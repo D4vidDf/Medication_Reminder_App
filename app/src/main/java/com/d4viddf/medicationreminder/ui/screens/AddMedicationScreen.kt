@@ -15,7 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.d4viddf.medicationreminder.ui.components.ColorSelector
-import com.d4viddf.medicationreminder.ui.components.FrequencySelector
+import com.d4viddf.medicationreminder.ui.components.frequency.FrequencySelector
 import com.d4viddf.medicationreminder.ui.components.GenericTextFieldInput
 import com.d4viddf.medicationreminder.ui.components.MedicationNameInput
 import com.d4viddf.medicationreminder.ui.components.MedicationTypeSelector

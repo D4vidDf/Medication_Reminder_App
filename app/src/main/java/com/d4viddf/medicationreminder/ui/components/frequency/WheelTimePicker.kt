@@ -1,4 +1,4 @@
-package com.d4viddf.medicationreminder.ui.components
+package com.d4viddf.medicationreminder.ui.components.frequency
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
