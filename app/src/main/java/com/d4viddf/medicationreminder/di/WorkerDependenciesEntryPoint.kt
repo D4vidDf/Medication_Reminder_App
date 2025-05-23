@@ -1,6 +1,7 @@
 package com.d4viddf.medicationreminder.di
 
 import android.content.Context
+import com.d4viddf.medicationreminder.data.PreReminderRepository
 import com.d4viddf.medicationreminder.data.MedicationReminderRepository
 import com.d4viddf.medicationreminder.data.MedicationRepository
 import com.d4viddf.medicationreminder.data.MedicationScheduleRepository
@@ -19,4 +20,5 @@ interface WorkerDependenciesEntryPoint {
     fun medicationReminderRepository(): MedicationReminderRepository
     fun notificationScheduler(): NotificationScheduler
     fun simplestDependency(): SimplestDependency // Para TestSimpleWorker
+    fun preReminderRepository(): PreReminderRepository
 }

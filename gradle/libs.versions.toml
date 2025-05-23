@@ -28,6 +28,7 @@ runtime = "1.9.0-alpha03"
 foundation = "1.9.0-alpha03"
 material3Version = "1.4.0-alpha15"
 materialIconsExtended = "1.7.8" # Add version for KSP
+androidx-datastore-preferences = "1.1.1"
 
 [libraries]
 accompanist-pager = { module = "com.google.accompanist:accompanist-pager", version = "0.36.0" }
@@ -75,6 +76,7 @@ androidx-runtime = { group = "androidx.compose.runtime", name = "runtime", versi
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3Version" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidx-datastore-preferences" }
 
 
 [plugins]

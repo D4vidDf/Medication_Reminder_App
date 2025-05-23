@@ -12,18 +12,26 @@ sealed class Screen(val route: String) {
     object MedicationDetails : Screen("medicationDetails/{id}") {
         fun createRoute(id: Int) = "medicationDetails/$id"
     }
+    object Settings : Screen("settings")
 }
 
 
+import androidx.compose.ui.Modifier
+
 @Composable
-fun AppNavigation(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = Screen.Home.route) {
+fun AppNavigation(navController: NavHostController, modifier: Modifier = Modifier) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Home.route,
+        modifier = modifier // Apply the modifier here
+    ) {
         composable(Screen.Home.route) {
             HomeScreen(
                 onAddMedicationClick = { navController.navigate(Screen.AddMedication.route) },
                 onMedicationClick = { medicationId -> // Correct lambda for passing medication ID
                     navController.navigate(Screen.MedicationDetails.createRoute(medicationId))
-                }
+                },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) } // Pass navigation logic
             )
         }
         composable(Screen.AddMedication.route) {
@@ -39,6 +47,11 @@ fun AppNavigation(navController: NavHostController) {
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
+        }
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }

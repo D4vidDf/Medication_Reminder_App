@@ -23,9 +23,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.d4viddf.medicationreminder.R
+import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.ui.colors.MedicationColor
 import com.d4viddf.medicationreminder.ui.colors.medicationColors
 
@@ -47,21 +51,21 @@ fun ColorSelector(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Color", modifier = Modifier.weight(1f))
+        Text(stringResource(R.string.color_selector_label), modifier = Modifier.weight(1f))
         Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.End) {
             Box(
                 modifier = Modifier
                     .size(24.dp)
                     .background(selectedColor.backgroundColor, CircleShape).semantics{
                         // Add content description for accessibility
-                        contentDescription = "Selected color: ${selectedColor.colorName}"
+                        contentDescription = stringResource(R.string.color_selector_selected_color_description_prefix) + medicationColorToString(selectedColor)
         }
 
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(selectedColor.colorName)
+            Text(medicationColorToString(selectedColor))
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = "Expand")
+            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = stringResource(R.string.color_selector_expand_description))
         }
     }
 
@@ -74,7 +78,7 @@ fun ColorSelector(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Color", style = MaterialTheme.typography.headlineSmall)
+                Text(stringResource(R.string.color_selector_label), style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
@@ -101,7 +105,7 @@ fun ColorSelector(
                                 }
                                 .semantics{
                                     // Add content description for accessibility
-                                    contentDescription = "Color: ${color.colorName}"
+                                    contentDescription = stringResource(R.string.color_selector_color_description_prefix) + medicationColorToString(color)
                                 },
                             contentAlignment = Alignment.Center,
 
@@ -109,7 +113,7 @@ fun ColorSelector(
                             if (isSelected) {
                                 Icon(
                                     Icons.Default.Check,
-                                    contentDescription = "Selected",
+                                    contentDescription = stringResource(R.string.color_selector_selected_icon_description),
                                     modifier = Modifier
                                         .background(Color.White, CircleShape)
                                         .padding(4.dp)
@@ -120,5 +124,23 @@ fun ColorSelector(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun medicationColorToString(color: MedicationColor): String {
+    return when (color) {
+        MedicationColor.ORANGE -> stringResource(R.string.medication_color_orange)
+        MedicationColor.PINK -> stringResource(R.string.medication_color_pink)
+        MedicationColor.GREEN -> stringResource(R.string.medication_color_dark_green)
+        MedicationColor.BLUE -> stringResource(R.string.medication_color_blue)
+        MedicationColor.PURPLE -> stringResource(R.string.medication_color_purple)
+        MedicationColor.YELLOW -> stringResource(R.string.medication_color_golden)
+        MedicationColor.LIGHT_YELLOW -> stringResource(R.string.medication_color_light_yellow)
+        MedicationColor.LIGHT_ORANGE -> stringResource(R.string.medication_color_light_orange)
+        MedicationColor.LIGHT_PINK -> stringResource(R.string.medication_color_light_pink)
+        MedicationColor.LIGHT_PURPLE -> stringResource(R.string.medication_color_light_purple)
+        MedicationColor.LIGHT_GREEN -> stringResource(R.string.medication_color_light_green)
+        MedicationColor.LIGHT_BLUE -> stringResource(R.string.medication_color_light_blue)
     }
 }

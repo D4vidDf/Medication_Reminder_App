@@ -46,9 +46,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.d4viddf.medicationreminder.R
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -76,7 +78,11 @@ fun FrequencySelector(
     onIntervalEndTimeSelected: (LocalTime?) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val frequencies = listOf("Once a day", "Multiple times a day", "Interval")
+    val frequencies = listOf(
+        stringResource(R.string.frequency_option_once_a_day),
+        stringResource(R.string.frequency_option_multiple_times_a_day),
+        stringResource(R.string.frequency_option_interval)
+    )
     val uiTimeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
     var showTimePickerFor by remember { mutableStateOf<TimePickerTarget?>(null) }
@@ -88,14 +94,14 @@ fun FrequencySelector(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Frequency", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.frequency_selector_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium)
             DropdownMenuFrequencies(selectedFrequency, frequencies, onFrequencySelected)
         }
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         when (selectedFrequency) {
-            "Once a day" -> {
-                SectionTitle("Daily Reminder Time & Days")
+            stringResource(R.string.frequency_option_once_a_day) -> {
+                SectionTitle(stringResource(R.string.frequency_selector_daily_reminder_time_days))
                 OutlinedButton(
                     onClick = {
                         timePickerState.hour = onceADayTime?.hour ?: LocalTime.now().hour
@@ -107,12 +113,12 @@ fun FrequencySelector(
                 ) {
                     Icon(Icons.Filled.ThumbUp, null, Modifier.size(ButtonDefaults.IconSize))
                     Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                    Text(onceADayTime?.format(uiTimeFormatter) ?: "Select Reminder Time")
+                    Text(onceADayTime?.format(uiTimeFormatter) ?: stringResource(R.string.frequency_selector_select_reminder_time_button))
                 }
                 Spacer(Modifier.height(8.dp))
                 DaySelector(selectedDays, onDaysSelected)
             }
-            "Multiple times a day" -> {
+            stringResource(R.string.frequency_option_multiple_times_a_day) -> {
                 CustomAlarmsSelector(
                     selectedTimes = selectedTimes,
                     onTimesSelected = onTimesSelected,
@@ -123,15 +129,15 @@ fun FrequencySelector(
                     }
                 )
             }
-            "Interval" -> {
-                SectionTitle("Repetition Interval")
+            stringResource(R.string.frequency_option_interval) -> {
+                SectionTitle(stringResource(R.string.frequency_selector_repetition_interval_title))
                 IntervalDurationSelector(intervalHours, intervalMinutes, onIntervalHoursChanged, onIntervalMinutesChanged)
 
                 Spacer(Modifier.height(16.dp))
-                SectionTitle("Daily Active Range for Interval")
+                SectionTitle(stringResource(R.string.frequency_selector_daily_active_range_title))
                 Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TimeRangeButton(
-                        label = "Start Time", time = intervalStartTime, placeholder = "Set Start",
+                        label = stringResource(R.string.frequency_selector_start_time_label), time = intervalStartTime, placeholder = stringResource(R.string.frequency_selector_set_start_placeholder),
                         onClick = {
                             timePickerState.hour = intervalStartTime?.hour ?: 6
                             timePickerState.minute = intervalStartTime?.minute ?: 0
@@ -140,7 +146,7 @@ fun FrequencySelector(
                         modifier = Modifier.weight(1f)
                     )
                     TimeRangeButton(
-                        label = "End Time", time = intervalEndTime, placeholder = "Set End",
+                        label = stringResource(R.string.frequency_selector_end_time_label), time = intervalEndTime, placeholder = stringResource(R.string.frequency_selector_set_end_placeholder),
                         onClick = {
                             timePickerState.hour = intervalEndTime?.hour ?: 22
                             timePickerState.minute = intervalEndTime?.minute ?: 0
@@ -183,9 +189,9 @@ fun FrequencySelector(
                         null -> {} // Should not happen
                     }
                     showTimePickerFor = null
-                }) { Text("OK") }
+                }) { Text(stringResource(R.string.dialog_button_ok)) }
             },
-            dismissButton = { TextButton(onClick = { showTimePickerFor = null }) { Text("Cancel") } }
+            dismissButton = { TextButton(onClick = { showTimePickerFor = null }) { Text(stringResource(R.string.dialog_button_cancel)) } }
         ) { TimePicker(state = timePickerState, modifier = Modifier.fillMaxWidth()) }
     }
 }
@@ -256,10 +262,10 @@ fun DaySelector(
     selectedDays: List<Int>,
     onDaysSelected: (List<Int>) -> Unit
 ) {
-    val daysOfWeekLabels = remember { listOf("M", "T", "W", "T", "F", "S", "S") }
+    val daysOfWeekLabels = remember { listOf("M", "T", "W", "T", "F", "S", "S") } // Keeping these as is for now
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text("Repeat on days:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(bottom = 12.dp))
+        Text(stringResource(R.string.day_selector_repeat_on_days_label), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(bottom = 12.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -305,19 +311,19 @@ fun CustomAlarmsSelector(
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        SectionTitle("Custom Alarm Times")
+        SectionTitle(stringResource(R.string.custom_alarms_selector_title))
         Button(
             onClick = onShowTimePicker,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Icon(Icons.Default.Add, "Add New Alarm Time", Modifier.size(ButtonDefaults.IconSize))
+            Icon(Icons.Default.Add, stringResource(R.string.custom_alarms_selector_add_new_alarm_description), Modifier.size(ButtonDefaults.IconSize))
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Add Alarm Time")
+            Text(stringResource(R.string.custom_alarms_selector_add_alarm_button))
         }
 
         if (selectedTimes.isNotEmpty()) {
             Spacer(Modifier.height(16.dp))
-            Text("Scheduled times:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(bottom = 8.dp))
+            Text(stringResource(R.string.custom_alarms_selector_scheduled_times_label), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(bottom = 8.dp))
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
             ) {
@@ -331,7 +337,7 @@ fun CustomAlarmsSelector(
                                 onClick = { onTimesSelected(selectedTimes.filter { it != time }) },
                                 modifier = Modifier.size(InputChipDefaults.IconSize)
                             ) {
-                                Icon(Icons.Filled.Close, contentDescription = "Delete time ${time.format(timeFormatter)}")
+                                Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.custom_alarms_selector_delete_time_description_prefix) + time.format(timeFormatter))
                             }
                         },
                     )
@@ -352,22 +358,22 @@ fun IntervalDurationSelector(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Every", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(end = 8.dp))
+        Text(stringResource(R.string.interval_duration_selector_every_label), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(end = 8.dp))
         Box(Modifier.width(70.dp)) {
             IOSWheelPicker((0..23).toList(), hours, onHoursChanged, Modifier.height(120.dp))
         }
-        Text("hrs", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 8.dp))
+        Text(stringResource(R.string.interval_duration_selector_hours_unit), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(horizontal = 8.dp))
         Box(Modifier.width(70.dp)) {
             IOSWheelPicker((0..55 step 5).toList(), minutes, onMinutesChanged, Modifier.height(120.dp))
         }
-        Text("min", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 8.dp))
+        Text(stringResource(R.string.interval_duration_selector_minutes_unit), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(start = 8.dp))
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePickerDialog(
-    title: String = "Select Time",
+    title: String = stringResource(R.string.time_picker_dialog_title_select_time),
     onDismissRequest: () -> Unit,
     confirmButton: @Composable () -> Unit,
     dismissButton: @Composable (() -> Unit)? = null,

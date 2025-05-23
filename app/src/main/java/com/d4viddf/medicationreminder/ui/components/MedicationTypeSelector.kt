@@ -18,6 +18,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import androidx.compose.ui.res.stringResource
+import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.data.MedicationType
 import com.d4viddf.medicationreminder.ui.colors.MedicationColor
 import com.d4viddf.medicationreminder.viewmodel.MedicationTypeViewModel
@@ -46,7 +48,7 @@ fun MedicationTypeSelector(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Select type of medication",
+                text = stringResource(R.string.medication_type_selector_title),
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Bold
                 ),

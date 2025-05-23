@@ -23,6 +23,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.viewmodel.MedicationTypeViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -55,7 +57,7 @@ fun MedicationDosagePackageDateInput(
             .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp) // Ensure consistent padding
     ) {
         Text(
-            "Dosage, Package & Dates",
+            stringResource(R.string.dosage_package_dates_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 24.dp)
@@ -78,13 +80,13 @@ fun MedicationDosagePackageDateInput(
                         "Liquid" -> "10 ${LiquidUnit.ML.displayValue}"
                         "Powder" -> "100 ${PowderUnit.MG.displayValue}"
                         "Syringe" -> "1 ${SyringeUnit.ML.displayValue}"
-                        "Spray" -> "1 sprays"
-                        "Suppository", "Suppositorium" -> "1 suppositories"
-                        "Patch" -> "1 patches"
-                        else -> "Tap to set dosage"
+                        "Spray" -> "1 ${stringResource(R.string.unit_sprays)}"
+                        "Suppository", "Suppositorium" -> "1 ${stringResource(R.string.unit_suppositories)}"
+                        "Patch" -> "1 ${stringResource(R.string.unit_patches)}"
+                        else -> stringResource(R.string.tap_to_set_dosage)
                     }
                 }
-            } ?: "Tap to set dosage"
+            } ?: stringResource(R.string.tap_to_set_dosage)
 
             Column(
                 modifier = Modifier
@@ -93,12 +95,12 @@ fun MedicationDosagePackageDateInput(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Dosage", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.dosage_label), style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = displayDosage, style = MaterialTheme.typography.headlineMedium)
                 if (medicationSearchResult?.dosage != null) {
                     Text(
-                        text = "(Pre-filled from CIMA, tap to edit)",
+                        text = stringResource(R.string.dosage_prefilled_info),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -121,12 +123,12 @@ fun MedicationDosagePackageDateInput(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Package Size", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.package_size_label), style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = packageSize,
                     onValueChange = onPackageSizeChange,
-                    label = { Text("Units") },
+                    label = { Text(stringResource(R.string.package_size_units_label)) },
                     textStyle = MaterialTheme.typography.headlineMedium.copy(textAlign = TextAlign.Center),
                     modifier = Modifier.width(120.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
@@ -143,19 +145,19 @@ fun MedicationDosagePackageDateInput(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             M3StyledDatePickerButton(
-                label = "Start Date",
+                label = stringResource(R.string.start_date_label),
                 dateString = startDate,
                 onDateSelected = onStartDateSelected,
                 modifier = Modifier.weight(1f),
-                placeholder = "Select Start Date"
+                placeholder = stringResource(R.string.select_start_date_placeholder)
             )
             M3StyledDatePickerButton(
-                label = "End Date",
+                label = stringResource(R.string.end_date_label),
                 dateString = endDate,
                 onDateSelected = onEndDateSelected,
                 modifier = Modifier.weight(1f),
-                placeholder = "Select End Date",
-                minSelectableDateMillis = if (startDate.isNotEmpty() && startDate != "Select Start Date") {
+                placeholder = stringResource(R.string.select_end_date_placeholder),
+                minSelectableDateMillis = if (startDate.isNotEmpty() && startDate != stringResource(R.string.select_start_date_placeholder)) {
                     try {
                         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(startDate)?.time
                     } catch (e: Exception) { null }
@@ -184,7 +186,7 @@ fun MedicationDosagePackageDateInput(
                 // The fixed height of the Row of pickers is key.
             ) {
                 Text(
-                    "Select Dosage",
+                    stringResource(R.string.select_dosage_modal_title),
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(bottom = 16.dp).align(Alignment.CenterHorizontally)
                 )
@@ -223,7 +225,13 @@ fun MedicationDosagePackageDateInput(
                                 selectedItem = pillFraction,
                                 onItemSelected = { pillFraction = it },
                                 modifier = Modifier.padding(start = 16.dp).width(120.dp).height(150.dp),
-                                displayTransform = { it.name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() } }
+                                displayTransform = {
+                                    when(it) {
+                                        PillFraction.WHOLE -> stringResource(R.string.pill_fraction_whole)
+                                        PillFraction.HALF -> stringResource(R.string.pill_fraction_half)
+                                        PillFraction.QUARTER -> stringResource(R.string.pill_fraction_quarter)
+                                    }
+                                }
                             )
                         }
                         "Cream", "Creme" -> {
@@ -297,7 +305,7 @@ fun MedicationDosagePackageDateInput(
                         }
                         "Spray" -> {
                             var numSprays by remember(dosage) { mutableStateOf(dosage.filter { it.isDigit() }.toIntOrNull() ?: 1) }
-                            LaunchedEffect(numSprays) { onDosageChange("$numSprays sprays") }
+                            LaunchedEffect(numSprays) { onDosageChange("$numSprays ${stringResource(R.string.unit_sprays)}") }
 
                             IOSWheelPicker(
                                 items = (1..10).toList(),
@@ -305,11 +313,11 @@ fun MedicationDosagePackageDateInput(
                                 onItemSelected = { numSprays = it },
                                 modifier = Modifier.width(80.dp).height(150.dp)
                             )
-                            Text("sprays", modifier = Modifier.padding(start = 16.dp))
+                            Text(stringResource(R.string.unit_sprays), modifier = Modifier.padding(start = 16.dp))
                         }
                         "Suppository", "Suppositorium" -> {
                             var numSuppositories by remember(dosage) { mutableStateOf(dosage.filter { it.isDigit() }.toIntOrNull() ?: 1) }
-                            LaunchedEffect(numSuppositories) { onDosageChange("$numSuppositories suppositories") }
+                            LaunchedEffect(numSuppositories) { onDosageChange("$numSuppositories ${stringResource(R.string.unit_suppositories)}") }
 
                             IOSWheelPicker(
                                 items = (1..10).toList(),
@@ -317,11 +325,11 @@ fun MedicationDosagePackageDateInput(
                                 onItemSelected = { numSuppositories = it },
                                 modifier = Modifier.width(80.dp).height(150.dp)
                             )
-                            Text("suppositories", modifier = Modifier.padding(start = 16.dp))
+                            Text(stringResource(R.string.unit_suppositories), modifier = Modifier.padding(start = 16.dp))
                         }
                         "Patch" -> {
                             var numPatches by remember(dosage) { mutableStateOf(dosage.filter { it.isDigit() }.toIntOrNull() ?: 1) }
-                            LaunchedEffect(numPatches) { onDosageChange("$numPatches patches") }
+                            LaunchedEffect(numPatches) { onDosageChange("$numPatches ${stringResource(R.string.unit_patches)}") }
 
                             IOSWheelPicker(
                                 items = (1..10).toList(),
@@ -329,10 +337,10 @@ fun MedicationDosagePackageDateInput(
                                 onItemSelected = { numPatches = it },
                                 modifier = Modifier.width(80.dp).height(150.dp)
                             )
-                            Text("patches", modifier = Modifier.padding(start = 16.dp))
+                            Text(stringResource(R.string.unit_patches), modifier = Modifier.padding(start = 16.dp))
                         }
                         else -> { // Fallback for other types
-                            Text("Dosage selection for this type is not available via wheel picker. Please enter manually if needed.",
+                            Text(stringResource(R.string.dosage_selection_not_available_message),
                                 modifier = Modifier.padding(16.dp).fillMaxWidth(),
                                 textAlign = TextAlign.Center
                             )
@@ -346,7 +354,7 @@ fun MedicationDosagePackageDateInput(
                     onClick = { showDosageModal = false },
                     modifier = Modifier.fillMaxWidth() // Button takes full width
                 ) {
-                    Text("Done")
+                    Text(stringResource(R.string.dialog_button_done))
                 }
             }
         }
@@ -428,10 +436,10 @@ private fun M3StyledDatePickerButton(
                     },
                     enabled = datePickerState.selectedDateMillis != null &&
                             (minSelectableDateMillis == null || datePickerState.selectedDateMillis!! >= minSelectableDateMillis)
-                ) { Text("OK") }
+                ) { Text(stringResource(R.string.dialog_button_ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.dialog_button_cancel)) }
             }
         ) {
             DatePicker(
@@ -533,13 +541,7 @@ fun <T> IOSWheelPicker( // Ensure this is the version you are using
 
 enum class PillFraction(val displayValue: String) {
     WHOLE(""), HALF(".5"), QUARTER(".25");
-    override fun toString(): String {
-        return when(this) {
-            WHOLE -> "Whole"
-            HALF -> "½"
-            QUARTER -> "¼"
-        }
-    }
+    // toString() is handled by the displayTransform in the picker using new string resources
 }
 enum class CreamUnit(val displayValue: String) {
     MG("mg"), G("g"), ML("ml");

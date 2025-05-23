@@ -9,8 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.d4viddf.medicationreminder.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +47,7 @@ fun GenericTextFieldInput(
             textStyle = MaterialTheme.typography.bodyLarge,
             singleLine = true,
             trailingIcon = {
-                Icon(Icons.Default.Edit, contentDescription = "Edit")
+                Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.generic_text_field_edit_description))
             },
             keyboardOptions = keyboardOptions,
             isError = isError,
@@ -63,7 +65,7 @@ fun GenericTextFieldInput(
 
         if (isError) {
             Text(
-                text = "This field is required or contains an error",
+                text = stringResource(R.string.generic_text_field_error_message),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )

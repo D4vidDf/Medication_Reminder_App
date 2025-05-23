@@ -19,9 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 // import androidx.compose.ui.platform.LocalContext // Only if child components truly need it
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.d4viddf.medicationreminder.R
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -53,11 +55,11 @@ fun AddMedicationScreen(
     var progress by rememberSaveable { mutableStateOf(0f) }
     var selectedTypeId by rememberSaveable { mutableStateOf(1) }
     var selectedColor by rememberSaveable { mutableStateOf(MedicationColor.LIGHT_ORANGE) }
-    var startDate by rememberSaveable { mutableStateOf("Select Start Date") }
-    var endDate by rememberSaveable { mutableStateOf("Select End Date") }
+    var startDate by rememberSaveable { mutableStateOf(getString(R.string.select_start_date_placeholder, LocalContext.current)) } // Requires context for initial value
+    var endDate by rememberSaveable { mutableStateOf(getString(R.string.select_end_date_placeholder, LocalContext.current)) } // Requires context
 
     // Frequency related states
-    var frequency by rememberSaveable { mutableStateOf("Once a day") }
+    var frequency by rememberSaveable { mutableStateOf(getString(R.string.frequency_option_once_a_day, LocalContext.current)) } // Requires context
     var selectedDays by rememberSaveable { mutableStateOf<List<Int>>(emptyList()) } // Default to empty
 
     // "Once a day" specific state
@@ -95,7 +97,7 @@ fun AddMedicationScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = if (medicationName.isBlank() || currentStep == 0) "New medication" else medicationName.substringBefore(" "),
+                                text = if (medicationName.isBlank() || currentStep == 0) stringResource(R.string.add_medication_screen_title_new) else medicationName.substringBefore(" "),
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.onGloballyPositioned { titleWidth = it.size.width }
@@ -118,7 +120,7 @@ fun AddMedicationScreen(
                                 currentStep--
                                 progress = (currentStep + 1) / 5f
                             }) {
-                                Icon(Icons.Rounded.KeyboardArrowLeft, contentDescription = "Back")
+                                Icon(Icons.Rounded.KeyboardArrowLeft, contentDescription = stringResource(R.string.navigation_back_description))
                             }
                         } else {
                             Spacer(Modifier.width(48.dp))
@@ -126,7 +128,7 @@ fun AddMedicationScreen(
                     },
                     actions = {
                         IconButton(onClick = onNavigateBack) {
-                            Icon(Icons.Rounded.Close, contentDescription = "Close")
+                            Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.navigation_close_description))
                         }
                     }
                 )
@@ -145,16 +147,16 @@ fun AddMedicationScreen(
                                     name = medicationName, typeId = selectedTypeId, color = selectedColor.toString(),
                                     dosage = dosage.ifEmpty { null }, packageSize = packageSize.toIntOrNull() ?: 0,
                                     remainingDoses = packageSize.toIntOrNull() ?: 0,
-                                    startDate = if (startDate != "Select Start Date") startDate else null,
-                                    endDate = if (endDate != "Select End Date") endDate else null,
+                                    startDate = if (startDate != stringResource(R.string.select_start_date_placeholder)) startDate else null,
+                                    endDate = if (endDate != stringResource(R.string.select_end_date_placeholder)) endDate else null,
                                     reminderTime = null // This might be derived or deprecated
                                 )
                             )
                             medicationId.let { medId ->
                                 val scheduleType = when (frequency) {
-                                    "Once a day" -> ScheduleType.DAILY // Or a new type if needed for single specific time
-                                    "Multiple times a day" -> ScheduleType.CUSTOM_ALARMS
-                                    "Interval" -> ScheduleType.INTERVAL
+                                    stringResource(R.string.frequency_option_once_a_day) -> ScheduleType.DAILY // Or a new type if needed for single specific time
+                                    stringResource(R.string.frequency_option_multiple_times_a_day) -> ScheduleType.CUSTOM_ALARMS
+                                    stringResource(R.string.frequency_option_interval) -> ScheduleType.INTERVAL
                                     // "Weekly" was removed from options, handle if re-added
                                     else -> ScheduleType.DAILY // Default or handle error
                                 }
@@ -220,7 +222,7 @@ fun AddMedicationScreen(
                 shape = MaterialTheme.shapes.extraLarge,
                 enabled = medicationName.isNotBlank() && (currentStep != 2 || (packageSize.isNotBlank() && packageSize.toIntOrNull() != null)) // Add more validation
             ) {
-                Text(if (currentStep == 4) "Confirm" else "Next")
+                Text(if (currentStep == 4) stringResource(R.string.button_confirm) else stringResource(R.string.button_next))
             }
         }
     ) { innerPadding ->
@@ -276,14 +278,14 @@ fun AddMedicationScreen(
                         onFrequencySelected = { newFrequency ->
                             frequency = newFrequency
                             // Reset states when frequency changes to avoid carrying over inappropriate data
-                            if (newFrequency != "Once a day") {
+                            if (newFrequency != stringResource(R.string.frequency_option_once_a_day)) {
                                 onceADayTime = null
                                 selectedDays = emptyList() // Typically days are for "Once a day" or "Weekly"
                             }
-                            if (newFrequency != "Multiple times a day") {
+                            if (newFrequency != stringResource(R.string.frequency_option_multiple_times_a_day)) {
                                 selectedTimes = emptyList()
                             }
-                            if (newFrequency != "Interval") {
+                            if (newFrequency != stringResource(R.string.frequency_option_interval)) {
                                 intervalHours = 1 // Reset to default
                                 intervalMinutes = 0 // Reset to default
                                 intervalStartTime = null
@@ -349,43 +351,43 @@ fun MedicationSummary(
     val daysOfWeekMap = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-        Text("Medication Summary", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.summary_section_title_medication), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
-        InfoRow("Name:", medicationName)
+        InfoRow(stringResource(R.string.summary_label_name), medicationName)
         // InfoRow("Type ID:", typeId.toString()) // Optional to show type ID
-        InfoRow("Dosage:", dosage.ifEmpty { "Not set" })
-        InfoRow("Package Size:", packageSize.ifEmpty { "Not set" })
-        InfoRow("Start Date:", if (startDate == "Select Start Date") "Not set" else startDate)
-        InfoRow("End Date:", if (endDate == "Select End Date") "Not set" else endDate)
+        InfoRow(stringResource(R.string.summary_label_dosage), dosage.ifEmpty { stringResource(R.string.summary_placeholder_not_set) })
+        InfoRow(stringResource(R.string.summary_label_package_size), packageSize.ifEmpty { stringResource(R.string.summary_placeholder_not_set) })
+        InfoRow(stringResource(R.string.summary_label_start_date), if (startDate == stringResource(R.string.select_start_date_placeholder)) stringResource(R.string.summary_placeholder_not_set) else startDate)
+        InfoRow(stringResource(R.string.summary_label_end_date), if (endDate == stringResource(R.string.select_end_date_placeholder)) stringResource(R.string.summary_placeholder_not_set) else endDate)
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
-            Text("Color:", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.summary_label_color), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
             Spacer(Modifier.width(8.dp))
             Box(Modifier.size(24.dp).background(color, CircleShape))
         }
         Divider(Modifier.padding(vertical = 8.dp))
-        Text("Reminder Details", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium)
-        InfoRow("Frequency:", frequency)
+        Text(stringResource(R.string.summary_section_title_reminder), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium)
+        InfoRow(stringResource(R.string.summary_label_frequency), frequency)
 
         when (frequency) {
-            "Once a day" -> {
-                InfoRow("Time:", onceADayTime?.format(timeFormatter) ?: "Not set")
+            stringResource(R.string.frequency_option_once_a_day) -> {
+                InfoRow(stringResource(R.string.summary_label_time), onceADayTime?.format(timeFormatter) ?: stringResource(R.string.summary_placeholder_not_set))
                 if (selectedDays.isNotEmpty()) {
-                    InfoRow("Days:", selectedDays.sorted().mapNotNull { daysOfWeekMap.getOrNull(it - 1) }.joinToString(", "))
+                    InfoRow(stringResource(R.string.summary_label_days), selectedDays.sorted().mapNotNull { daysOfWeekMap.getOrNull(it - 1) }.joinToString(", "))
                 }
             }
-            "Multiple times a day" -> {
+            stringResource(R.string.frequency_option_multiple_times_a_day) -> {
                 if (selectedTimes.isNotEmpty()) {
                     selectedTimes.sorted().forEachIndexed { index, time ->
-                        InfoRow("Alarm ${index + 1}:", time.format(timeFormatter))
+                        InfoRow(stringResource(R.string.summary_label_alarm_prefix) + "${index + 1}:", time.format(timeFormatter))
                     }
                 } else {
-                    InfoRow("Alarms:", "None set")
+                    InfoRow(stringResource(R.string.summary_label_alarms), stringResource(R.string.summary_placeholder_none_set))
                 }
             }
-            "Interval" -> {
-                InfoRow("Interval:", "Every $intervalHours hrs $intervalMinutes mins")
-                InfoRow("Daily Start:", intervalStartTime?.format(timeFormatter) ?: "Not set")
-                InfoRow("Daily End:", intervalEndTime?.format(timeFormatter) ?: "Not set")
+            stringResource(R.string.frequency_option_interval) -> {
+                InfoRow(stringResource(R.string.summary_label_interval), stringResource(R.string.interval_duration_selector_every_label) + "$intervalHours " + stringResource(R.string.interval_duration_selector_hours_unit) + " $intervalMinutes " + stringResource(R.string.interval_duration_selector_minutes_unit))
+                InfoRow(stringResource(R.string.summary_label_daily_start), intervalStartTime?.format(timeFormatter) ?: stringResource(R.string.summary_placeholder_not_set))
+                InfoRow(stringResource(R.string.summary_label_daily_end), intervalEndTime?.format(timeFormatter) ?: stringResource(R.string.summary_placeholder_not_set))
             }
         }
     }

@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 // Define an enum for the color options
 enum class MedicationColor(
-    val colorName: String, // Add a field for the color name
+    // val colorName: String, // Removed: will be handled by string resources
     val backgroundColor: Color,
     val textColor: Color,
     val cardColor: Color,
@@ -13,7 +13,7 @@ enum class MedicationColor(
     val progressBarColor: Color,
 ) {
     ORANGE(
-        colorName = "Orange", // Set the color name
+        // colorName = "Orange", // Removed
         backgroundColor = Color(0xFFd96126),
         textColor = Color(0xFFfffdf3),
         cardColor = Color(0xFF2c1407),
@@ -22,7 +22,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xFFFFFFFF)
     ),
     PINK(
-        colorName = "Pink",
+        // colorName = "Pink", // Removed
         backgroundColor = Color(0xFFd6418c),
         textColor = Color(0xFFfffdff),
         cardColor = Color(0xFF2c0d1d),
@@ -31,7 +31,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xFFFFFFFF)
     ),
     GREEN(
-        colorName = "Dark Green",
+        // colorName = "Dark Green", // Removed
         backgroundColor = Color(0xFF009965),
         textColor = Color(0xFFe2fffa),
         cardColor = Color(0xFF001f13),
@@ -40,7 +40,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xFFFFFFFF)
     ),
     BLUE(
-        colorName = "Blue",
+        // colorName = "Blue", // Removed
         backgroundColor = Color(0xFF269dd8),
         textColor = Color(0xFFfeffff),
         cardColor = Color(0xFF071f2c),
@@ -49,7 +49,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xFFFFFFFF)
     ),
     PURPLE(
-        colorName = "Purple",
+        // colorName = "Purple", // Removed
         backgroundColor = Color(0xFF6b5eee),
         textColor = Color(0xFFfffeff),
         cardColor = Color(0xFF15122e),
@@ -58,7 +58,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xFFFFFFFF)
     ),
     YELLOW(
-        colorName = "Golden",
+        // colorName = "Golden", // Removed
         backgroundColor = Color(0xFFf0b300),
         textColor = Color(0xFFfffef4),
         cardColor = Color(0xFF312400),
@@ -67,7 +67,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xFFFFFFFF)
     ),
     LIGHT_YELLOW(
-        colorName = "Light Yellow",
+        // colorName = "Light Yellow", // Removed
         backgroundColor = Color(0xFFfcdd82),
         textColor = Color(0xFF372c11),
         cardColor = Color(0xFF322d19),
@@ -76,7 +76,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xff2e2918)
     ),
     LIGHT_ORANGE(
-        colorName = "Light Orange",
+        // colorName = "Light Orange", // Removed
         backgroundColor = Color(0xFFfcc793),
         textColor = Color(0xFF33281f),
         cardColor = Color(0xFF2e251c),
@@ -85,7 +85,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xff2e251c)
     ),
     LIGHT_PINK(
-        colorName = "Light Pink",
+        // colorName = "Light Pink", // Removed
         backgroundColor = Color(0xFFf7c8ee),
         textColor = Color(0xFF2f2631),
         cardColor = Color(0xFF312730),
@@ -94,7 +94,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xff2d262c)
     ),
     LIGHT_PURPLE(
-        colorName = "Light Purple",
+        // colorName = "Light Purple", // Removed
         backgroundColor = Color(0xFFd3cffb),
         textColor = Color(0xFF302e40),
         cardColor = Color(0xFF2a2932),
@@ -103,7 +103,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xff26262d)
     ),
     LIGHT_GREEN(
-        colorName = "Light Green",
+        // colorName = "Light Green", // Removed
         backgroundColor = Color(0xFFbae0b7),
         textColor = Color(0xFF2a2f27),
         cardColor = Color(0xFF262d25),
@@ -112,7 +112,7 @@ enum class MedicationColor(
         progressBarColor = Color(0xff232822)
     ),
     LIGHT_BLUE(
-        colorName = "Light Blue",
+        // colorName = "Light Blue", // Removed
         backgroundColor = Color(0xFFc5dfec),
         textColor = Color(0xFF262f36),
         cardColor = Color(0xFF292d2e),

@@ -10,10 +10,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.data.Medication
 import com.d4viddf.medicationreminder.data.MedicationSchedule
 import com.d4viddf.medicationreminder.data.ScheduleType
@@ -62,28 +64,28 @@ fun MedicationDetailCounters(
                 (sched.specificTimes?.split(',')?.count { it.isNotBlank() } ?: 0) <= 1 &&
                 sched.specificTimes?.split(',')?.firstOrNull()?.isNotBlank() == true) {
                 val timesCount = sched.specificTimes?.split(',')?.count { it.isNotBlank() } ?: 0
-                if (timesCount == 1) "1" to "toma" // Más genérico que "vez al día" si hay días
-                else if (timesCount > 1) "$timesCount" to "tomas"
+                if (timesCount == 1) "1" to stringResource(R.string.medication_counter_dose_singular) // Más genérico que "vez al día" si hay días
+                else if (timesCount > 1) "$timesCount" to stringResource(R.string.medication_counter_dose_plural)
                 else null
             } else {
                 when (sched.scheduleType) {
                     ScheduleType.DAILY -> {
                         val timesCount = sched.specificTimes?.split(',')?.count { it.isNotBlank() } ?: 0
-                        if (timesCount == 1) "1" to "vez al día"
-                        else if (timesCount > 1) "$timesCount" to "veces al día"
+                        if (timesCount == 1) "1" to stringResource(R.string.medication_counter_once_a_day)
+                        else if (timesCount > 1) "$timesCount" to stringResource(R.string.medication_counter_times_a_day)
                         else null
                     }
                     ScheduleType.CUSTOM_ALARMS -> {
                         val timesCount = sched.specificTimes?.split(',')?.count { it.isNotBlank() } ?: 0
-                        if (timesCount > 0) "$timesCount" to "veces al día" else null
+                        if (timesCount > 0) "$timesCount" to stringResource(R.string.medication_counter_times_a_day) else null
                     }
                     ScheduleType.INTERVAL -> {
                         val h = sched.intervalHours ?: 0; val m = sched.intervalMinutes ?: 0
                         val vp = mutableListOf<String>()
                         if (h > 0) vp.add("${h}h"); if (m > 0) vp.add("${m}m")
-                        if (vp.isNotEmpty()) "Cada ${vp.joinToString(" ")}" to "intervalo" else null
+                        if (vp.isNotEmpty()) stringResource(R.string.medication_counter_interval_prefix_each) + vp.joinToString(" ") to stringResource(R.string.medication_counter_interval_unit) else null
                     }
-                    ScheduleType.AS_NEEDED -> "S/N" to "según necesidad"
+                    ScheduleType.AS_NEEDED -> stringResource(R.string.medication_counter_as_needed_value) to stringResource(R.string.medication_counter_as_needed_label)
                     else -> null
                 }
             }
@@ -108,13 +110,13 @@ fun MedicationDetailCounters(
                 pStartDate != null && pEndDate != null -> {
                     if (pEndDate.isBefore(pStartDate)) return@remember null to null
                     val total = ChronoUnit.DAYS.between(pStartDate, pEndDate) + 1
-                    if (total >= 0) "$total" to "días total" else null
+                    if (total >= 0) "$total" to stringResource(R.string.medication_counter_duration_total_days) else null
                 }
                 pEndDate != null && !pEndDate.isBefore(today) -> {
                     val ref = if (pStartDate != null && pStartDate.isAfter(today)) pStartDate else today
                     if (pEndDate.isBefore(ref)) return@remember null to null
                     val remaining = ChronoUnit.DAYS.between(ref, pEndDate) + 1
-                    if (remaining >= 0) "$remaining" to "días rest." else null
+                    if (remaining >= 0) "$remaining" to stringResource(R.string.medication_counter_duration_remaining_days) else null
                 }
                 else -> null
             }
@@ -134,9 +136,9 @@ fun MedicationDetailCounters(
             if (days.isNotEmpty()) {
                 val count = days.size
                 val label = when (count) {
-                    7 -> "todos los días"
-                    1 -> "día" // o "1 día/sem."
-                    else -> "$count días/semana"
+                    7 -> stringResource(R.string.medication_counter_days_summary_all_days)
+                    1 -> stringResource(R.string.medication_counter_days_summary_one_day) // o "1 día/sem."
+                    else -> "$count" + stringResource(R.string.medication_counter_days_summary_days_per_week_suffix)
                 }
                 // Para el valor, si es "todos los días", no necesitamos el "7" explícitamente
                 // a menos que el diseño lo requiera. Vamos a usar el count.
@@ -168,7 +170,7 @@ fun MedicationDetailCounters(
         // Evitar mostrar "1 vez al día" si ya tenemos un contador de días, ya que la frecuencia
         // en ese caso suele ser implícita (1 toma en esos días).
         // A menos que la frecuencia explícitamente sea > 1 toma en esos días específicos.
-        val isRedundantWithDaysSummary = daysSummaryValue != null && frequencyValue == "1" && frequencyUnit == "toma"
+        val isRedundantWithDaysSummary = daysSummaryValue != null && frequencyValue == "1" && frequencyUnit == stringResource(R.string.medication_counter_dose_singular)
         if (!isRedundantWithDaysSummary) {
             itemsToDisplay.add(frequencyValue to frequencyUnit)
         }
@@ -197,7 +199,7 @@ fun MedicationDetailCounters(
     ) {
         if (finalItems.isEmpty()) {
             Text(
-                "No hay detalles de conteo.",
+                stringResource(R.string.medication_counter_no_details),
                 color = Color.White.copy(alpha = 0.7f),
                 fontSize = 12.sp,
                 modifier = Modifier.align(Alignment.CenterVertically) // Centrar texto si es el único elemento

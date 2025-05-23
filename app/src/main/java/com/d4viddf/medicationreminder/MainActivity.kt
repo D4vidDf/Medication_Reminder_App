@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge // Import for enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts // Import ActivityResultContracts
 import androidx.core.content.ContextCompat // Import ContextCompat
 import androidx.work.Data
@@ -18,6 +19,8 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.d4viddf.medicationreminder.data.ThemeRepository
+import com.d4viddf.medicationreminder.data.ThemeSetting
 import com.d4viddf.medicationreminder.notifications.NotificationHelper
 import dagger.hilt.android.AndroidEntryPoint
 import com.d4viddf.medicationreminder.ui.MedicationReminderApp
@@ -25,9 +28,16 @@ import com.d4viddf.medicationreminder.workers.ReminderSchedulingWorker
 import com.d4viddf.medicationreminder.workers.TestSimpleWorker
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.isSystemInDarkTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var themeRepository: ThemeRepository
 
     // ActivityResultLauncher for the permission request
     private val requestPermissionLauncher =
@@ -46,6 +56,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge() // Enable edge-to-edge display
 
         // 1. Create Notification Channels (moved before setContent for early setup)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -63,7 +74,13 @@ class MainActivity : ComponentActivity() {
 
         // 3. Set up UI
         setContent {
-            MedicationReminderApp()
+            val themeSetting by themeRepository.currentTheme.collectAsState(initial = ThemeSetting.SYSTEM)
+            val useDarkTheme = when (themeSetting) {
+                ThemeSetting.LIGHT -> false
+                ThemeSetting.DARK -> true
+                ThemeSetting.SYSTEM -> isSystemInDarkTheme()
+            }
+            MedicationReminderApp(darkTheme = useDarkTheme) // Pass useDarkTheme
         }
 
     }

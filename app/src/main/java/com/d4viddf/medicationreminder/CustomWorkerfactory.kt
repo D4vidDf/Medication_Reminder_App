@@ -36,7 +36,8 @@ class CustomWorkerFasctory @Inject constructor() : WorkerFactory() {
                     hiltEntryPoint.medicationRepository(),
                     hiltEntryPoint.medicationScheduleRepository(),
                     hiltEntryPoint.medicationReminderRepository(),
-                    hiltEntryPoint.notificationScheduler()
+                    hiltEntryPoint.notificationScheduler(),
+                    hiltEntryPoint.preReminderRepository() // Provide PreReminderRepository
                 )
             }
             TestSimpleWorker::class.java.name -> {

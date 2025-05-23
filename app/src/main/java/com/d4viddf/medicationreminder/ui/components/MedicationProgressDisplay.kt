@@ -12,11 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.drawscope.Stroke // Para definir el grosor del trazo
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.ui.colors.MedicationColor
 
 // Data class ProgressDetails (sin cambios)
@@ -53,11 +55,11 @@ fun MedicationProgressDisplay(
     val indicatorSize = 220.dp
 
     val accessibilityDescription = if (progressDetails != null && progressDetails.totalFromPackage > 0) {
-        "Progreso de la medicación: ${progressDetails.taken} dosis tomadas de ${progressDetails.totalFromPackage}. Quedan ${progressDetails.remaining} dosis."
+        stringResource(R.string.progress_display_desc_prefix) + "${progressDetails.taken}" + stringResource(R.string.progress_display_desc_taken_from) + "${progressDetails.totalFromPackage}" + stringResource(R.string.progress_display_desc_remaining_prefix) + "${progressDetails.remaining}" + stringResource(R.string.progress_display_desc_doses_suffix)
     } else if (progressDetails != null && progressDetails.displayText != "N/A") {
-        "Medicación: ${progressDetails.remaining} restantes, ${progressDetails.taken} tomadas. Progreso no basado en paquete."
+        stringResource(R.string.progress_display_desc_non_package_prefix) + "${progressDetails.remaining}" + stringResource(R.string.progress_display_desc_non_package_remaining_infix) + "${progressDetails.taken}" + stringResource(R.string.progress_display_desc_non_package_suffix)
     } else {
-        "Progreso de la medicación: Información no disponible."
+        stringResource(R.string.progress_display_desc_unavailable)
     }
 
     // El Column exterior ahora solo envuelve el Box que contiene el indicador y el texto
@@ -94,7 +96,7 @@ fun MedicationProgressDisplay(
                     verticalArrangement = Arrangement.Center // Centra los textos verticalmente dentro de esta Column
                 ) {
                     Text(
-                        text = "Progreso",
+                        text = stringResource(R.string.progress_display_label),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = colorScheme.textColor,

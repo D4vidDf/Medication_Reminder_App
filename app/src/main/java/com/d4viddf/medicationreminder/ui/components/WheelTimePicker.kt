@@ -18,11 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4viddf.medicationreminder.R
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.rememberSnapperFlingBehavior
 import java.time.LocalTime
@@ -85,7 +87,7 @@ fun WheelTimePicker(
 
             // Separator
             Text(
-                text = ":",
+                text = stringResource(R.string.wheel_time_picker_separator),
                 fontSize = 36.sp,
                 color = Color.White,
                 modifier = Modifier.padding(horizontal = 4.dp)

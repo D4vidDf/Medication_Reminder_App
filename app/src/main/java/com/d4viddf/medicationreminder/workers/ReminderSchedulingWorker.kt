@@ -10,6 +10,7 @@ import com.d4viddf.medicationreminder.data.MedicationReminderRepository
 import com.d4viddf.medicationreminder.data.MedicationRepository
 import com.d4viddf.medicationreminder.data.MedicationSchedule
 import com.d4viddf.medicationreminder.data.MedicationScheduleRepository
+import com.d4viddf.medicationreminder.data.PreReminderRepository
 import com.d4viddf.medicationreminder.data.ScheduleType
 import com.d4viddf.medicationreminder.logic.ReminderCalculator
 import com.d4viddf.medicationreminder.notifications.NotificationScheduler
@@ -26,7 +27,8 @@ class ReminderSchedulingWorker constructor(
     private val medicationRepository: MedicationRepository,
     private val medicationScheduleRepository: MedicationScheduleRepository,
     private val medicationReminderRepository: MedicationReminderRepository,
-    private val notificationScheduler: NotificationScheduler
+    private val notificationScheduler: NotificationScheduler,
+    private val preReminderRepository: PreReminderRepository // Injected
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -37,12 +39,12 @@ class ReminderSchedulingWorker constructor(
         private val storableDateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
         // Flags de configuración (simulados por ahora)
-        const val ENABLE_PRE_REMINDER_NOTIFICATION_FEATURE = true
+        // const val ENABLE_PRE_REMINDER_NOTIFICATION_FEATURE = true // Will be replaced by DataStore value
         const val PRE_REMINDER_OFFSET_MINUTES = 60L // Configurable: 60 minutos antes
     }
 
     override suspend fun doWork(): Result {
-        Log.d(TAG, "ReminderSchedulingWorker (CustomFactory) started. InputData: $inputData")
+        Log.d(TAG, "ReminderSchedulingWorker started. InputData: $inputData")
         val medicationIdInput = inputData.getInt(KEY_MEDICATION_ID, -1)
         val isDailyRefresh = inputData.getBoolean(KEY_IS_DAILY_REFRESH, false)
 
@@ -197,17 +199,25 @@ class ReminderSchedulingWorker constructor(
                 Log.d(TAG, "Scheduling with NotificationScheduler: reminderId=${reminderWithActualId.id}, isInterval=$isIntervalType, nextDoseHelperMillis=$nextDoseTimeForHelperMillis")
 
                 try {
+                    // Collect the pre-reminder setting
+                    val preRemindersEnabled = preReminderRepository.preRemindersEnabled.firstOrNull() ?: true // Default to true if not found
+
                     notificationScheduler.scheduleNotification(
                         applicationContext, reminderWithActualId, medication.name, medication.dosage ?: "",
                         isIntervalType, nextDoseTimeForHelperMillis, actualScheduledTimeMillis
                     )
-                    if (ENABLE_PRE_REMINDER_NOTIFICATION_FEATURE) {
+                    if (preRemindersEnabled) { // Use the dynamic setting
                         val preReminderTargetTimeMillis = actualScheduledTimeMillis - TimeUnit.MINUTES.toMillis(PRE_REMINDER_OFFSET_MINUTES)
                         if (preReminderTargetTimeMillis > System.currentTimeMillis()) {
+                            Log.d(TAG, "Pre-reminders enabled, scheduling pre-reminder trigger for ${medication.name}")
                             notificationScheduler.schedulePreReminderServiceTrigger(
                                 applicationContext, reminderWithActualId, actualScheduledTimeMillis, medication.name
                             )
+                        } else {
+                            Log.d(TAG, "Pre-reminder time for ${medication.name} is in the past, not scheduling.")
                         }
+                    } else {
+                        Log.d(TAG, "Pre-reminders disabled, not scheduling pre-reminder trigger for ${medication.name}")
                     }
                 } catch (e: IllegalStateException) {
                     Log.e(TAG, "ALARM LIMIT EXCEPTION for reminder ID ${reminderWithActualId.id}: ${e.message}", e)

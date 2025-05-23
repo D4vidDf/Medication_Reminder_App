@@ -24,8 +24,22 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import com.d4viddf.medicationreminder.data.PreReminderRepository
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class PreReminderForegroundService : Service() {
+
+    @Inject
+    lateinit var preReminderRepository: PreReminderRepository
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     companion object {
         const val ACTION_STOP_PRE_REMINDER = "com.d4viddf.medicationreminder.ACTION_STOP_PRE_REMINDER"
@@ -83,6 +97,22 @@ class PreReminderForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand received with action: ${intent?.action}")
 
+        serviceScope.launch {
+            val preRemindersEnabled = preReminderRepository.preRemindersEnabled.first() // Collect the first value
+            if (!preRemindersEnabled) {
+                Log.i(TAG, "Pre-Reminders are disabled in settings. Stopping service.")
+                stopSelfService()
+                return@launch
+            }
+
+            // Proceed with existing service logic if pre-reminders are enabled
+            handleIntent(intent)
+        }
+        return START_STICKY // or START_REDELIVER_INTENT depending on desired behavior
+    }
+
+    @RequiresApi(Build.VERSION_CODES.BAKLAVA)
+    private fun handleIntent(intent: Intent?) {
         val reminderIdFromIntent = intent?.getIntExtra(EXTRA_SERVICE_REMINDER_ID, -1) ?: -1
 
         if (intent?.action == ACTION_STOP_PRE_REMINDER) {
@@ -116,8 +146,10 @@ class PreReminderForegroundService : Service() {
         val initialTimeRemainingMillis = actualTakeTimeMillis - System.currentTimeMillis()
         if (initialTimeRemainingMillis <= TimeUnit.SECONDS.toMillis(10)) {
             Log.w(TAG, "Pre-reminder start requested for $currentReminderId, but actual take time is in the past or too close. Not starting foreground service.")
-            stopSelf()
-            return START_NOT_STICKY
+            stopSelfService() // Use the consistent stop method
+            // If handleIntent is called from onStartCommand, the return value of onStartCommand handles stickiness.
+            // If called elsewhere, this return might be irrelevant.
+            return
         }
 
         val initialNotification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
@@ -129,9 +161,8 @@ class PreReminderForegroundService : Service() {
 
         handler.removeCallbacks(updateNotificationRunnable)
         handler.post(updateNotificationRunnable)
-
-        return START_STICKY
     }
+
 
     private fun createMarkAsTakenPendingIntent(reminderId: Int): PendingIntent {
         val markAsActionIntent = Intent(this, ReminderBroadcastReceiver::class.java).apply {
@@ -297,6 +328,7 @@ class PreReminderForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        serviceJob.cancel() // Cancel the scope when the service is destroyed
         handler.removeCallbacks(updateNotificationRunnable)
         Log.d(TAG, "PreReminderForegroundService onDestroy for (last known) reminderId: $currentReminderId")
     }

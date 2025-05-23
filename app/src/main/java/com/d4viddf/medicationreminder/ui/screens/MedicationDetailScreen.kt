@@ -34,10 +34,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.data.Medication
 import com.d4viddf.medicationreminder.data.MedicationSchedule
 import com.d4viddf.medicationreminder.data.MedicationType
@@ -131,7 +133,7 @@ fun MedicationDetailsScreen(
                         ) {
                             Icon(
                                 Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.navigation_back_description),
                                 modifier = Modifier.size(28.dp), tint = Color.White
                             )
                         }
@@ -142,7 +144,7 @@ fun MedicationDetailsScreen(
                                 .clickable { /* TODO: Handle edit action */ },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Edit", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(stringResource(R.string.button_edit_label), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
@@ -179,7 +181,7 @@ fun MedicationDetailsScreen(
             item {
                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Today", fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.medication_detail_screen_today_title), fontSize = 36.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     ScheduleItem(time = "9:00", label = "After waking up", enabled = true)
                     ScheduleItem(time = "15:00", label = "With lunch", enabled = false)
