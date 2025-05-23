@@ -13,7 +13,7 @@
     <string name="frequency_option_multiple_times_a_day">Multiple times a day</string>
     <string name="frequency_option_interval">Interval</string>
     <string name="frequency_selector_title">Frequency</string>
-    <string name="frequency_selector_daily_reminder_time_days">Daily Reminder Time & Days</string>
+    <string name="frequency_selector_daily_reminder_time_days">Daily Reminder Time &amp; Days</string>
     <string name="frequency_selector_select_reminder_time_button">Select Reminder Time</string>
     <string name="frequency_selector_repetition_interval_title">Repetition Interval</string>
     <string name="frequency_selector_daily_active_range_title">Daily Active Range for Interval</string>
