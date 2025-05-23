@@ -26,6 +26,7 @@ import com.d4viddf.medicationreminder.viewmodel.MedicationViewModel
 fun HomeScreen(
     onAddMedicationClick: () -> Unit,
     onMedicationClick: (Int) -> Unit,
+    onSettingsClick: () -> Unit, // Added parameter
     viewModel: MedicationViewModel = hiltViewModel()
 ) {
     val medications = viewModel.medications.collectAsState().value
@@ -37,10 +38,10 @@ fun HomeScreen(
 
         bottomBar = {
             BottomNavBar(
-                onHomeClick = { /* Handle Home button click */ },
-                onSettingsClick = { /* Handle Settings button click */ },
+                onHomeClick = { /* Handle Home button click, or pass navController if needed */ },
+                onSettingsClick = onSettingsClick, // Pass the lambda
                 onAddClick = onAddMedicationClick,
-                selectedIndex = 0
+                selectedIndex = 0 // Assuming Home is index 0
             )
         }
     ) { innerPadding ->

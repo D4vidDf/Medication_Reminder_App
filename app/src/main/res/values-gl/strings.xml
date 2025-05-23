@@ -2,4 +2,13 @@
     <string name="app_name">PillPal</string>
     <!-- TODO: Community translation -->
     <!-- Other strings will be added later. -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_language_section_title">Idioma</string>
+    <string name="language_spanish_display">Español</string>
+    <string name="language_english_display">Inglés</string>
+    <string name="language_galician_display">Gallego</string> <!-- TODO: Community translation -->
+    <string name="language_euskera_display">Euskera</string>
+    <string name="language_catalan_display">Catalán</string>
+    <!-- New string for SettingsScreen -->
+    <string name="content_description_selected_language">Idioma seleccionado</string> <!-- TODO: Community translation -->
 </resources>

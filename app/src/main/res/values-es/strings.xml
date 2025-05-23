@@ -71,4 +71,14 @@
     <string name="frequency_selector_interval_select_time_button">Seleccionar hora</string>
     <string name="frequency_selector_edit_desc">Editar</string>
     <string name="frequency_selector_delete_desc">Eliminar</string>
+    <!-- Settings Screen Strings (from previous subtask, ensuring they are kept and new ones are added) -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_language_section_title">Idioma</string>
+    <string name="language_spanish_display">Español</string>
+    <string name="language_english_display">Inglés</string>
+    <string name="language_galician_display">Gallego</string>
+    <string name="language_euskera_display">Euskera</string>
+    <string name="language_catalan_display">Catalán</string>
+    <!-- New string for SettingsScreen -->
+    <string name="content_description_selected_language">Idioma seleccionado</string>
 </resources>
