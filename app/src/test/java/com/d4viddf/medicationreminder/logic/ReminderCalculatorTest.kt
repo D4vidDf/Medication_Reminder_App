@@ -27,11 +27,7 @@ class ReminderCalculatorTest {
             dosage = "1 pill",
             startDate = startDate.format(dateStorableFormatter),
             endDate = endDate?.format(dateStorableFormatter),
-            typeId = TODO(),
-            color = TODO(),
-            packageSize = TODO(),
-            remainingDoses = TODO(),
-            reminderTime = TODO(),
+            notes = null
         )
     }
 
@@ -51,8 +47,8 @@ class ReminderCalculatorTest {
             intervalEndTime = intervalEndTime?.format(timeStorableFormatter),
             intervalHours = intervalHours,
             intervalMinutes = intervalMinutes,
-            specificTimes = null,
-            daysOfWeek = TODO()
+            specificDaysOfWeek = null,
+            specificTimes = null
         )
     }
 
@@ -545,14 +541,7 @@ class ReminderCalculatorTest {
     @Test
     fun `generateRemindersForPeriod - Continuous with null medication start date returns empty map`() {
         // Create medication with a null start date string
-        val medicationWithNullStartDate = Medication(
-            id = 1, name = "TestMed", startDate = null, endDate = null, dosage = "1",
-            typeId = TODO(),
-            color = TODO(),
-            packageSize = TODO(),
-            remainingDoses = TODO(),
-            reminderTime = TODO()
-        )
+        val medicationWithNullStartDate = Medication(id = 1, name = "TestMed", startDate = null, endDate = null, dosage = "1")
         val schedule = createIntervalSchedule(intervalHours = 6, intervalMinutes = 0, intervalStartTime = null)
         val result = ReminderCalculator.generateRemindersForPeriod(medicationWithNullStartDate, schedule, testDate, testDate.plusDays(1))
         assertTrue("Expected empty map when medication start date is null", result.isEmpty())

@@ -11,8 +11,8 @@ import java.time.format.DateTimeFormatter
 
 object ReminderCalculator {
 
-    val timeStorableFormatter = DateTimeFormatter.ISO_LOCAL_TIME
-    val dateStorableFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") // Matches AddMedicationScreen
+     val timeStorableFormatter = DateTimeFormatter.ISO_LOCAL_TIME
+     val dateStorableFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy") // Matches AddMedicationScreen
     val storableDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
 
@@ -97,7 +97,7 @@ object ReminderCalculator {
                         LocalTime.MAX
                     }
                 } ?: LocalTime.MAX
-
+                
                 Log.d("ReminderCalculator", "Calculating Type A for $targetDate, start: $actualDailyStart, end: $actualDailyEnd, interval: $totalIntervalMinutes min, scheduleId: ${schedule.id}")
 
                 var loopTime = actualDailyStart
@@ -105,7 +105,7 @@ object ReminderCalculator {
                 // Using the static MAX_ITERATIONS as defined in previous versions for consistency of this safeguard's behavior.
                 // A dynamic one like `(24 * 60 / totalIntervalMinutes.coerceAtLeast(1)) + 5` could also be used
                 // if very fine-grained control per interval length is desired for the safeguard.
-                val MAX_ITERATIONS_PER_DAY = (24 * 60) + 5
+                val MAX_ITERATIONS_PER_DAY = (24 * 60) + 5 
 
                 while (iterations < MAX_ITERATIONS_PER_DAY) {
                     // Primary condition: if loopTime has passed actualDailyEnd, stop.
@@ -114,7 +114,7 @@ object ReminderCalculator {
                         Log.d("ReminderCalculatorLoop", "Iter ${iterations}: loopTime $loopTime is after actualDailyEnd $actualDailyEnd. Breaking. ScheduleId: ${schedule.id}")
                         break
                     }
-
+                    
                     reminders.add(LocalDateTime.of(targetDate, loopTime))
                     Log.d("ReminderCalculatorLoop", "Iter ${iterations}: Added: ${LocalDateTime.of(targetDate, loopTime)}, scheduleId: ${schedule.id}")
 
@@ -127,7 +127,7 @@ object ReminderCalculator {
                         Log.d("ReminderCalculatorLoop", "Iter ${iterations}: nextLoopTimeCandidate $nextLoopTimeCandidate is before loopTime $loopTime, and actualDailyEnd $actualDailyEnd is not MAX. Breaking. ScheduleId: ${schedule.id}")
                         break
                     }
-
+                    
                     loopTime = nextLoopTimeCandidate
                     iterations++
                 }
