@@ -13,7 +13,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.d4viddf.medicationreminder.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.d4viddf.medicationreminder.ui.components.BottomNavBar
 import com.d4viddf.medicationreminder.ui.components.MedicationList
@@ -30,7 +32,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Medications", fontWeight = FontWeight.Bold,style = MaterialTheme.typography.headlineLarge) })
+            TopAppBar(title = { Text(stringResource(R.string.home_screen_title), fontWeight = FontWeight.Bold,style = MaterialTheme.typography.headlineLarge) })
         },
 
         bottomBar = {

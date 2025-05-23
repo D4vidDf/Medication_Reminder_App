@@ -1,0 +1,74 @@
+<resources>
+    <string name="app_name">PillPal</string>
+    <!-- Initially, app_name can be the same, will be updated if needed. -->
+    <!-- Other strings will be added later. -->
+    <string name="add_medication_title_new">Nuevo medicamento</string>
+    <string name="content_description_back">Atrás</string>
+    <string name="content_description_close">Cerrar</string>
+    <string name="button_next">Siguiente</string>
+    <string name="button_confirm">Confirmar</string>
+    <string name="add_medication_start_date_placeholder">Seleccionar fecha de inicio</string>
+    <string name="add_medication_end_date_placeholder">Seleccionar fecha de fin</string>
+    <string name="frequency_once_a_day">Una vez al día</string>
+    <string name="frequency_multiple_times_a_day">Varias veces al día</string>
+    <string name="frequency_interval">Intervalo</string>
+    <string name="summary_title">Resumen de medicación</string>
+    <string name="summary_name_label">Nombre:</string>
+    <string name="summary_dosage_label">Dosis:</string>
+    <string name="summary_dosage_not_set">No establecido</string>
+    <string name="summary_package_size_label">Tamaño del envase:</string>
+    <string name="summary_package_size_not_set">No establecido</string>
+    <string name="summary_start_date_label">Fecha de inicio:</string>
+    <string name="summary_start_date_not_set">No establecido</string>
+    <string name="summary_end_date_label">Fecha de fin:</string>
+    <string name="summary_end_date_not_set">No establecido</string>
+    <string name="summary_color_label">Color:</string>
+    <string name="summary_reminder_details_title">Detalles del recordatorio</string>
+    <string name="summary_frequency_label">Frecuencia:</string>
+    <string name="summary_time_label">Hora:</string>
+    <string name="summary_time_not_set">No establecido</string>
+    <string name="summary_days_label">Días:</string>
+    <string name="summary_alarm_label_format">Alarma %1$d:</string>
+    <string name="summary_alarms_label">Alarmas:</string>
+    <string name="summary_alarms_none_set">Ninguna establecida</string>
+    <string name="summary_interval_label">Intervalo:</string>
+    <string name="summary_interval_value_format">Cada %1$d h %2$d min</string>
+    <string name="summary_interval_daily_start_label">Inicio diario:</string>
+    <string name="summary_interval_daily_start_not_set">No establecido</string>
+    <string name="summary_interval_daily_end_label">Fin diario:</string>
+    <string name="summary_interval_daily_end_not_set">No establecido</string>
+    <!-- Strings for MedicationNameInput -->
+    <string name="medication_name_input_title">Introduce el nombre del medicamento</string>
+    <string name="medication_name_input_placeholder">Nombre del medicamento</string>
+    <string name="medication_name_input_clear_search_description">Limpiar búsqueda</string>
+    <string name="medication_name_input_error_invalid_name">Por favor, introduce un nombre de medicamento válido</string>
+    <!-- Strings for BottomAppBar and NotificationToggleWidget -->
+    <string name="bottom_nav_home_description">Inicio</string>
+    <string name="bottom_nav_add_description">Añadir</string>
+    <string name="bottom_nav_settings_description">Ajustes</string>
+    <string name="notification_toggle_widget_label">Notificaciones</string>
+    <!-- Strings for HomeScreen, MedicationDetailScreen, MedicationCard, FrequencySelector -->
+    <string name="home_screen_title">Medicamentos</string>
+    <string name="medication_detail_back_desc">Atrás</string>
+    <string name="medication_detail_edit_desc">Editar</string>
+    <string name="medication_detail_today_text">Hoy</string>
+    <string name="medication_detail_schedule_after_waking_up">Después de despertar</string>
+    <string name="medication_detail_schedule_before_sleep">Antes de dormir</string>
+    <string name="medication_detail_schedule_with_breakfast">Con el desayuno</string>
+    <string name="medication_detail_schedule_with_lunch">Con el almuerzo</string>
+    <string name="medication_detail_schedule_with_dinner">Con la cena</string>
+    <string name="medication_card_time_prefix">Hora: </string>
+    <string name="frequency_selector_title">Frecuencia</string>
+    <string name="frequency_selector_daily_reminder_time_days_title">Hora y días del recordatorio diario</string>
+    <string name="frequency_selector_select_reminder_time_button">Seleccionar hora del recordatorio</string>
+    <string name="frequency_selector_time_picker_ok_button">Aceptar</string>
+    <string name="frequency_selector_time_picker_cancel_button">Cancelar</string>
+    <string name="frequency_selector_repeat_on_days_label">Repetir los días:</string>
+    <string name="frequency_selector_add_alarm_time_button">Añadir hora de alarma</string>
+    <string name="frequency_selector_interval_every_label">Cada</string>
+    <string name="frequency_selector_interval_hours_label">h</string>
+    <string name="frequency_selector_interval_minutes_label">min</string>
+    <string name="frequency_selector_interval_select_time_button">Seleccionar hora</string>
+    <string name="frequency_selector_edit_desc">Editar</string>
+    <string name="frequency_selector_delete_desc">Eliminar</string>
+</resources>

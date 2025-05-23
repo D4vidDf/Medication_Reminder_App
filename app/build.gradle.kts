@@ -103,6 +103,9 @@ dependencies {
     implementation(libs.accompanist.pager)
     implementation(libs.accompanist.pager.indicators)
 
+    // DataStore Preferences
+    implementation(libs.androidx.datastore.preferences)
+
     // Unit Tests
     testImplementation(libs.junit)
 

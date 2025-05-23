@@ -34,9 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.d4viddf.medicationreminder.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.d4viddf.medicationreminder.data.Medication
 import com.d4viddf.medicationreminder.data.MedicationSchedule
@@ -131,7 +133,7 @@ fun MedicationDetailsScreen(
                         ) {
                             Icon(
                                 Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.medication_detail_back_desc),
                                 modifier = Modifier.size(28.dp), tint = Color.White
                             )
                         }
@@ -142,7 +144,7 @@ fun MedicationDetailsScreen(
                                 .clickable { /* TODO: Handle edit action */ },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Edit", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(stringResource(R.string.medication_detail_edit_desc), fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
@@ -179,10 +181,13 @@ fun MedicationDetailsScreen(
             item {
                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Today", fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.medication_detail_today_text), fontSize = 36.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
-                    ScheduleItem(time = "9:00", label = "After waking up", enabled = true)
-                    ScheduleItem(time = "15:00", label = "With lunch", enabled = false)
+                    // TODO: The time "9:00" and "15:00" and enabled state are still hardcoded.
+                    // This task focuses on the provided strings.
+                    // A more complete solution would handle dynamic schedule data.
+                    ScheduleItem(time = "9:00", label = stringResource(R.string.medication_detail_schedule_after_waking_up), enabled = true)
+                    ScheduleItem(time = "15:00", label = stringResource(R.string.medication_detail_schedule_with_lunch), enabled = false)
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }

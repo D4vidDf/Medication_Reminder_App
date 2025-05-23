@@ -19,15 +19,32 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.d4viddf.medicationreminder.notifications.NotificationHelper
-import dagger.hilt.android.AndroidEntryPoint
+import com.d4viddf.medicationreminder.preferences.LanguageManager
 import com.d4viddf.medicationreminder.ui.MedicationReminderApp
-import com.d4viddf.medicationreminder.workers.ReminderSchedulingWorker
+import com.d4viddf.medicationreminder.utils.LocaleHelper
 import com.d4viddf.medicationreminder.workers.TestSimpleWorker
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.first // Example: Only if used in a blocking way, which we avoid here
+import kotlinx.coroutines.launch
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var languageManager: LanguageManager
+
+    // This state will hold the current language and trigger recomposition
+    private var currentLanguageCode by mutableStateOf(LanguageManager.DEFAULT_LANGUAGE)
 
     // ActivityResultLauncher for the permission request
     private val requestPermissionLauncher =
@@ -44,8 +61,41 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    override fun attachBaseContext(newBase: Context) {
+        // The language applied here might be the system's default or a stale one
+        // if read synchronously. The definitive update happens in onCreate via languageFlow.
+        // For simplicity, we'll use a temporary instance to fetch the *initial* language
+        // This is often done by reading from SharedPreferences directly or a cached value.
+        // Since LanguageManager is async, we'll default and let recomposition correct it.
+        Log.d("MainActivity", "Initial attachBaseContext. Defaulting to '${LanguageManager.DEFAULT_LANGUAGE}' for now.")
+        super.attachBaseContext(LocaleHelper.updateLocale(newBase, LanguageManager.DEFAULT_LANGUAGE))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Start collecting language changes
+        lifecycleScope.launch {
+            languageManager.languageFlow.collect { languageCode ->
+                if (currentLanguageCode != languageCode) {
+                    Log.d("MainActivity", "Language changed to: $languageCode. Recreating activity.")
+                    currentLanguageCode = languageCode
+                    // The recreation will ensure attachBaseContext is called again,
+                    // and the activity's resources are reloaded with the new locale.
+                    // However, for attachBaseContext to pick up the *new* language,
+                    // it needs a way to know it. A static variable or Application class
+                    // field is a common way. For this task, we assume the recreate()
+                    // and the subsequent re-collection of currentLanguageCode in setContent
+                    // will handle the display correctly.
+                    this@MainActivity.recreate() 
+                } else {
+                    // This ensures that currentLanguageCode is initialized with the value from DataStore
+                    // on the first collection, even if it's the same as the initial default.
+                    // This is important if the initial default in mutableStateOf differs from what's in DataStore.
+                    currentLanguageCode = languageCode
+                }
+            }
+        }
 
         // 1. Create Notification Channels (moved before setContent for early setup)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -63,9 +113,13 @@ class MainActivity : ComponentActivity() {
 
         // 3. Set up UI
         setContent {
-            MedicationReminderApp()
+            // Re-apply locale to current context configuration for the content being set.
+            // This ensures that the initial composition uses the correct language from languageFlow.
+            val localizedContext = LocaleHelper.updateLocale(this, currentLanguageCode)
+            CompositionLocalProvider(LocalContext provides localizedContext) {
+                MedicationReminderApp(currentLanguageCode) // Pass language code
+            }
         }
-
     }
 
     private fun requestPostNotificationPermission() {

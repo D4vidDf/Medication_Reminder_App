@@ -1,0 +1,73 @@
+<resources>
+    <string name="app_name">PillPal</string>
+    <!-- Other strings will be added later. -->
+    <string name="add_medication_title_new">New medication</string>
+    <string name="content_description_back">Back</string>
+    <string name="content_description_close">Close</string>
+    <string name="button_next">Next</string>
+    <string name="button_confirm">Confirm</string>
+    <string name="add_medication_start_date_placeholder">Select Start Date</string>
+    <string name="add_medication_end_date_placeholder">Select End Date</string>
+    <string name="frequency_once_a_day">Once a day</string>
+    <string name="frequency_multiple_times_a_day">Multiple times a day</string>
+    <string name="frequency_interval">Interval</string>
+    <string name="summary_title">Medication Summary</string>
+    <string name="summary_name_label">Name:</string>
+    <string name="summary_dosage_label">Dosage:</string>
+    <string name="summary_dosage_not_set">Not set</string>
+    <string name="summary_package_size_label">Package Size:</string>
+    <string name="summary_package_size_not_set">Not set</string>
+    <string name="summary_start_date_label">Start Date:</string>
+    <string name="summary_start_date_not_set">Not set</string>
+    <string name="summary_end_date_label">End Date:</string>
+    <string name="summary_end_date_not_set">Not set</string>
+    <string name="summary_color_label">Color:</string>
+    <string name="summary_reminder_details_title">Reminder Details</string>
+    <string name="summary_frequency_label">Frequency:</string>
+    <string name="summary_time_label">Time:</string>
+    <string name="summary_time_not_set">Not set</string>
+    <string name="summary_days_label">Days:</string>
+    <string name="summary_alarm_label_format">Alarm %1$d:</string>
+    <string name="summary_alarms_label">Alarms:</string>
+    <string name="summary_alarms_none_set">None set</string>
+    <string name="summary_interval_label">Interval:</string>
+    <string name="summary_interval_value_format">Every %1$d hrs %2$d mins</string>
+    <string name="summary_interval_daily_start_label">Daily Start:</string>
+    <string name="summary_interval_daily_start_not_set">Not set</string>
+    <string name="summary_interval_daily_end_label">Daily End:</string>
+    <string name="summary_interval_daily_end_not_set">Not set</string>
+    <!-- Strings for MedicationNameInput -->
+    <string name="medication_name_input_title">Enter medication name</string>
+    <string name="medication_name_input_placeholder">Medication Name</string>
+    <string name="medication_name_input_clear_search_description">Clear search</string>
+    <string name="medication_name_input_error_invalid_name">Please enter a valid medication name</string>
+    <!-- Strings for BottomAppBar and NotificationToggleWidget -->
+    <string name="bottom_nav_home_description">Home</string>
+    <string name="bottom_nav_add_description">Add</string>
+    <string name="bottom_nav_settings_description">Settings</string>
+    <string name="notification_toggle_widget_label">Notifications</string>
+    <!-- Strings for HomeScreen, MedicationDetailScreen, MedicationCard, FrequencySelector -->
+    <string name="home_screen_title">Medications</string>
+    <string name="medication_detail_back_desc">Back</string>
+    <string name="medication_detail_edit_desc">Edit</string>
+    <string name="medication_detail_today_text">Today</string>
+    <string name="medication_detail_schedule_after_waking_up">After waking up</string>
+    <string name="medication_detail_schedule_before_sleep">Before sleep</string>
+    <string name="medication_detail_schedule_with_breakfast">With breakfast</string>
+    <string name="medication_detail_schedule_with_lunch">With lunch</string>
+    <string name="medication_detail_schedule_with_dinner">With dinner</string>
+    <string name="medication_card_time_prefix">Time: </string>
+    <string name="frequency_selector_title">Frequency</string>
+    <string name="frequency_selector_daily_reminder_time_days_title">Daily Reminder Time &amp; Days</string>
+    <string name="frequency_selector_select_reminder_time_button">Select Reminder Time</string>
+    <string name="frequency_selector_time_picker_ok_button">OK</string>
+    <string name="frequency_selector_time_picker_cancel_button">Cancel</string>
+    <string name="frequency_selector_repeat_on_days_label">Repeat on days:</string>
+    <string name="frequency_selector_add_alarm_time_button">Add Alarm Time</string>
+    <string name="frequency_selector_interval_every_label">Every</string>
+    <string name="frequency_selector_interval_hours_label">hrs</string>
+    <string name="frequency_selector_interval_minutes_label">min</string>
+    <string name="frequency_selector_interval_select_time_button">Select Time</string>
+    <string name="frequency_selector_edit_desc">Edit</string>
+    <string name="frequency_selector_delete_desc">Delete</string>
+</resources>

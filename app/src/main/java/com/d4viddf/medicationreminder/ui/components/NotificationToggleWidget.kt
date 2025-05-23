@@ -8,7 +8,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.d4viddf.medicationreminder.R
 
 @Composable
 fun NotificationToggleWidget(
@@ -21,7 +23,7 @@ fun NotificationToggleWidget(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = "Notifications", modifier = Modifier.weight(1f))
+        Text(text = stringResource(R.string.notification_toggle_widget_label), modifier = Modifier.weight(1f))
         Switch(
             checked = isNotificationEnabled,
             onCheckedChange = { onToggle(it) }
