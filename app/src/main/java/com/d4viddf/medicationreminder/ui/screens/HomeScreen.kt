@@ -10,9 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox // Changed import
+import androidx.compose.material3.LoadingIndicator // Added import
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect // Keep for initial load if needed, or remove if refreshMedications handles it
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,13 +30,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-// Removed width import as it's not used directly for fixed width here
+import androidx.compose.foundation.layout.size // Added import for LoadingIndicator size
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-// Removed unit.dp import as it's not used directly for fixed width here
+import androidx.compose.ui.unit.dp // Added import for LoadingIndicator size
 import com.d4viddf.medicationreminder.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,7 +72,19 @@ fun HomeScreen(
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { viewModel.refreshMedications() },
-            modifier = modifier.fillMaxSize() // Apply the modifier here
+            modifier = modifier.fillMaxSize(), // Apply the modifier here
+            indicator = {
+                Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                    LoadingIndicator(
+                        modifier = Modifier.size(36.dp), // Example size
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.tertiary,
+                            MaterialTheme.colorScheme.secondary
+                        )
+                    )
+                }
+            }
         ) {
             MedicationList(
                 medications = medications,
@@ -87,7 +100,19 @@ fun HomeScreen(
                 onRefresh = { viewModel.refreshMedications() },
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight()
+                    .fillMaxHeight(),
+                indicator = {
+                    Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                        LoadingIndicator(
+                            modifier = Modifier.size(36.dp), // Example size
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.tertiary,
+                                MaterialTheme.colorScheme.secondary
+                            )
+                        )
+                    }
+                }
             ) {
                 MedicationList(
                     medications = medications,

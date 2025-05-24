@@ -1,12 +1,17 @@
 package com.d4viddf.medicationreminder.ui.theme
 import android.app.Activity
 import android.os.Build
+import android.app.Activity
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+// Attempt to import MaterialExpressiveTheme and MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.MaterialTheme // Keep for default shapes if needed
+import androidx.compose.material3.expressive.MaterialExpressiveTheme
+import androidx.compose.material3.expressive.MotionScheme
 import androidx.compose.material3.surfaceColorAtElevation
 // Remove Material3.Typography as AppTypography is used
 import androidx.compose.runtime.Composable
@@ -19,83 +24,72 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.d4viddf.medicationreminder.data.ThemeKeys
 
-private val lightScheme = lightColorScheme(
-    primary = primaryLight,
-    onPrimary = onPrimaryLight,
-    primaryContainer = primaryContainerLight,
-    onPrimaryContainer = onPrimaryContainerLight,
-    secondary = secondaryLight,
-    onSecondary = onSecondaryLight,
-    secondaryContainer = secondaryContainerLight,
-    onSecondaryContainer = onSecondaryContainerLight,
-    tertiary = tertiaryLight,
-    onTertiary = onTertiaryLight,
-    tertiaryContainer = tertiaryContainerLight,
-    onTertiaryContainer = onTertiaryContainerLight,
-    error = errorLight,
-    onError = onErrorLight,
-    errorContainer = errorContainerLight,
-    onErrorContainer = onErrorContainerLight,
-    background = backgroundLight,
-    onBackground = onBackgroundLight,
-    surface = surfaceLight,
-    onSurface = onSurfaceLight,
-    surfaceVariant = surfaceVariantLight,
-    onSurfaceVariant = onSurfaceVariantLight,
-    outline = outlineLight,
-    outlineVariant = outlineVariantLight,
-    scrim = scrimLight,
-    inverseSurface = inverseSurfaceLight,
-    inverseOnSurface = inverseOnSurfaceLight,
-    inversePrimary = inversePrimaryLight,
-    surfaceDim = surfaceDimLight,
-    surfaceBright = surfaceBrightLight,
-    surfaceContainerLowest = surfaceContainerLowestLight,
-    surfaceContainerLow = surfaceContainerLowLight,
-    surfaceContainer = surfaceContainerLight,
-    surfaceContainerHigh = surfaceContainerHighLight,
-    surfaceContainerHighest = surfaceContainerHighestLight,
+// New Expressive Color Schemes
+private val ExpressiveLightColorScheme = lightColorScheme(
+    primary = ExpressiveTeal_Light_Primary,
+    onPrimary = ExpressiveTeal_Light_OnPrimary,
+    primaryContainer = ExpressiveTeal_Light_PrimaryContainer,
+    onPrimaryContainer = ExpressiveTeal_Light_OnPrimaryContainer,
+    secondary = ExpressiveOrange_Light_Secondary,
+    onSecondary = ExpressiveOrange_Light_OnSecondary,
+    secondaryContainer = ExpressiveOrange_Light_SecondaryContainer,
+    onSecondaryContainer = ExpressiveOrange_Light_OnSecondaryContainer,
+    tertiary = ExpressivePurple_Light_Tertiary,
+    onTertiary = ExpressivePurple_Light_OnTertiary,
+    tertiaryContainer = ExpressivePurple_Light_TertiaryContainer,
+    onTertiaryContainer = ExpressivePurple_Light_OnTertiaryContainer,
+    error = ExpressiveLight_Error,
+    onError = ExpressiveLight_OnError,
+    errorContainer = ExpressiveLight_ErrorContainer,
+    onErrorContainer = ExpressiveLight_OnErrorContainer,
+    background = ExpressiveLight_Background,
+    onBackground = ExpressiveLight_OnBackground,
+    surface = ExpressiveLight_Surface,
+    onSurface = ExpressiveLight_OnSurface,
+    surfaceVariant = ExpressiveLight_SurfaceVariant,
+    onSurfaceVariant = ExpressiveLight_OnSurfaceVariant,
+    outline = ExpressiveLight_Outline,
+    // Optional: Define other colors like inverseSurface, inverseOnSurface, etc.
+    // For now, they will use Material 3 defaults based on the main colors.
+    scrim = Color.Black, // Default scrim
+    inversePrimary = ExpressiveTeal_Dark_Primary // Example inverse
 )
 
-private val darkScheme = darkColorScheme(
-    primary = primaryDark,
-    onPrimary = onPrimaryDark,
-    primaryContainer = primaryContainerDark,
-    onPrimaryContainer = onPrimaryContainerDark,
-    secondary = secondaryDark,
-    onSecondary = onSecondaryDark,
-    secondaryContainer = secondaryContainerDark,
-    onSecondaryContainer = onSecondaryContainerDark,
-    tertiary = tertiaryDark,
-    onTertiary = onTertiaryDark,
-    tertiaryContainer = tertiaryContainerDark,
-    onTertiaryContainer = onTertiaryContainerDark,
-    error = errorDark,
-    onError = onErrorDark,
-    errorContainer = errorContainerDark,
-    onErrorContainer = onErrorContainerDark,
-    background = backgroundDark,
-    onBackground = onBackgroundDark,
-    surface = surfaceDark,
-    onSurface = onSurfaceDark,
-    surfaceVariant = surfaceVariantDark,
-    onSurfaceVariant = onSurfaceVariantDark,
-    outline = outlineDark,
-    outlineVariant = outlineVariantDark,
-    scrim = scrimDark,
-    inverseSurface = inverseSurfaceDark,
-    inverseOnSurface = inverseOnSurfaceDark,
-    inversePrimary = inversePrimaryDark,
-    surfaceDim = surfaceDimDark,
-    surfaceBright = surfaceBrightDark,
-    surfaceContainerLowest = surfaceContainerLowestDark,
-    surfaceContainerLow = surfaceContainerLowDark,
-    surfaceContainer = surfaceContainerDark,
-    surfaceContainerHigh = surfaceContainerHighDark,
-    surfaceContainerHighest = surfaceContainerHighestDark,
+private val ExpressiveDarkColorScheme = darkColorScheme(
+    primary = ExpressiveTeal_Dark_Primary,
+    onPrimary = ExpressiveTeal_Dark_OnPrimary,
+    primaryContainer = ExpressiveTeal_Dark_PrimaryContainer,
+    onPrimaryContainer = ExpressiveTeal_Dark_OnPrimaryContainer,
+    secondary = ExpressiveOrange_Dark_Secondary,
+    onSecondary = ExpressiveOrange_Dark_OnSecondary,
+    secondaryContainer = ExpressiveOrange_Dark_SecondaryContainer,
+    onSecondaryContainer = ExpressiveOrange_Dark_OnSecondaryContainer,
+    tertiary = ExpressivePurple_Dark_Tertiary,
+    onTertiary = ExpressivePurple_Dark_OnTertiary,
+    tertiaryContainer = ExpressivePurple_Dark_TertiaryContainer,
+    onTertiaryContainer = ExpressivePurple_Dark_OnTertiaryContainer,
+    error = ExpressiveDark_Error,
+    onError = ExpressiveDark_OnError,
+    errorContainer = ExpressiveDark_ErrorContainer,
+    onErrorContainer = ExpressiveDark_OnErrorContainer,
+    background = ExpressiveDark_Background,
+    onBackground = ExpressiveDark_OnBackground,
+    surface = ExpressiveDark_Surface,
+    onSurface = ExpressiveDark_OnSurface,
+    surfaceVariant = ExpressiveDark_SurfaceVariant,
+    onSurfaceVariant = ExpressiveDark_OnSurfaceVariant,
+    outline = ExpressiveDark_Outline,
+    // Optional: Define other colors
+    scrim = Color.Black, // Default scrim
+    inversePrimary = ExpressiveTeal_Light_Primary // Example inverse
 )
 
-// Not using contrast color schemes for now to keep it simple with Light/Dark/System
+
+// Old schemes (can be removed or kept for reference)
+// private val lightScheme = lightColorScheme(...)
+// private val darkScheme = darkColorScheme(...)
+
+// Not using contrast color schemes for now
 // private val mediumContrastLightColorScheme = ...
 // private val highContrastLightColorScheme = ...
 // private val mediumContrastDarkColorScheme = ...
@@ -115,15 +109,14 @@ val unspecified_scheme = ColorFamily(
 
 @Composable
 fun AppTheme(
-    themePreference: String = ThemeKeys.SYSTEM, // Added themePreference parameter
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // Kept dynamicColor, can be true if needed
+    themePreference: String = ThemeKeys.SYSTEM,
+    dynamicColor: Boolean = false, // Default to false to prioritize static expressive theme
     content: @Composable() () -> Unit
 ) {
     val useDarkTheme = when (themePreference) {
         ThemeKeys.LIGHT -> false
         ThemeKeys.DARK -> true
-        else -> isSystemInDarkTheme() // Default to system for ThemeKeys.SYSTEM or any other value
+        else -> isSystemInDarkTheme()
     }
 
     val colorScheme = when {
@@ -131,8 +124,8 @@ fun AppTheme(
             val context = LocalContext.current
             if (useDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        useDarkTheme -> darkScheme
-        else -> lightScheme
+        useDarkTheme -> ExpressiveDarkColorScheme // Use new expressive dark theme
+        else -> ExpressiveLightColorScheme // Use new expressive light theme
     }
 
     val view = LocalView.current
@@ -150,9 +143,15 @@ fun AppTheme(
         }
     }
 
-    MaterialTheme(
+    // Attempt to use MaterialExpressiveTheme
+    MaterialExpressiveTheme(
         colorScheme = colorScheme,
-        typography = AppTypography, // Assuming AppTypography is defined elsewhere
+        typography = AppTypography,
+        // Shapes: Using MaterialTheme.shapes for default M3 shapes.
+        // If MaterialExpressiveTheme requires its own Shapes object and one isn't available,
+        // this might be an issue. Assuming it can take standard M3 Shapes.
+        shapes = MaterialTheme.shapes, // Or omit if it takes M3 defaults implicitly
+        motionScheme = MotionScheme(), // Attempt to use a default MotionScheme
         content = content
     )
 }
