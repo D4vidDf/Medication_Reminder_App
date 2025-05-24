@@ -30,16 +30,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size // Added import for LoadingIndicator size
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp // Added import for LoadingIndicator size
 import com.d4viddf.medicationreminder.R
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeScreen(
     // Removed onNavigateToSettings, onNavigateToCalendar, onNavigateToProfile
@@ -77,11 +78,9 @@ fun HomeScreen(
                 Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                     LoadingIndicator(
                         modifier = Modifier.size(36.dp), // Example size
-                        colors = listOf(
+                        color =
                             MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.tertiary,
-                            MaterialTheme.colorScheme.secondary
-                        )
+
                     )
                 }
             }
@@ -105,12 +104,10 @@ fun HomeScreen(
                     Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                         LoadingIndicator(
                             modifier = Modifier.size(36.dp), // Example size
-                            colors = listOf(
+                            color =
                                 MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.tertiary,
-                                MaterialTheme.colorScheme.secondary
+
                             )
-                        )
                     }
                 }
             ) {

@@ -7,10 +7,11 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent // Or ApplicationComponent if older Hilt
+import com.d4viddf.medicationreminder.data.UserPreferencesRepository
+
 
 @EntryPoint
 @InstallIn(SingletonComponent::class) // Or ApplicationComponent
-import com.d4viddf.medicationreminder.data.UserPreferencesRepository
 
 interface ReminderReceiverEntryPoint {
     fun reminderRepository(): MedicationReminderRepository

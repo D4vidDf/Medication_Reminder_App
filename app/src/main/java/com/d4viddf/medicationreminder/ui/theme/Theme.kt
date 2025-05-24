@@ -1,17 +1,16 @@
 package com.d4viddf.medicationreminder.ui.theme
 import android.app.Activity
 import android.os.Build
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
 // Attempt to import MaterialExpressiveTheme and MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.MaterialTheme // Keep for default shapes if needed
-import androidx.compose.material3.expressive.MaterialExpressiveTheme
-import androidx.compose.material3.expressive.MotionScheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.surfaceColorAtElevation
 // Remove Material3.Typography as AppTypography is used
 import androidx.compose.runtime.Composable
@@ -21,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import com.d4viddf.medicationreminder.data.ThemeKeys
 
@@ -107,6 +107,7 @@ val unspecified_scheme = ColorFamily(
     Color.Unspecified, Color.Unspecified, Color.Unspecified, Color.Unspecified
 )
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppTheme(
     themePreference: String = ThemeKeys.SYSTEM,
@@ -151,7 +152,6 @@ fun AppTheme(
         // If MaterialExpressiveTheme requires its own Shapes object and one isn't available,
         // this might be an issue. Assuming it can take standard M3 Shapes.
         shapes = MaterialTheme.shapes, // Or omit if it takes M3 defaults implicitly
-        motionScheme = MotionScheme(), // Attempt to use a default MotionScheme
         content = content
     )
 }
