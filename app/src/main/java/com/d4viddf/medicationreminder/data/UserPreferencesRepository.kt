@@ -25,6 +25,25 @@ class UserPreferencesRepository @Inject constructor(
     private companion object {
         val SELECTED_LANGUAGE_KEY = stringPreferencesKey("selected_language_tag")
         val SELECTED_THEME_KEY = stringPreferencesKey("selected_theme_key")
+        val ALARM_VOLUME_KEY = floatPreferencesKey("alarm_volume_key")
+    }
+
+    val alarmVolumeFlow: Flow<Float> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) {
+                emit(emptyPreferences())
+            } else {
+                throw exception
+            }
+        }
+        .map { preferences ->
+            preferences[ALARM_VOLUME_KEY] ?: 1.0f // Default to full volume
+        }
+
+    suspend fun updateAlarmVolume(volume: Float) {
+        context.dataStore.edit { preferences ->
+            preferences[ALARM_VOLUME_KEY] = volume.coerceIn(0.0f, 1.0f) // Ensure volume is between 0 and 1
+        }
     }
 
     val languageTagFlow: Flow<String> = context.dataStore.data

@@ -47,12 +47,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.d4viddf.medicationreminder.data.FrequencyType
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -290,9 +293,14 @@ fun DaySelector(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             daysOfWeekLabels.forEachIndexed { index, dayResId ->
-                val dayLabel = stringResource(id = dayResId)
+                val dayLabel = stringResource(id = dayResId) // Visual label (e.g., "M")
                 val dayNumber = index + 1
                 val isSelected = selectedDays.contains(dayNumber)
+
+                val dayName = java.time.DayOfWeek.of(dayNumber).getDisplayName(TextStyle.FULL, Locale.getDefault())
+                val dayStateDescription = if (isSelected) stringResource(com.d4viddf.medicationreminder.R.string.state_selected) else stringResource(com.d4viddf.medicationreminder.R.string.state_not_selected)
+                val fullDayDescription = stringResource(com.d4viddf.medicationreminder.R.string.day_selector_desc, dayName, dayStateDescription)
+
                 OutlinedButton(
                     onClick = {
                         val updatedDays = selectedDays.toMutableList()
@@ -300,7 +308,7 @@ fun DaySelector(
                         onDaysSelected(updatedDays.sorted())
                     },
                     shape = CircleShape,
-                    modifier = Modifier.size(42.dp),
+                    modifier = Modifier.size(42.dp).semantics { contentDescription = fullDayDescription },
                     contentPadding = PaddingValues(0.dp),
                     border = BorderStroke(
                         width = if (isSelected) 2.dp else 1.dp,

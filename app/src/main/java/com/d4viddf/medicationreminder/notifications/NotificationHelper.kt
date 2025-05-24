@@ -46,7 +46,7 @@ object NotificationHelper {
                 lightColor = android.graphics.Color.CYAN
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 500, 250, 500)
-                setSound(defaultSoundUri, Notification.AUDIO_ATTRIBUTES_DEFAULT)
+                setSound(null, null) // Sound will be played manually by the receiver
 
             }
 
@@ -124,7 +124,8 @@ object NotificationHelper {
         val notificationTitle = context.getString(R.string.notification_title_time_for, medicationName)
         var notificationText = context.getString(R.string.notification_text_take_dosage, medicationDosage)
 
-        val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        // Sound is now played manually, so no need to set it on the builder.
+        // val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val notificationCompatBuilder = NotificationCompat.Builder(context, REMINDER_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_medication)
@@ -138,7 +139,7 @@ object NotificationHelper {
             .setShowWhen(true)
             .addAction(R.drawable.ic_check_circle, context.getString(R.string.notification_action_mark_as_taken), markAsTakenPendingIntent)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
-            .setSound(defaultSoundUri) // Set sound for pre-Oreo and as default
+            // .setSound(defaultSoundUri) // Removed: Sound is played manually by ReminderBroadcastReceiver
 
         if (isIntervalType && nextDoseTimeMillisForHelper != null && nextDoseTimeMillisForHelper > actualReminderTimeMillis) {
             val startTimeMillis = actualReminderTimeMillis

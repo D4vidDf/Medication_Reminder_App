@@ -42,4 +42,19 @@ class SettingsViewModel @Inject constructor(
             userPreferencesRepository.setTheme(themeKey)
         }
     }
+
+    // Alarm Volume Preference
+    val alarmVolume: StateFlow<Float> = userPreferencesRepository.alarmVolumeFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 1.0f // Default to full volume, consistent with repository
+        )
+
+    fun setAlarmVolume(volume: Float) {
+        viewModelScope.launch {
+            // Ensure volume is within 0.0 to 1.0 range, though repository also coerces
+            userPreferencesRepository.updateAlarmVolume(volume.coerceIn(0.0f, 1.0f))
+        }
+    }
 }

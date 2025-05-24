@@ -153,6 +153,7 @@
     <string name="settings_theme_light_option">Light</string>
     <string name="settings_theme_dark_option">Dark</string>
     <string name="settings_theme_system_option">System Default</string>
+    <string name="settings_alarm_volume_label">Alarm Volume</string>
 
     <!-- FrequencyType Strings -->
     <string name="frequency_once_a_day">Once a day</string>
@@ -193,4 +194,14 @@
     <string name="time_hr_min">%1$d hr %2$d min</string>
     <string name="time_hr">%1$d hr</string>
     <string name="time_min">%1$d min</string>
+
+    <!-- Accessibility specific strings -->
+    <string name="collapse_navigation_rail">Collapse navigation rail</string>
+    <string name="expand_navigation_rail">Expand navigation rail</string>
+    <string name="state_selected">selected</string>
+    <string name="state_not_selected">not selected</string>
+    <string name="color_option_desc">%1$s, %2$s</string>
+    <string name="date_item_desc">Date: %1$s, %2$s %3$d, %4$s</string>
+    <string name="day_selector_desc">%1$s, %2$s</string>
+    <string name="medication_type_desc">%1$s, %2$s</string>
 </resources>

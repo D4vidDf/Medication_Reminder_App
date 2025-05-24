@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -94,6 +95,9 @@ fun MedicationTypeItem(
     cornerRadius: RoundedCornerShape,
     onClick: () -> Unit
 ) {
+    val itemStateDescription = if (isSelected) stringResource(com.d4viddf.medicationreminder.R.string.state_selected) else stringResource(com.d4viddf.medicationreminder.R.string.state_not_selected)
+    val fullTypeDescription = stringResource(com.d4viddf.medicationreminder.R.string.medication_type_desc, type.name, itemStateDescription)
+
     Column(
         modifier = Modifier
             .padding(4.dp) // Outer padding for spacing between items
@@ -104,13 +108,16 @@ fun MedicationTypeItem(
                 shape = cornerRadius
             )
             .clickable(onClick = onClick)
+            .semantics(mergeDescendants = true) { // Merge descendants
+                contentDescription = fullTypeDescription
+            }
             .padding(8.dp), // Inner padding for content
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center // Center content vertically
     ) {
         AsyncImage(
             model = type.imageUrl,
-            contentDescription = type.name,
+            contentDescription = null, // Decorative, description handled by parent Column
             modifier = Modifier
                 .fillMaxSize(0.6f) // Image takes a portion of the item size
                 .aspectRatio(1f),

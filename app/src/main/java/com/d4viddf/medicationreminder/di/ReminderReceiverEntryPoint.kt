@@ -10,7 +10,10 @@ import dagger.hilt.components.SingletonComponent // Or ApplicationComponent if o
 
 @EntryPoint
 @InstallIn(SingletonComponent::class) // Or ApplicationComponent
+import com.d4viddf.medicationreminder.data.UserPreferencesRepository
+
 interface ReminderReceiverEntryPoint {
     fun reminderRepository(): MedicationReminderRepository
     fun notificationScheduler(): NotificationScheduler
+    fun userPreferencesRepository(): UserPreferencesRepository
 }

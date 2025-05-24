@@ -15,8 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.d4viddf.medicationreminder.R
 import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -47,16 +52,26 @@ fun DateItem(
 ) {
     val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
 
+    val itemStateDescription = if (isSelected) stringResource(R.string.state_selected) else stringResource(R.string.state_not_selected)
+    val fullDateDescription = stringResource(
+        R.string.date_item_desc,
+        date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault()),
+        date.month.getDisplayName(TextStyle.SHORT, Locale.getDefault()), // Using SHORT for month to be less verbose visually if needed, but FULL for a11y
+        date.dayOfMonth,
+        itemStateDescription
+    )
+
     Column(
         modifier = Modifier
             .padding(8.dp)
             .clickable(onClick = onClick)
             .background(color = backgroundColor, shape = RoundedCornerShape(8.dp))
-            .padding(16.dp),
+            .padding(16.dp)
+            .semantics { contentDescription = fullDateDescription },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = date.dayOfWeek.name.take(3),
+        Text( // Visually, keep it short
+            text = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()).take(3).uppercase(Locale.getDefault()),
             style = MaterialTheme.typography.bodyMedium,
             color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
         )

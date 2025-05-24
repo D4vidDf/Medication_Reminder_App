@@ -36,9 +36,11 @@ import androidx.compose.foundation.BorderStroke // Added for Surface border
 import androidx.compose.material3.Surface // Added for grouping
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow // Added
 import androidx.compose.material3.SegmentedButton // Added
-import androidx.compose.material3.SegmentedButtonDefaults // Added
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,6 +58,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val currentLanguageTag by viewModel.currentLanguageTag.collectAsState()
     val currentThemeKey by viewModel.currentTheme.collectAsState()
+    val alarmVolume by viewModel.alarmVolume.collectAsState()
 
     val languages = remember {
         listOf(
@@ -174,6 +177,42 @@ fun SettingsScreen(
                                 label = { Text(themeDisplayName, style = MaterialTheme.typography.labelLarge) }
                             )
                         }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp)) // Spacer between sections
+
+            // Alarm Volume Setting Group
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = stringResource(id = R.string.settings_alarm_volume_label),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Slider(
+                            value = alarmVolume,
+                            onValueChange = { viewModel.setAlarmVolume(it) },
+                            valueRange = 0f..1f,
+                            steps = 9, // Creates 10 steps (0%, 10%, ..., 100%)
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "${(alarmVolume * 100).toInt()}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.width(40.dp) // Fixed width for percentage text
+                        )
                     }
                 }
             }

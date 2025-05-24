@@ -1,19 +1,35 @@
 package com.d4viddf.medicationreminder.ui.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.d4viddf.medicationreminder.R
-import com.d4viddf.medicationreminder.ui.screens.Screen // Required for Screen routes
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationRailItemDefaults
+import com.d4viddf.medicationreminder.ui.screens.Screen
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppNavigationRail(
@@ -25,22 +41,35 @@ fun AppNavigationRail(
     modifier: Modifier = Modifier,
     currentRoute: String? = null
 ) {
-    NavigationRail(
-        modifier = modifier,
-        // Optional: Apply custom container color if needed, e.g., MaterialTheme.colorScheme.surfaceVariant
-    ) {
-        // "Add" item - typically no selected state
-        NavigationRailItem(
-            icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.add_medication_title)) },
-            selected = false,
-            onClick = onAddClick,
-            label = { Text(stringResource(R.string.add_medication_short_action)) },
-            colors = NavigationRailItemDefaults.colors( // Ensure consistent unselected color if needed
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
 
+    NavigationRail(
+        modifier = modifier.animateContentSize(),
+        header = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FloatingActionButton(
+                    onClick = onAddClick,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.add_medication_title)
+                    )
+                }
+                IconButton(onClick = { isExpanded = !isExpanded }) {
+                    Icon(
+                        imageVector = if (isExpanded) Icons.AutoMirrored.Filled.KeyboardArrowLeft else Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = if (isExpanded) stringResource(R.string.collapse_navigation_rail) else stringResource(R.string.expand_navigation_rail)
+                    )
+                }
+                Spacer(Modifier.height(16.dp)) // Add some space before the first item
+            }
+        }
+    ) {
         val homeSelected = currentRoute == Screen.Home.route
         NavigationRailItem(
             icon = {
@@ -51,7 +80,8 @@ fun AppNavigationRail(
             },
             selected = homeSelected,
             onClick = onHomeClick,
-            label = { Text(stringResource(R.string.home_screen_title)) },
+            label = { if (isExpanded) Text(stringResource(R.string.home_screen_title)) },
+            alwaysShowLabel = false, // Let our expanded state control this
             colors = NavigationRailItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -71,7 +101,8 @@ fun AppNavigationRail(
             },
             selected = calendarSelected,
             onClick = onCalendarClick,
-            label = { Text(stringResource(R.string.calendar_screen_title)) },
+            label = { if (isExpanded) Text(stringResource(R.string.calendar_screen_title)) },
+            alwaysShowLabel = false,
             colors = NavigationRailItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -91,7 +122,8 @@ fun AppNavigationRail(
             },
             selected = profileSelected,
             onClick = onProfileClick,
-            label = { Text(stringResource(R.string.profile_screen_title)) },
+            label = { if (isExpanded) Text(stringResource(R.string.profile_screen_title)) },
+            alwaysShowLabel = false,
             colors = NavigationRailItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -111,7 +143,8 @@ fun AppNavigationRail(
             },
             selected = settingsSelected,
             onClick = onSettingsClick,
-            label = { Text(stringResource(R.string.settings_screen_title)) },
+            label = { if (isExpanded) Text(stringResource(R.string.settings_screen_title)) },
+            alwaysShowLabel = false,
             colors = NavigationRailItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,

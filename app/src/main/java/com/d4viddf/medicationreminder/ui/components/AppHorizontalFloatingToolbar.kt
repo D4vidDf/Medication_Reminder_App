@@ -8,8 +8,11 @@ import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.res.painterResource
 import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.ui.screens.Screen // Required for Screen routes
@@ -42,38 +45,66 @@ fun AppHorizontalFloatingToolbar(
     ) {
         val homeSelected = currentRoute == Screen.Home.route
         IconButton(onClick = onHomeClick) {
-            Icon(
-                painter = painterResource(id = if (homeSelected) R.drawable.rounded_home_24 else R.drawable.ic_outline_home_24),
-                contentDescription = stringResource(id = R.string.home_screen_title),
-                tint = if (homeSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    painter = painterResource(id = if (homeSelected) R.drawable.rounded_home_24 else R.drawable.ic_outline_home_24),
+                    contentDescription = stringResource(id = R.string.home_screen_title),
+                    tint = if (homeSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(id = R.string.home_screen_title),
+                    color = if (homeSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
 
         val calendarSelected = currentRoute == Screen.Calendar.route
         IconButton(onClick = onCalendarClick) {
-            Icon(
-                painter = painterResource(id = if (calendarSelected) R.drawable.ic_round_calendar_today_24 else R.drawable.ic_outline_calendar_today_24),
-                contentDescription = stringResource(id = R.string.calendar_screen_title),
-                tint = if (calendarSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    painter = painterResource(id = if (calendarSelected) R.drawable.ic_round_calendar_today_24 else R.drawable.ic_outline_calendar_today_24),
+                    contentDescription = stringResource(id = R.string.calendar_screen_title),
+                    tint = if (calendarSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(id = R.string.calendar_screen_title),
+                    color = if (calendarSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
 
         val profileSelected = currentRoute == Screen.Profile.route
         IconButton(onClick = onProfileClick) {
-            Icon(
-                painter = painterResource(id = if (profileSelected) R.drawable.rounded_person_24 else R.drawable.ic_outline_person_24),
-                contentDescription = stringResource(id = R.string.profile_screen_title),
-                tint = if (profileSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    painter = painterResource(id = if (profileSelected) R.drawable.rounded_person_24 else R.drawable.ic_outline_person_24),
+                    contentDescription = stringResource(id = R.string.profile_screen_title),
+                    tint = if (profileSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(id = R.string.profile_screen_title),
+                    color = if (profileSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
 
         val settingsSelected = currentRoute == Screen.Settings.route
         IconButton(onClick = onSettingsClick) {
-            Icon(
-                painter = painterResource(id = if (settingsSelected) R.drawable.rounded_settings_24 else R.drawable.ic_outline_settings_24),
-                contentDescription = stringResource(id = R.string.settings_screen_title),
-                tint = if (settingsSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    painter = painterResource(id = if (settingsSelected) R.drawable.rounded_settings_24 else R.drawable.ic_outline_settings_24),
+                    contentDescription = stringResource(id = R.string.settings_screen_title),
+                    tint = if (settingsSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(id = R.string.settings_screen_title),
+                    color = if (settingsSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
     }
 }

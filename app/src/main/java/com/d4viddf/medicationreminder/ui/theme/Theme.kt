@@ -3,10 +3,11 @@ import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.surfaceColorAtElevation
 // Remove Material3.Typography as AppTypography is used
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -138,8 +139,14 @@ fun AppTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb() // You might want to use a specific status bar color
+            // Make status bar transparent for edge-to-edge
+            window.statusBarColor = Color.Transparent.toArgb()
+            // Set navigation bar to a translucent color for better contrast in edge-to-edge
+            window.navigationBarColor = colorScheme.surfaceColorAtElevation(3.dp).toArgb()
+
+            // Ensure system icons (status bar, navigation bar) contrast with content
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDarkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !useDarkTheme
         }
     }
 
@@ -149,3 +156,13 @@ fun AppTheme(
         content = content
     )
 }
+// Helper to get dp, assuming it's not directly available in this context otherwise
+// For surfaceColorAtElevation, dp is needed.
+// However, surfaceColorAtElevation is a composable function, so it should be fine.
+// If it were a non-composable context, one might need something like:
+// import androidx.compose.ui.unit.Dp
+// import androidx.compose.ui.platform.LocalDensity
+// val elevation = with(LocalDensity.current) { 3.dp.toPx() } -> then convert back or use appropriately.
+// But since it's within SideEffect in a Composable, 3.dp should be resolvable.
+// Let's ensure the import for Dp is available if needed, or that surfaceColorAtElevation handles it.
+// androidx.compose.ui.unit.dp should be available by default with Compose.

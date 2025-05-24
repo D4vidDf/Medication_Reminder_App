@@ -17,6 +17,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -24,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
+import androidx.core.view.WindowCompat
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.d4viddf.medicationreminder.data.ThemeKeys
@@ -64,6 +66,8 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Enable edge-to-edge display
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         requestFullScreenIntentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             // After returning from settings, re-check the permission

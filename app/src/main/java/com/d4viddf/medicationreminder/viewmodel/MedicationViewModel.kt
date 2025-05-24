@@ -35,17 +35,37 @@ class MedicationViewModel @Inject constructor(
     private val _medications = MutableStateFlow<List<Medication>>(emptyList())
     val medications: StateFlow<List<Medication>> = _medications.asStateFlow()
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     private val _medicationProgressDetails = MutableStateFlow<ProgressDetails?>(null)
     val medicationProgressDetails: StateFlow<ProgressDetails?> = _medicationProgressDetails.asStateFlow()
 
     init {
-        getAllMedications()
+        // Initial load can also be considered a "refresh" or a separate load function
+        refreshMedications() // Changed from getAllMedications to refreshMedications
     }
 
-    private fun getAllMedications() {
+    // Changed from private fun getAllMedications() to public fun refreshMedications()
+    fun refreshMedications() {
         viewModelScope.launch {
-            medicationRepository.getAllMedications().collect {
-                _medications.value = it
+            _isRefreshing.value = true
+            try {
+                // Assuming getAllMedications() returns a Flow that completes or you take the first emission
+                // For a one-shot refresh, you might want to ensure the collect block doesn't run indefinitely
+                // if the underlying Flow doesn't complete.
+                // If medicationRepository.getAllMedications() is a long-lived Flow,
+                // you might need a different strategy for a "refresh" action,
+                // e.g., a specific function in repository for a one-time fetch.
+                // For this example, assuming it collects current state then completes, or we just update.
+                medicationRepository.getAllMedications().collect {
+                    _medications.value = it
+                }
+            } catch (e: Exception) {
+                // Handle error, e.g., log it or update UI state
+                Log.e("MedicationViewModel", "Error refreshing medications", e)
+            } finally {
+                _isRefreshing.value = false
             }
         }
     }

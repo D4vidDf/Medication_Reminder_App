@@ -87,8 +87,11 @@ fun ColorSelector(
                     items(medicationColors.size) { index ->
                         val color = medicationColors[index]
                         val isSelected = color == selectedColor
-                        val itemColorAccText = stringResource(id = com.d4viddf.medicationreminder.R.string.color_selector_selected_color_acc, color.colorName)
-                        val itemSelectedAccText = stringResource(id = com.d4viddf.medicationreminder.R.string.color_selector_selected_acc)
+                        // val itemColorAccText = stringResource(id = com.d4viddf.medicationreminder.R.string.color_selector_selected_color_acc, color.colorName)
+                        // val itemSelectedAccText = stringResource(id = com.d4viddf.medicationreminder.R.string.color_selector_selected_acc)
+                        val itemStateDescription = if (isSelected) stringResource(com.d4viddf.medicationreminder.R.string.state_selected) else stringResource(com.d4viddf.medicationreminder.R.string.state_not_selected)
+                        val fullItemDescription = stringResource(com.d4viddf.medicationreminder.R.string.color_option_desc, color.colorName, itemStateDescription)
+
 
                         val cornerShape = when (index) {
                             0 -> RoundedCornerShape(topStart = 16.dp, bottomStart = 8.dp, topEnd = 8.dp, bottomEnd = 8.dp)
@@ -106,16 +109,16 @@ fun ColorSelector(
                                     onColorSelected(color)
                                     showBottomSheet = false
                                 }
-                                .semantics{
-                                    contentDescription = itemColorAccText
+                                .semantics(mergeDescendants = true) { // Merge descendants
+                                    contentDescription = fullItemDescription
                                 },
-                            contentAlignment = Alignment.Center,
+                            contentAlignment = Alignment.Center
 
                         ) {
                             if (isSelected) {
                                 Icon(
                                     Icons.Default.Check,
-                                    contentDescription = itemSelectedAccText,
+                                    contentDescription = null, // Decorative, description handled by parent Box
                                     modifier = Modifier
                                         .background(Color.White, CircleShape)
                                         .padding(4.dp)

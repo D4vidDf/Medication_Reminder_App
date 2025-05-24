@@ -9,11 +9,14 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import android.media.MediaPlayer
+import android.media.RingtoneManager
 import com.d4viddf.medicationreminder.di.ReminderReceiverEntryPoint
 import com.d4viddf.medicationreminder.notifications.NotificationHelper
-import com.d4viddf.medicationreminder.services.PreReminderForegroundService // Importa el servicio
+import com.d4viddf.medicationreminder.services.PreReminderForegroundService
 import com.d4viddf.medicationreminder.workers.ReminderSchedulingWorker
 import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -51,6 +54,7 @@ class ReminderBroadcastReceiver : BroadcastReceiver() {
         )
         val localReminderRepository = entryPoint.reminderRepository()
         val localNotificationScheduler = entryPoint.notificationScheduler()
+        val userPreferencesRepository = entryPoint.userPreferencesRepository() // Get UserPreferencesRepository
 
         val action = intent.action
         Log.d(TAG, "Received action: $action with Intent extras: ${intent.extras}")
@@ -75,6 +79,38 @@ class ReminderBroadcastReceiver : BroadcastReceiver() {
                 val nextDoseTimeForHelper = if (nextDoseTimeMillisExtra > 0) nextDoseTimeMillisExtra else null
 
                 Log.i(TAG, "ACTION_SHOW_REMINDER for ID: $reminderId, Name: $medicationName. Interval: $isIntervalType, NextDoseMillis: $nextDoseTimeForHelper")
+
+                // Play sound manually with custom volume
+                scope.launch {
+                    try {
+                        val alarmVolume = userPreferencesRepository.alarmVolumeFlow.first()
+                        val alarmSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        if (alarmSoundUri != null) {
+                            val mediaPlayer = MediaPlayer()
+                            mediaPlayer.setDataSource(context, alarmSoundUri)
+                            mediaPlayer.setVolume(alarmVolume, alarmVolume)
+                            mediaPlayer.setOnCompletionListener { mp ->
+                                mp.release()
+                                Log.d(TAG, "MediaPlayer released after completion for reminder ID: $reminderId")
+                            }
+                            mediaPlayer.setOnErrorListener { mp, what, extra ->
+                                Log.e(TAG, "MediaPlayer error for reminder ID: $reminderId - what: $what, extra: $extra")
+                                mp.release()
+                                true // Error handled
+                            }
+                            mediaPlayer.prepareAsync() // Use prepareAsync for non-blocking prepare
+                            mediaPlayer.setOnPreparedListener { mp ->
+                                Log.d(TAG, "MediaPlayer prepared, starting playback for reminder ID: $reminderId at volume $alarmVolume")
+                                mp.start()
+                            }
+                        } else {
+                            Log.w(TAG, "Default alarm sound URI is null. Cannot play sound for reminder ID: $reminderId")
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error playing sound for reminder ID: $reminderId", e)
+                    }
+                }
+
                 NotificationHelper.showReminderNotification(
                     context, reminderId, medicationName, medicationDosage,
                     isIntervalType, nextDoseTimeForHelper, actualReminderTimeMillis
