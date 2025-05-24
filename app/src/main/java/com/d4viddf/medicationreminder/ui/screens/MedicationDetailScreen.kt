@@ -119,11 +119,9 @@ fun MedicationDetailsScreen(
                         .padding(WindowInsets.statusBars.asPaddingValues()) // Add padding for status bar
                         .padding(start = 16.dp, end = 16.dp, bottom = 24.dp) // Keep original horizontal and bottom padding
                 ) {
-                    // Row para Back y Edit
+                    // Row para Back y Edit - Re-affirming correct structure
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            // .padding(top = 16.dp), // Removed top padding as status bar padding is handled by parent
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {

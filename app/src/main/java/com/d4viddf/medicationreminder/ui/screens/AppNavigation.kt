@@ -75,14 +75,14 @@ fun AppNavigation(
                 onMedicationClick = { medicationId ->
                     navController.navigate(Screen.MedicationDetails.createRoute(medicationId))
                 },
-                widthSizeClass = widthSizeClass,
-                modifier = Modifier.fillMaxSize()
+                widthSizeClass = widthSizeClass
+                // modifier = Modifier.fillMaxSize() // Removed
             )
         }
         composable(Screen.AddMedication.route) {
             AddMedicationScreen(
-                onNavigateBack = { navController.popBackStack() },
-                modifier = Modifier.fillMaxSize()
+                onNavigateBack = { navController.popBackStack() }
+                // modifier = Modifier.fillMaxSize() // Removed
             )
         }
         composable(Screen.MedicationDetails.route) { backStackEntry ->
@@ -90,27 +90,27 @@ fun AppNavigation(
             if (medicationId != null) {
                 MedicationDetailsScreen(
                     medicationId = medicationId,
-                    onNavigateBack = { navController.popBackStack() },
-                    modifier = Modifier.fillMaxSize()
+                    onNavigateBack = { navController.popBackStack() }
+                    // modifier = Modifier.fillMaxSize() // Removed
                 )
             }
         }
         composable(Screen.Settings.route) {
             SettingsScreen(
-                onNavigateBack = { navController.popBackStack() },
-                modifier = Modifier.fillMaxSize()
+                onNavigateBack = { navController.popBackStack() }
+                // modifier = Modifier.fillMaxSize() // Removed
             )
         }
         composable(Screen.Calendar.route) {
             CalendarScreen(
-                onNavigateBack = { navController.popBackStack() },
-                modifier = Modifier.fillMaxSize()
+                onNavigateBack = { navController.popBackStack() }
+                // modifier = Modifier.fillMaxSize() // Removed
             )
         }
         composable(Screen.Profile.route) {
             ProfileScreen(
-                onNavigateBack = { navController.popBackStack() },
-                modifier = Modifier.fillMaxSize()
+                onNavigateBack = { navController.popBackStack() }
+                // modifier = Modifier.fillMaxSize() // Removed
             )
         }
     }

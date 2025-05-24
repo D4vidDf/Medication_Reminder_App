@@ -101,9 +101,15 @@ fun SettingsScreen(
             )
         }
     ) { innerPadding ->
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)
+                .fillMaxSize() // Added fillMaxSize
+                .verticalScroll(rememberScrollState()) // Added verticalScroll for potentially long content
                 .padding(16.dp) // Outer padding for the whole screen content
         ) {
             // Language Selection Group
