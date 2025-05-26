@@ -7,11 +7,7 @@ import androidx.room.AutoMigration
 
 @Database(
     entities = [Medication::class, MedicationType::class, MedicationSchedule::class, MedicationReminder::class, MedicationInfo::class, FirebaseSync::class],
-    version = 4, // Incremented version
-    autoMigrations = [
-        AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 3, to = 4) // New migration for remainingDoses type change
-    ],
+    version = 5, // Incremented version
     exportSchema = true
 )
 abstract class MedicationDatabase : RoomDatabase() {

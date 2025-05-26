@@ -2,7 +2,6 @@ package com.d4viddf.medicationreminder.viewmodel
 
 import app.cash.turbine.test
 import com.d4viddf.medicationreminder.data.*
-import com.d4viddf.medicationreminder.logic.ReminderCalculator // Actual object, not mocked
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
