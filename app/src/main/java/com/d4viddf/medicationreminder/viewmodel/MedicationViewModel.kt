@@ -226,20 +226,32 @@ class MedicationViewModel @Inject constructor(
                 val dailyConsumption = dosesScheduledToday * userDosageQty
                 val currentRemainingDoses = medication.remainingDoses ?: 0.0 // Default to 0.0 if null
 
-                if (dailyConsumption > 0) {
+                if (dailyConsumption > 0.0) { // Explicitly compare Double with Double
                     val daysLeft = currentRemainingDoses / dailyConsumption
                     Log.i("RefillCheck", "Medication: ${medication.name}, Doses Today: $dosesScheduledToday, User Qty: $userDosageQty, Daily Consumption: $dailyConsumption units, Remaining Units: $currentRemainingDoses, Days Left: $daysLeft")
+                    // Line 232: daysLeft is Double, refillThresholdDays is Int. This comparison is fine.
                     if (daysLeft < refillThresholdDays) {
                         // Trigger refill alert (e.g., log, update a LiveData, send a notification)
                         Log.w("RefillAlert", "REFILL ALERT for ${medication.name}: Only $daysLeft days of medication left (threshold: $refillThresholdDays days). Remaining units: $currentRemainingDoses.")
                         // For a real app, this would update some UI state or schedule a notification.
                     }
-                } else if (currentRemainingDoses > 0 && dosesScheduledToday == 0 && schedule.scheduleType != ScheduleType.AS_NEEDED) {
-                    // This case handles medications that have stock, but no doses scheduled for *today*.
-                    // If it's not "As Needed", it might be a concern or an off-day in a cycle.
-                    // For simplicity, we are primarily alerting based on *today's* consumption rate.
-                    // A more advanced system might average consumption over a typical week.
-                    Log.d("RefillCheck", "Medication ${medication.name} has stock ($currentRemainingDoses) but no doses scheduled today, and is not 'As Needed'. Daily consumption for alert is 0.")
+                } else { // dailyConsumption is 0 or less (though should generally be >= 0)
+                    if (currentRemainingDoses > 0.0) { // Explicitly compare Double with Double
+                        // If there's stock but no consumption, days left is effectively infinite for refill purposes
+                        Log.i("RefillCheck", "Medication: ${medication.name}, Remaining Units: $currentRemainingDoses. Daily consumption is 0, days left is effectively infinite.")
+                    } else {
+                        // No stock and no consumption
+                        Log.i("RefillCheck", "Medication: ${medication.name}, No remaining units and daily consumption is 0. Days left is 0.")
+                    }
+                    // Line 237: Comparison involving currentRemainingDoses > 0.0
+                    // The original `else if` condition:
+                    // else if (currentRemainingDoses > 0 && dosesScheduledToday == 0 && schedule.scheduleType != ScheduleType.AS_NEEDED)
+                    // This is now handled by the structure: dailyConsumption is 0 (because dosesScheduledToday is 0),
+                    // and currentRemainingDoses > 0 is checked above.
+                    // The log "Medication ... has stock ... but no doses scheduled today..." is effectively covered.
+                    if (currentRemainingDoses > 0.0 && dosesScheduledToday == 0 && schedule.scheduleType != ScheduleType.AS_NEEDED) {
+                         Log.d("RefillCheck", "Medication ${medication.name} has stock ($currentRemainingDoses) but no doses scheduled today, and is not 'As Needed'. Daily consumption for alert is 0 for today.")
+                    }
                 }
             }
         }
