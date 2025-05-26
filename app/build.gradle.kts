@@ -6,6 +6,11 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// Configure KSP for Room schema location
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "com.d4viddf.medicationreminder"
     compileSdk = 36

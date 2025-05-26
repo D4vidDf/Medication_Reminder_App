@@ -11,7 +11,8 @@ import com.d4viddf.medicationreminder.data.MedicationScheduleRepository
 import com.d4viddf.medicationreminder.logic.ReminderCalculator
 import com.d4viddf.medicationreminder.ui.components.ProgressDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.time.LocalDate // Added
+// Removed one java.time.LocalDate import, keeping the one below
+import com.d4viddf.medicationreminder.data.ScheduleType // Added
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
+import java.time.LocalDate // Keep this one
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -216,8 +217,8 @@ class MedicationViewModel @Inject constructor(
                     // This means daysLeft will be infinite unless remainingDoses is 0.
                     // A more robust approach might be to average doses over a week if schedule is irregular.
                     // However, for fixed daily/interval schedules, this is fine.
-                    if (medication.remainingDoses > 0) { // Only log if it has stock but no doses today
-                        Log.d("RefillCheck", "Medication ${medication.name} has remaining stock (${medication.remainingDoses}) but 0 doses scheduled for today. Days left effectively infinite for today's rate.")
+                    if ((medication.remainingDoses ?: 0.0) > 0) { // Only log if it has stock but no doses today
+                        Log.d("RefillCheck", "Medication ${medication.name} has remaining stock (${medication.remainingDoses ?: 0.0}) but 0 doses scheduled for today. Days left effectively infinite for today's rate.")
                     }
                 }
 

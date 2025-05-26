@@ -65,7 +65,8 @@ class MedicationRepository @Inject constructor(
     suspend fun updateDoseCount(medicationId: Int, remainingDoses: Int) {
         val medication = medicationDao.getMedicationById(medicationId)
         if (medication != null) {
-            val updatedMedication = medication.copy(remainingDoses = remainingDoses)
+            // Convert Int to Double for the remainingDoses field which is now Double?
+            val updatedMedication = medication.copy(remainingDoses = remainingDoses.toDouble())
             updateMedication(updatedMedication)
         }
     }

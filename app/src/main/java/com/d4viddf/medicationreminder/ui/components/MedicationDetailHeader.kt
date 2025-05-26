@@ -14,11 +14,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.d4viddf.medicationreminder.ui.colors.MedicationColor
-
-@Composable
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import com.d4viddf.medicationreminder.R
+import androidx.compose.ui.semantics.contentDescription // Moved
+import androidx.compose.ui.semantics.semantics // Moved
+import com.d4viddf.medicationreminder.R // Moved
 
 @Composable
 fun MedicationDetailHeader(

@@ -4,10 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
-import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
+import androidx.work.Data // Keep one
+import androidx.work.ExistingWorkPolicy // Keep one
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.d4viddf.medicationreminder.data.Medication
@@ -19,8 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.StateFlow // Keep one
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

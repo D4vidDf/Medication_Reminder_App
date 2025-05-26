@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioAttributes // Added
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
@@ -46,8 +47,12 @@ object NotificationHelper {
                 lightColor = android.graphics.Color.CYAN
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 500, 250, 500)
-                setSound(defaultSoundUri, Notification.AUDIO_ATTRIBUTES_DEFAULT)
-
+                // Updated AudioAttributes for alarm sound
+                val audioAttributes = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION) // Or CONTENT_TYPE_UNKNOWN
+                    .build()
+                setSound(defaultSoundUri, audioAttributes)
             }
 
             val preReminderChannelDefault = NotificationChannel(
