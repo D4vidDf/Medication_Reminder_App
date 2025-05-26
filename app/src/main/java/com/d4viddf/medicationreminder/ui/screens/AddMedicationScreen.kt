@@ -81,7 +81,9 @@ fun AddMedicationScreen(
 
 
     var medicationName by rememberSaveable { mutableStateOf("") }
-    var dosage by rememberSaveable { mutableStateOf("") }
+    var dosage by rememberSaveable { mutableStateOf("") } // This is CIMA dosage or user override of the modal.
+    var userDosageQuantity by rememberSaveable { mutableStateOf("") }
+    var userDosageUnit by rememberSaveable { mutableStateOf("") }
     var packageSize by rememberSaveable { mutableStateOf("") }
     var medicationSearchResult by rememberSaveable { mutableStateOf<MedicationSearchResult?>(null) }
 
@@ -147,11 +149,14 @@ fun AddMedicationScreen(
                             val medicationId = medicationViewModel.insertMedication(
                                 Medication(
                                     name = medicationName, typeId = selectedTypeId, color = selectedColor.toString(),
-                                    dosage = dosage.ifEmpty { null }, packageSize = packageSize.toIntOrNull() ?: 0,
-                                    remainingDoses = packageSize.toIntOrNull() ?: 0,
+                                    dosage = dosage.ifEmpty { null }, // This is the CIMA dosage or the one from the modal
+                                    userDosageQuantity = userDosageQuantity.ifBlank { null },
+                                    userDosageUnit = userDosageUnit.ifBlank { null },
+                                    packageSize = packageSize.toIntOrNull() ?: 0,
+                                    remainingDoses = packageSize.toIntOrNull()?.toDouble(), // Convert to Double?
                                     startDate = if (startDate.isNotBlank() && startDate != selectStartDatePlaceholder) startDate else null,
                                     endDate = if (endDate.isNotBlank() && endDate != selectEndDatePlaceholder) endDate else null,
-                                    reminderTime = null
+                                    reminderTime = null // reminderTime is set by worker
                                 )
                             )
                             medicationId.let { medId ->
@@ -267,7 +272,9 @@ fun AddMedicationScreen(
                 2 -> {
                     MedicationDosagePackageDateInput(
                         selectedTypeId = selectedTypeId,
-                        dosage = dosage, onDosageChange = { dosage = it },
+                        dosage = dosage, onDosageChange = { dosage = it }, // CIMA / Modal Dosage
+                        userDosageQuantity = userDosageQuantity, onUserDosageQuantityChange = { userDosageQuantity = it },
+                        userDosageUnit = userDosageUnit, onUserDosageUnitChange = { userDosageUnit = it },
                         packageSize = packageSize, onPackageSizeChange = { packageSize = it },
                         medicationSearchResult = medicationSearchResult,
                         startDate = if (startDate.isBlank()) selectStartDatePlaceholder else startDate,
@@ -317,7 +324,10 @@ fun AddMedicationScreen(
                     val summaryEndDate = if (endDate.isBlank()) selectEndDatePlaceholder else endDate
                     MedicationSummary(
                         typeId = selectedTypeId, medicationName = medicationName, color = selectedColor.backgroundColor,
-                        dosage = dosage, packageSize = packageSize, frequency = frequency,
+                        cimaDosage = dosage, // CIMA / Modal dosage
+                        userDosageQuantity = userDosageQuantity,
+                        userDosageUnit = userDosageUnit,
+                        packageSize = packageSize, frequency = frequency,
                         startDate = summaryStartDate, endDate = summaryEndDate,
                         onceADayTime = onceADayTime,
                         selectedTimes = selectedTimes,
@@ -338,7 +348,11 @@ fun AddMedicationScreen(
 
 @Composable
 fun MedicationSummary(
-    typeId: Int, medicationName: String, color: Color, dosage: String, packageSize: String,
+    typeId: Int, medicationName: String, color: Color,
+    cimaDosage: String, // CIMA / Modal dosage
+    userDosageQuantity: String,
+    userDosageUnit: String,
+    packageSize: String,
     frequency: FrequencyType, // Changed to FrequencyType
     startDate: String, endDate: String,
     onceADayTime: LocalTime?,
@@ -365,7 +379,13 @@ fun MedicationSummary(
         Text(stringResource(id = R.string.medication_summary_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
         InfoRow(stringResource(id = R.string.label_name), medicationName)
-        InfoRow(stringResource(id = R.string.label_dosage), dosage.ifEmpty { notSet })
+        // Displaying user-defined dosage if available, otherwise CIMA/modal dosage
+        val displayDosage = if (userDosageQuantity.isNotBlank() && userDosageUnit.isNotBlank()) {
+            "$userDosageQuantity $userDosageUnit"
+        } else {
+            cimaDosage.ifEmpty { notSet }
+        }
+        InfoRow(stringResource(id = R.string.label_dosage), displayDosage)
         InfoRow(stringResource(id = R.string.label_package_size), packageSize.ifEmpty { notSet })
         InfoRow(stringResource(id = R.string.label_start_date), if (startDate.isBlank() || startDate == selectStartDatePlaceholder) notSet else startDate)
         InfoRow(stringResource(id = R.string.label_end_date), if (endDate.isBlank() || endDate == selectEndDatePlaceholder) notSet else endDate)

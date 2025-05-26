@@ -43,14 +43,23 @@ fun MedicationDosagePackageDateInput(
     onStartDateSelected: (String) -> Unit,
     endDate: String,
     onEndDateSelected: (String) -> Unit,
+    userDosageQuantity: String, // New
+    onUserDosageQuantityChange: (String) -> Unit, // New
+    userDosageUnit: String, // New
+    onUserDosageUnitChange: (String) -> Unit, // New
     viewModel: MedicationTypeViewModel = hiltViewModel()
 ) {
     val medicationTypes by viewModel.medicationTypes.collectAsState(initial = emptyList())
     val medicationType = medicationTypes.find { it.id == selectedTypeId }
     var showDosageModal by remember { mutableStateOf(false) }
+    var unitDropdownExpanded by remember { mutableStateOf(false) } // New state for unit dropdown
+    var showCustomUnitDialog by remember { mutableStateOf(false) } // New state for custom unit dialog
+    var customUnitValue by remember { mutableStateOf("") } // New state for custom unit input
 
     // Resolve strings in Composable context
     val strDosagePackageDatesTitle = stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_package_dates_title)
+    val strUserDosageQuantityLabel = stringResource(id = com.d4viddf.medicationreminder.R.string.label_dosage_quantity) // New
+    val strUserDosageUnitLabel = stringResource(id = com.d4viddf.medicationreminder.R.string.label_dosage_unit) // New
     val strDosageWholePill = stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_whole_pill)
     val strDosageMg = stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_mg) // Assuming R.string.dosage_mg exists for "mg"
     val strDosageMl = stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_ml) // Assuming R.string.dosage_ml exists for "ml"
@@ -71,6 +80,22 @@ fun MedicationDosagePackageDateInput(
     val strDialogDoneButton = stringResource(id = com.d4viddf.medicationreminder.R.string.dialog_done_button)
     val strDialogOkButton = stringResource(id = com.d4viddf.medicationreminder.R.string.dialog_ok_button)
     val strDialogCancelButton = stringResource(id = com.d4viddf.medicationreminder.R.string.dialog_cancel_button)
+    val strPlaceholderCustomDosageUnit = stringResource(id = com.d4viddf.medicationreminder.R.string.placeholder_custom_dosage_unit) // New
+
+    // Define dosage units list
+    val dosageUnits = listOf(
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_pills),
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_ml_dropdown),
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_mg_dropdown),
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_g),
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_sprays_dropdown),
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_drops),
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_patches_dropdown),
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_units),
+        stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_custom)
+    )
+    val customUnitString = stringResource(id = com.d4viddf.medicationreminder.R.string.dosage_unit_custom)
+
 
     // Pre-resolve PillFraction display values
     // The 'pillFractionDisplayValues' using context = null was part of an intermediate step and is not needed.
@@ -92,13 +117,73 @@ fun MedicationDosagePackageDateInput(
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
+        // User Dosage Quantity and Unit
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.Top // Align to top for consistent label behavior
+        ) {
+            OutlinedTextField(
+                value = userDosageQuantity,
+                onValueChange = { onUserDosageQuantityChange(it.filter { char -> char.isDigit() || char == '.' || char == ',' }) },
+                label = { Text(strUserDosageQuantityLabel) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal, imeAction = ImeAction.Next),
+                singleLine = true,
+                modifier = Modifier.weight(1f)
+            )
+
+            ExposedDropdownMenuBox(
+                expanded = unitDropdownExpanded,
+                onExpandedChange = { unitDropdownExpanded = !unitDropdownExpanded },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = userDosageUnit,
+                    onValueChange = { onUserDosageUnitChange(it) }, // Allow typing for custom, though selection is primary
+                    label = { Text(strUserDosageUnitLabel) },
+                    readOnly = true, // Make it read-only to force selection from dropdown
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitDropdownExpanded) },
+                    modifier = Modifier.menuAnchor() // Important for the dropdown to anchor correctly
+                )
+                ExposedDropdownMenu(
+                    expanded = unitDropdownExpanded,
+                    onDismissRequest = { unitDropdownExpanded = false }
+                ) {
+                    dosageUnits.forEach { unit ->
+                        DropdownMenuItem(
+                            text = { Text(unit) },
+                            onClick = {
+                                if (unit == customUnitString) {
+                                    customUnitValue = "" // Reset custom unit value
+                                    showCustomUnitDialog = true
+                                } else {
+                                    onUserDosageUnitChange(unit)
+                                }
+                                unitDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+
+        // CIMA Dosage / Modal Dosage Picker (existing)
+        Text(
+            text = strDosageLabel, // Changed to a more generic "Dosage Information" or similar if this section becomes less primary
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
         Surface(
             tonalElevation = 3.dp,
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
-                .clickable { showDosageModal = true }
+                .clickable { showDosageModal = true } // This Surface is for the CIMA/modal dosage
         ) {
             val displayDosage = remember(dosage, medicationSearchResult, medicationType, strDosageWholePill, strDosageMg, strDosageMl, strDosageSprays, strDosageSuppositories, strDosagePatches, strDosageTapToSet) {
                 dosage.ifEmpty {
@@ -106,13 +191,13 @@ fun MedicationDosagePackageDateInput(
                     else {
                         when (medicationType?.name) { // medicationType.name is English, used for logic
                             "Tablet", "Pill" -> strDosageWholePill
-                            "Cream", "Creme" -> "10 $strDosageMg"
-                            "Liquid" -> "10 $strDosageMl"
-                            "Powder" -> "100 $strDosageMg"
-                            "Syringe" -> "1 $strDosageMl"
-                            "Spray" -> "1 $strDosageSprays"
-                            "Suppository", "Suppositorium" -> "1 $strDosageSuppositories"
-                            "Patch" -> "1 $strDosagePatches"
+                            "Cream", "Creme" -> "10 $strDosageMg" // Example default
+                            "Liquid" -> "10 $strDosageMl"   // Example default
+                            "Powder" -> "100 $strDosageMg"  // Example default
+                            "Syringe" -> "1 $strDosageMl"   // Example default
+                            "Spray" -> "1 $strDosageSprays" // Example default
+                            "Suppository", "Suppositorium" -> "1 $strDosageSuppositories" // Example default
+                            "Patch" -> "1 $strDosagePatches" // Example default
                             else -> strDosageTapToSet
                         }
                     }
@@ -126,7 +211,7 @@ fun MedicationDosagePackageDateInput(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(strDosageLabel, style = MaterialTheme.typography.titleLarge)
+                // Text(strDosageLabel, style = MaterialTheme.typography.titleLarge) // Label is now above this Surface
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = displayDosage, style = MaterialTheme.typography.headlineMedium)
                 if (medicationSearchResult?.dosage != null) {
@@ -140,6 +225,13 @@ fun MedicationDosagePackageDateInput(
             }
         }
 
+        // Package Size (existing)
+        Text(
+            text = strPackageSizeLabel,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp, top = 8.dp) // Added top padding
+        )
         Surface(
             tonalElevation = 3.dp,
             shape = RoundedCornerShape(16.dp),
@@ -154,7 +246,7 @@ fun MedicationDosagePackageDateInput(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(strPackageSizeLabel, style = MaterialTheme.typography.titleLarge)
+                // Text(strPackageSizeLabel, style = MaterialTheme.typography.titleLarge) // Label is now above this Surface
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = packageSize,
@@ -171,12 +263,20 @@ fun MedicationDosagePackageDateInput(
             }
         }
 
+
+        // Start and End Date (existing)
+        Text(
+            text = stringResource(id = com.d4viddf.medicationreminder.R.string.label_start_date) + " & " + stringResource(id = com.d4viddf.medicationreminder.R.string.label_end_date),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             M3StyledDatePickerButton(
-                label = strStartDateLabel,
+                label = strStartDateLabel, // This is already "Start Date"
                 dateString = startDate,
                 onDateSelected = onStartDateSelected,
                 modifier = Modifier.weight(1f),
@@ -192,11 +292,40 @@ fun MedicationDosagePackageDateInput(
                     try {
                         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).parse(startDate)?.time
                     } catch (e: Exception) { null }
-                } else null
+                } else null // Keep existing logic for minSelectableDateMillis
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
+
+    if (showCustomUnitDialog) {
+        AlertDialog(
+            onDismissRequest = { showCustomUnitDialog = false },
+            title = { Text(customUnitString) },
+            text = {
+                OutlinedTextField(
+                    value = customUnitValue,
+                    onValueChange = { customUnitValue = it },
+                    label = { Text(strPlaceholderCustomDosageUnit) },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (customUnitValue.isNotBlank()) {
+                            onUserDosageUnitChange(customUnitValue)
+                        }
+                        showCustomUnitDialog = false
+                    }
+                ) { Text(strDialogDoneButton) }
+            },
+            dismissButton = {
+                Button(onClick = { showCustomUnitDialog = false }) { Text(strDialogCancelButton) }
+            }
+        )
+    }
+
 
     if (showDosageModal) {
         val configuration = LocalConfiguration.current

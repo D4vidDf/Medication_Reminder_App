@@ -64,13 +64,23 @@ fun MedicationDetailsScreen(
     var medicationTypeState by remember { mutableStateOf<MedicationType?>(null) } // Estado para el tipo
 
     val progressDetails by viewModel.medicationProgressDetails.collectAsState()
+    val dosesPerDay by scheduleViewModel.dosesPerDay.collectAsState() // Collect dosesPerDay
 
     LaunchedEffect(key1 = medicationId) {
         val med = viewModel.getMedicationById(medicationId)
         medicationState = med
         if (med != null) {
-            // scheduleState se necesita para MedicationDetailCounters
-            scheduleState = scheduleViewModel.getActiveScheduleForMedication(med.id)
+            // Load schedule and subsequently dosesPerDay
+            scheduleViewModel.loadActiveScheduleForMedication(med.id) // This will trigger dosesPerDay calculation
+            // scheduleState is still needed for MedicationDetailCounters, so we get it from the ViewModel's StateFlow
+            // This assumes activeSchedule StateFlow in scheduleViewModel is updated by loadActiveScheduleForMedication
+            // If not, we might need to collect activeSchedule separately or ensure getActiveScheduleForMedicationOnce is used for scheduleState
+            // For now, let's assume loadActiveScheduleForMedication updates a flow that scheduleState can observe or be derived from.
+            // Let's get scheduleState from the viewmodel's flow
+            scheduleViewModel.activeSchedule.collect { activeSched ->
+                scheduleState = activeSched
+            }
+
 
             // Iniciar la observación para el progreso DIARIO
             viewModel.observeMedicationAndRemindersForDailyProgress(med.id)
@@ -152,10 +162,13 @@ fun MedicationDetailsScreen(
                     // Usar el nuevo componente MedicationDetailHeader
                     MedicationDetailHeader(
                         medicationName = medicationState?.name,
-                        medicationDosage = medicationState?.dosage,
-                        medicationImageUrl = medicationTypeState?.imageUrl, // Pasar la URL de la imagen del tipo
+                        // Pass user-defined dosage and unit, and dosesPerDay
+                        userDosageQuantity = medicationState?.userDosageQuantity,
+                        userDosageUnit = medicationState?.userDosageUnit,
+                        cimaDosage = medicationState?.dosage, // Fallback CIMA dosage
+                        dosesPerDay = dosesPerDay,
+                        medicationImageUrl = medicationTypeState?.imageUrl,
                         colorScheme = color
-                        // El modifier por defecto del componente ya tiene fillMaxWidth
                     )
 
                     Spacer(modifier = Modifier.height(16.dp)) // Ajustado el espacio después del header

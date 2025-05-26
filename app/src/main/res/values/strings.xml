@@ -166,6 +166,28 @@
     <string name="dosage_mg">mg</string>
     <string name="dosage_ml">ml</string>
 
+    <!-- User Defined Dosage Input -->
+    <string name="label_dosage_quantity">Dosage Quantity</string>
+    <string name="label_dosage_unit">Dosage Unit</string>
+    <string name="dosage_unit_pills">pill(s)</string>
+    <string name="dosage_unit_ml_dropdown">mL</string> <!-- Suffix to avoid conflict if needed -->
+    <string name="dosage_unit_mg_dropdown">mg</string> <!-- Suffix to avoid conflict if needed -->
+    <string name="dosage_unit_g">g</string>
+    <string name="dosage_unit_sprays_dropdown">spray(s)</string> <!-- Suffix to avoid conflict if needed -->
+    <string name="dosage_unit_drops">drop(s)</string>
+    <string name="dosage_unit_patches_dropdown">patch(es)</string> <!-- Suffix to avoid conflict if needed -->
+    <string name="dosage_unit_units">unit(s)</string>
+    <string name="dosage_unit_custom">Custom...</string>
+    <string name="placeholder_custom_dosage_unit">Enter custom unit</string>
+
+    <!-- Dosage frequency display -->
+    <string name="doses_per_day_format">%dx day</string>
+    <string name="interval_dosing_display">Interval</string>
+    <string name="dosage_times_a_day_content_description">Dosage: %1$s, %2$d times a day</string>
+    <string name="dosage_interval_content_description">Dosage: %1$s, interval dosing</string>
+    <string name="no_dosage_info">No dosage info</string>
+
+
     <!-- Strings for Navigation Components (Task: Add Missing String Resources) -->
     <string name="add_medication_title">Add Medication</string>
     <string name="add_medication_short_action">Add</string>

@@ -7,11 +7,11 @@ import com.d4viddf.medicationreminder.data.Medication
 import com.d4viddf.medicationreminder.data.MedicationReminder
 import com.d4viddf.medicationreminder.data.MedicationReminderRepository
 import com.d4viddf.medicationreminder.data.MedicationRepository
-import com.d4viddf.medicationreminder.data.MedicationSchedule
 import com.d4viddf.medicationreminder.data.MedicationScheduleRepository
 import com.d4viddf.medicationreminder.logic.ReminderCalculator
 import com.d4viddf.medicationreminder.ui.components.ProgressDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalDate // Added
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MedicationViewModel @Inject constructor(
     private val medicationRepository: MedicationRepository,
-    private val reminderRepository: MedicationReminderRepository,
+    private val reminderRepository: MedicationReminderRepository, // Keep if used elsewhere, or remove if not.
     private val scheduleRepository: MedicationScheduleRepository
 ) : ViewModel() {
 
@@ -80,20 +80,19 @@ class MedicationViewModel @Inject constructor(
     }
 
     fun observeMedicationAndRemindersForDailyProgress(medicationId: Int) {
-        viewModelScope.launch(Dispatchers.IO) { // Mover a IO para operaciones de BD y cálculo
-            // Observar cambios en los reminders y recalcular
-            // También necesitamos observar el medicationState y scheduleState por si cambian (ej. edición)
-            // Una forma más robusta podría ser combinar Flows, pero por ahora recolectaremos reminders
-            // y obtendremos medication/schedule cada vez.
+        viewModelScope.launch(Dispatchers.IO) {
             reminderRepository.getRemindersForMedication(medicationId).collect { remindersList ->
                 val currentMedication = medicationRepository.getMedicationById(medicationId)
+                // Ensure we get the list of schedules, then the first, if any.
                 val currentSchedule = scheduleRepository.getSchedulesForMedication(medicationId).firstOrNull()?.firstOrNull()
                 calculateAndSetDailyProgressDetails(currentMedication, currentSchedule, remindersList)
             }
         }
     }
 
-    suspend fun getMedicationById(medicationId: Int): Medication? {
+    // This function seems to be for individual medication detail view, not directly for refill alerts across all meds.
+    // Refill logic will be a separate function.
+    suspend fun getMedicationById(medicationId: Int): Medication? { // Keep for other uses
         return withContext(Dispatchers.IO) {
             medicationRepository.getMedicationById(medicationId)
         }
@@ -101,18 +100,15 @@ class MedicationViewModel @Inject constructor(
 
     private suspend fun calculateAndSetDailyProgressDetails(
         medication: Medication?,
-        schedule: MedicationSchedule?,
-        allRemindersForMedication: List<MedicationReminder> // Pasar la lista actual de reminders
+        schedule: com.d4viddf.medicationreminder.data.MedicationSchedule?, // Explicitly using the type
+        allRemindersForMedication: List<MedicationReminder>
     ) {
         if (medication == null || schedule == null) {
-            _medicationProgressDetails.value = ProgressDetails(0,0,0,0f, "N/A")
+            _medicationProgressDetails.value = ProgressDetails(0, 0, 0, 0f, "N/A")
             return
         }
 
         val today = LocalDate.now()
-
-        // 1. Calcular dosis totales programadas para HOY
-        // Replace calculateReminderDateTimes with generateRemindersForPeriod
         val remindersMapForToday = ReminderCalculator.generateRemindersForPeriod(
             medication = medication,
             schedule = schedule,
@@ -121,10 +117,8 @@ class MedicationViewModel @Inject constructor(
         )
         val scheduledTimesTodayList = remindersMapForToday[today] ?: emptyList()
         val totalDosesScheduledToday = scheduledTimesTodayList.size
-        Log.d("ProgressCalc", "Med: ${medication.name}, Schedule: ${schedule.scheduleType}, Scheduled for $today: $totalDosesScheduledToday doses (using generateRemindersForPeriod). Times: $scheduledTimesTodayList")
+        Log.d("ProgressCalc", "Med: ${medication.name}, Schedule: ${schedule.scheduleType}, Scheduled for $today: $totalDosesScheduledToday doses. Times: $scheduledTimesTodayList")
 
-
-        // 2. Calcular dosis tomadas HOY
         val dosesTakenToday = allRemindersForMedication.count { reminder ->
             try {
                 val reminderDateTime = LocalDateTime.parse(reminder.reminderTime, ReminderCalculator.storableDateTimeFormatter)
@@ -136,51 +130,117 @@ class MedicationViewModel @Inject constructor(
         }
         Log.d("ProgressCalc", "Doses taken today for ${medication.name}: $dosesTakenToday")
 
-
-        // 3. Calcular la fracción de progreso para la barra (Tomadas Hoy / Programadas Hoy)
         val progressFraction = if (totalDosesScheduledToday > 0) {
             dosesTakenToday.toFloat() / totalDosesScheduledToday.toFloat()
         } else {
-            0f // Si no hay dosis programadas para hoy, el progreso es 0 o 100% si tampoco hay tomadas?
-            // Mejor 0 si no hay programadas. Si se tomaron sin estar programadas, es otro caso.
+            0f
         }
-
-        // 4. Determinar el texto a mostrar
         val displayText = "$dosesTakenToday / $totalDosesScheduledToday"
-
         _medicationProgressDetails.value = ProgressDetails(
-            taken = dosesTakenToday, // Tomadas hoy
-            remaining = (totalDosesScheduledToday - dosesTakenToday).coerceAtLeast(0), // Restantes para hoy
-            totalFromPackage = totalDosesScheduledToday, // "Total" en este contexto son las programadas hoy
+            taken = dosesTakenToday,
+            remaining = (totalDosesScheduledToday - dosesTakenToday).coerceAtLeast(0),
+            totalFromPackage = totalDosesScheduledToday,
             progressFraction = progressFraction.coerceIn(0f, 1f),
             displayText = displayText
         )
     }
 
-    // Mantener la función anterior si la necesitas para un progreso general basado en paquete o período completo
-    // o refactorizarla completamente si el progreso diario es el único que se mostrará.
-    // Por ahora, la comento para evitar confusión, ya que la nueva es calculateAndSetDailyProgressDetails
-    /*
-    suspend fun calculateAndSetOverallProgressDetails(medication: Medication?, schedule: MedicationSchedule?) {
-        // ... lógica anterior que calculaba el progreso general del tratamiento o paquete ...
-    }
-    */
-
     suspend fun insertMedication(medication: Medication): Int {
         return withContext(Dispatchers.IO) {
-            medicationRepository.insertMedication(medication)
+            val id = medicationRepository.insertMedication(medication)
+            // Potentially trigger refill check here if a new medication could affect alerts
+            checkRefillAlerts()
+            id.toInt() // Assuming insertMedication returns Long
         }
     }
 
     fun updateMedication(medication: Medication) {
         viewModelScope.launch(Dispatchers.IO) {
             medicationRepository.updateMedication(medication)
+            // Trigger refill check after update as well
+            checkRefillAlerts()
         }
     }
 
     fun deleteMedication(medication: Medication) {
         viewModelScope.launch(Dispatchers.IO) {
             medicationRepository.deleteMedication(medication)
+            // And after deletion
+            checkRefillAlerts()
+        }
+    }
+
+    // New function for refill alerts
+    fun checkRefillAlerts(refillThresholdDays: Int = 7) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val allMedications = medicationRepository.getAllMedications().firstOrNull() ?: emptyList()
+            val today = LocalDate.now()
+
+            allMedications.forEach { medication ->
+                // Skip medications that have an end date in the past
+                medication.endDate?.let { endDateStr ->
+                    try {
+                        val parsedEndDate = LocalDate.parse(endDateStr, ReminderCalculator.dateStorableFormatter)
+                        if (parsedEndDate.isBefore(today)) {
+                            Log.d("RefillCheck", "Skipping ${medication.name} as its end date ($parsedEndDate) is in the past.")
+                            return@forEach // Skips to the next medication in the loop
+                        }
+                    } catch (e: DateTimeParseException) {
+                        Log.e("RefillCheck", "Error parsing end date for ${medication.name}: $endDateStr", e)
+                        // Optionally, decide whether to proceed or skip if end date is unparsable
+                    }
+                }
+
+
+                val schedules = scheduleRepository.getSchedulesForMedication(medication.id).firstOrNull()
+                val schedule = schedules?.firstOrNull() // Assuming one schedule per medication for now
+
+                if (schedule == null) {
+                    Log.w("RefillCheck", "No schedule found for medication: ${medication.name} (ID: ${medication.id}). Cannot calculate daily consumption.")
+                    return@forEach // Skips to the next medication
+                }
+
+                val remindersForTodayMap = ReminderCalculator.generateRemindersForPeriod(
+                    medication = medication,
+                    schedule = schedule,
+                    periodStartDate = today,
+                    periodEndDate = today
+                )
+                val dosesScheduledToday = remindersForTodayMap[today]?.size ?: 0
+
+                if (dosesScheduledToday == 0) {
+                    // Log.d("RefillCheck", "No doses scheduled today for ${medication.name}. Skipping refill check for it.")
+                    // If no doses today, it might not be actively taken, or it's an AS_NEEDED type.
+                    // Depending on desired behavior, one might still want to check stock if it's not AS_NEEDED.
+                    // For now, if no doses scheduled today, we assume daily consumption for refill calc is 0.
+                    // This means daysLeft will be infinite unless remainingDoses is 0.
+                    // A more robust approach might be to average doses over a week if schedule is irregular.
+                    // However, for fixed daily/interval schedules, this is fine.
+                    if (medication.remainingDoses > 0) { // Only log if it has stock but no doses today
+                        Log.d("RefillCheck", "Medication ${medication.name} has remaining stock (${medication.remainingDoses}) but 0 doses scheduled for today. Days left effectively infinite for today's rate.")
+                    }
+                }
+
+                val userDosageQty = medication.userDosageQuantity?.toDoubleOrNull() ?: 1.0
+                val dailyConsumption = dosesScheduledToday * userDosageQty
+                val currentRemainingDoses = medication.remainingDoses ?: 0.0 // Default to 0.0 if null
+
+                if (dailyConsumption > 0) {
+                    val daysLeft = currentRemainingDoses / dailyConsumption
+                    Log.i("RefillCheck", "Medication: ${medication.name}, Doses Today: $dosesScheduledToday, User Qty: $userDosageQty, Daily Consumption: $dailyConsumption units, Remaining Units: $currentRemainingDoses, Days Left: $daysLeft")
+                    if (daysLeft < refillThresholdDays) {
+                        // Trigger refill alert (e.g., log, update a LiveData, send a notification)
+                        Log.w("RefillAlert", "REFILL ALERT for ${medication.name}: Only $daysLeft days of medication left (threshold: $refillThresholdDays days). Remaining units: $currentRemainingDoses.")
+                        // For a real app, this would update some UI state or schedule a notification.
+                    }
+                } else if (currentRemainingDoses > 0 && dosesScheduledToday == 0 && schedule.scheduleType != ScheduleType.AS_NEEDED) {
+                    // This case handles medications that have stock, but no doses scheduled for *today*.
+                    // If it's not "As Needed", it might be a concern or an off-day in a cycle.
+                    // For simplicity, we are primarily alerting based on *today's* consumption rate.
+                    // A more advanced system might average consumption over a typical week.
+                    Log.d("RefillCheck", "Medication ${medication.name} has stock ($currentRemainingDoses) but no doses scheduled today, and is not 'As Needed'. Daily consumption for alert is 0.")
+                }
+            }
         }
     }
 }

@@ -24,6 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.ui.components.MedicationList
 import com.d4viddf.medicationreminder.viewmodel.MedicationViewModel
+import com.d4viddf.medicationreminder.viewmodel.MedicationScheduleViewModel // Added
+import androidx.compose.runtime.LaunchedEffect // Added
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,11 +34,20 @@ fun HomeScreen(
     onMedicationClick: (Int) -> Unit,
     widthSizeClass: WindowWidthSizeClass,
     viewModel: MedicationViewModel = hiltViewModel(),
+    scheduleViewModel: MedicationScheduleViewModel = hiltViewModel(), // Added
     modifier: Modifier = Modifier // This modifier comes from NavHost, potentially with padding
 ) {
     val medications by viewModel.medications.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val schedulesMap by scheduleViewModel.schedulesMap.collectAsState() // Added
     var selectedMedicationId by rememberSaveable { mutableStateOf<Int?>(null) }
+
+    LaunchedEffect(medications) { // Added
+        val ids = medications.map { it.id }
+        if (ids.isNotEmpty()) {
+            scheduleViewModel.loadSchedulesForMedicationIds(ids)
+        }
+    }
 
     val medicationListClickHandler: (Int) -> Unit = { medicationId ->
         if (widthSizeClass == WindowWidthSizeClass.Compact) {
@@ -56,6 +67,7 @@ fun HomeScreen(
         ) { scaffoldInnerPadding -> // This is the padding provided by THIS HomeScreen's Scaffold
             MedicationList(
                 medications = medications,
+                schedulesMap = schedulesMap, // Pass schedulesMap
                 onItemClick = { medication -> medicationListClickHandler(medication.id) },
                 isLoading = isLoading,
                 onRefresh = { viewModel.refreshMedications() },
@@ -74,6 +86,7 @@ fun HomeScreen(
             ) {
                 MedicationList(
                     medications = medications,
+                    schedulesMap = schedulesMap, // Pass schedulesMap
                     onItemClick = { medication -> medicationListClickHandler(medication.id) },
                     isLoading = isLoading,
                     onRefresh = { viewModel.refreshMedications() },

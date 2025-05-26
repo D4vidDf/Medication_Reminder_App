@@ -6,15 +6,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.d4viddf.medicationreminder.data.Medication
 import com.d4viddf.medicationreminder.data.MedicationReminder
 import com.d4viddf.medicationreminder.data.MedicationReminderRepository
+import com.d4viddf.medicationreminder.data.MedicationRepository // Added
 import com.d4viddf.medicationreminder.workers.ReminderSchedulingWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -27,6 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MedicationReminderViewModel @Inject constructor(
     private val reminderRepository: MedicationReminderRepository,
+    private val medicationRepository: MedicationRepository, // Added
     @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
@@ -80,12 +86,31 @@ class MedicationReminderViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val nowString = LocalDateTime.now().format(storableDateTimeFormatter)
             Log.d("MedReminderVM", "Marking reminderId $reminderId (medId $medicationId) as taken at $nowString")
+
+            // Fetch the medication
+            val medication = medicationRepository.getMedicationById(medicationId)
+            if (medication != null) {
+                val quantityToDeduct = medication.userDosageQuantity?.toDoubleOrNull() ?: 1.0
+                val currentRemainingDoses = medication.remainingDoses ?: 0.0 // Default to 0.0 if null
+                val newRemainingDoses = (currentRemainingDoses - quantityToDeduct).coerceAtLeast(0.0)
+
+                Log.d("MedReminderVM", "Medication: ${medication.name}, Original Remaining Doses: ${medication.remainingDoses}, Quantity Deducted: $quantityToDeduct, New Calculated Remaining Doses: $newRemainingDoses")
+
+                val updatedMedication = medication.copy(remainingDoses = newRemainingDoses)
+                medicationRepository.updateMedication(updatedMedication)
+                Log.d("MedReminderVM", "Updated medication ${medication.name} with new remaining doses: $newRemainingDoses")
+
+            } else {
+                Log.e("MedReminderVM", "Medication not found with id: $medicationId. Cannot update remaining doses.")
+            }
+
+            // Mark reminder as taken after updating medication stock
             reminderRepository.markReminderAsTaken(reminderId, nowString)
-            triggerNextReminderScheduling(medicationId) // Llama sin pasar el contexto
+            triggerNextReminderScheduling(medicationId)
         }
     }
 
-    internal fun triggerNextReminderScheduling(medicationId: Int) {
+    internal fun triggerNextReminderScheduling(medicationId: Int) { // Made internal as per original for consistency
         Log.d("MedReminderVM", "Triggering next reminder scheduling for med ID: $medicationId using injected appContext")
         val workManager = WorkManager.getInstance(this.appContext) // Usa this.appContext
         val data = Data.Builder()

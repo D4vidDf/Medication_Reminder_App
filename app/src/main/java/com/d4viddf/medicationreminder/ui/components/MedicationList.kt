@@ -16,11 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.data.Medication
+import com.d4viddf.medicationreminder.data.MedicationSchedule // Added
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class) // ExperimentalMaterial3ExpressiveApi is not needed for PullToRefreshBox
 @Composable
 fun MedicationList(
     medications: List<Medication>,
+    schedulesMap: Map<Int, MedicationSchedule?>, // Added
     onItemClick: (Medication) -> Unit,
     isLoading: Boolean,
     onRefresh: () -> Unit,
@@ -60,8 +62,10 @@ fun MedicationList(
                 // The indicator is drawn in a separate layer or space managed by PullToRefreshBox.
             ) {
                 items(medications, key = { medication -> medication.id }) { medication ->
+                    val schedule = schedulesMap[medication.id] // Get schedule from map
                     MedicationCard(
                         medication = medication,
+                        schedule = schedule, // Pass schedule to MedicationCard
                         onClick = { onItemClick(medication) }
                     )
                 }

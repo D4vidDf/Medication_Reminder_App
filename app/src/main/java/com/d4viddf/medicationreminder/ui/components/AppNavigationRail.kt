@@ -53,11 +53,11 @@ fun AppNavigationRail(
             onClick = onHomeClick,
             label = { Text(stringResource(R.string.home_screen_title)) },
             colors = NavigationRailItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
+                selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                selectedTextColor = MaterialTheme.colorScheme.onSurface,
                 unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                indicatorColor = MaterialTheme.colorScheme.primaryContainer // Or adjust as needed
+                indicatorColor = MaterialTheme.colorScheme.secondaryContainer
             )
         )
 
@@ -73,11 +73,11 @@ fun AppNavigationRail(
             onClick = onCalendarClick,
             label = { Text(stringResource(R.string.calendar_screen_title)) },
             colors = NavigationRailItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
+                selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                selectedTextColor = MaterialTheme.colorScheme.onSurface,
                 unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                indicatorColor = MaterialTheme.colorScheme.secondaryContainer
             )
         )
 
@@ -93,11 +93,11 @@ fun AppNavigationRail(
             onClick = onProfileClick,
             label = { Text(stringResource(R.string.profile_screen_title)) },
             colors = NavigationRailItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
+                selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                selectedTextColor = MaterialTheme.colorScheme.onSurface,
                 unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                indicatorColor = MaterialTheme.colorScheme.secondaryContainer
             )
         )
 
@@ -113,11 +113,11 @@ fun AppNavigationRail(
             onClick = onSettingsClick,
             label = { Text(stringResource(R.string.settings_screen_title)) },
             colors = NavigationRailItemDefaults.colors(
-                selectedIconColor = MaterialTheme.colorScheme.primary,
-                selectedTextColor = MaterialTheme.colorScheme.primary,
+                selectedIconColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                selectedTextColor = MaterialTheme.colorScheme.onSurface,
                 unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                indicatorColor = MaterialTheme.colorScheme.secondaryContainer
             )
         )
     }
