@@ -39,14 +39,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-// Import Pages
-import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.BatteryOptimizationPage
-import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.ExactAlarmPermissionPage
-import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.NotificationPermissionPage
-import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.WelcomePage
-// Import a Theme if not already (assuming MedicationReminderTheme from preview example)
-import com.d4viddf.medicationreminder.ui.theme.MedicationReminderTheme
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.d4viddf.medicationreminder.ui.theme.AppTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -229,7 +223,7 @@ fun OnboardingScreenPreview() {
         .firstOrNull()
 
     if (activity != null) {
-        MedicationReminderTheme { // Assuming a theme wrapper like this exists
+        AppTheme { // Assuming a theme wrapper like this exists
             OnboardingScreen(
                 activity = activity,
                 onOnboardingComplete = {}
