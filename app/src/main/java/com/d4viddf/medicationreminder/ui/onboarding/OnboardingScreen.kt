@@ -17,6 +17,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 // De-duplicated imports:
 import android.Manifest
+import android.content.ActivityNotFoundException // Ensure this is present for the new logic
 import android.content.ContextWrapper // For Preview
 import android.content.Intent
 import android.net.Uri
@@ -39,8 +40,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+// Import Pages
+import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.BatteryOptimizationPage
+import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.ExactAlarmPermissionPage
+import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.NotificationPermissionPage
+import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.WelcomePage
+// Import a Theme if not already (assuming MedicationReminderTheme from preview example)
+import com.d4viddf.medicationreminder.ui.theme.MedicationReminderTheme
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.d4viddf.medicationreminder.ui.theme.AppTheme
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -111,16 +118,19 @@ fun OnboardingScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Previous Button
                     TextButton(
                         onClick = {
-                            viewModel.setOnboardingFinished()
-                            onOnboardingComplete()
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                            }
                         },
-                        modifier = Modifier.weight(1f)
+                        enabled = pagerState.currentPage > 0
                     ) {
-                        Text("Skip")
+                        Text("Previous")
                     }
 
+                    // Next/Finish Button
                     Button(
                         onClick = {
                             if (pagerState.currentPage < pageCount - 1) {
@@ -137,8 +147,8 @@ fun OnboardingScreen(
                                   } else { // "Next" button for previous pages
                                       !(pagerState.currentPage == 1 && !notificationPermissionGranted) &&
                                       !(pagerState.currentPage == 2 && !exactAlarmPermissionGranted)
-                                  },
-                        modifier = Modifier.weight(1f)
+                                  }
+                        // Removed Modifier.weight(1f)
                     ) {
                         Text(if (pagerState.currentPage < pageCount - 1) "Next" else "Finish")
                     }
@@ -191,17 +201,24 @@ fun OnboardingScreen(
                         onRequestSettings = {
                             val packageName = context.packageName
                             try {
+                                // Option 1: Request to ignore battery optimizations directly for this app
                                 val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
                                 intent.data = Uri.parse("package:$packageName")
                                 context.startActivity(intent)
-                            } catch (e: android.content.ActivityNotFoundException) {
+                            } catch (e: ActivityNotFoundException) {
                                 try {
-                                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                                    intent.data = Uri.parse("package:$packageName")
+                                    // Option 2: Open general battery optimization settings list
+                                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                                     context.startActivity(intent)
-                                } catch (e2: android.content.ActivityNotFoundException) {
-                                    // Optionally, could try Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-                                    // or show a Toast message if all fail.
+                                } catch (e2: ActivityNotFoundException) {
+                                    try {
+                                        // Option 3: Fallback to app details settings
+                                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                                        intent.data = Uri.parse("package:$packageName")
+                                        context.startActivity(intent)
+                                    } catch (e3: ActivityNotFoundException) {
+                                        // Option 4: If all else fails, do nothing further for now.
+                                    }
                                 }
                             }
                         }
@@ -223,7 +240,7 @@ fun OnboardingScreenPreview() {
         .firstOrNull()
 
     if (activity != null) {
-        AppTheme { // Assuming a theme wrapper like this exists
+        MedicationReminderTheme { // Assuming a theme wrapper like this exists
             OnboardingScreen(
                 activity = activity,
                 onOnboardingComplete = {}

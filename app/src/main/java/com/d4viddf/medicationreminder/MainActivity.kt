@@ -37,14 +37,14 @@ import com.d4viddf.medicationreminder.ui.onboarding.OnboardingScreen
 import com.d4viddf.medicationreminder.workers.TestSimpleWorker
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.runtime.mutableStateOf // Added for onboarding
+import androidx.compose.runtime.rememberSaveable // Added for onboarding
 import androidx.compose.runtime.setValue // Added for onboarding (if directly using by rememberSaveable)
 import androidx.compose.foundation.layout.Box // Added for onboarding
 import androidx.compose.foundation.layout.fillMaxSize // Added for onboarding
 import androidx.compose.material3.CircularProgressIndicator // Added for onboarding
 import androidx.compose.ui.Alignment // Added for onboarding
 import androidx.compose.foundation.isSystemInDarkTheme // Needed for theme wrapper
-import androidx.compose.runtime.saveable.rememberSaveable
-import com.d4viddf.medicationreminder.ui.theme.AppTheme
+import com.d4viddf.medicationreminder.ui.theme.MedicationReminderTheme // Theme wrapper
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -58,16 +58,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var onboardingPreferences: OnboardingPreferences // Added for onboarding
 
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                Log.i("MainActivity", "POST_NOTIFICATIONS permission granted.")
-            } else {
-                Log.w("MainActivity", "POST_NOTIFICATIONS permission denied.")
-            }
-        }
-
-    private lateinit var requestFullScreenIntentLauncher: ActivityResultLauncher<Intent>
+    // Removed requestPermissionLauncher
+    // Removed requestFullScreenIntentLauncher declaration
 
     companion object {
         private const val TAG_MAIN_ACTIVITY = "MainActivity" // For logging
@@ -80,17 +72,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        requestFullScreenIntentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            // After returning from settings, re-check the permission
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // API 34+ for canUseFullScreenIntent
-                val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                if (notificationManager.canUseFullScreenIntent()) {
-                    Log.i(TAG_MAIN_ACTIVITY, "USE_FULL_SCREEN_INTENT permission is now granted after returning from settings.")
-                } else {
-                    Log.w(TAG_MAIN_ACTIVITY, "USE_FULL_SCREEN_INTENT permission is still NOT granted after returning from settings.")
-                }
-            }
-        }
+        // Removed requestFullScreenIntentLauncher initialization
         // Step 1: Fetch the stored language preference.
         // Your UserPreferencesRepository defaults to system language if DataStore is empty/key not found.
         val storedLocaleTag = runBlocking { userPreferencesRepository.languageTagFlow.first() }
@@ -115,9 +97,10 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationHelper.createNotificationChannels(this)
         }
-        requestPostNotificationPermission()
-        checkAndRequestExactAlarmPermission()
-        checkAndRequestFullScreenIntentPermission() // Call the new check method
+        // Removed permission request calls:
+        // requestPostNotificationPermission()
+        // checkAndRequestExactAlarmPermission()
+        // checkAndRequestFullScreenIntentPermission()
 
 
         val testWorkRequest = OneTimeWorkRequestBuilder<TestSimpleWorker>().build()
@@ -149,7 +132,13 @@ class MainActivity : ComponentActivity() {
             }
 
             // Apply MedicationReminderTheme to wrap the conditional logic
-            AppTheme  (themePreference = themePreference
+            MedicationReminderTheme(
+                dynamicColor = themePreference == ThemeKeys.SYSTEM, // Or your specific logic for dynamic color
+                darkTheme = when (themePreference) {
+                    ThemeKeys.LIGHT -> false
+                    ThemeKeys.DARK -> true
+                    else -> isSystemInDarkTheme() // ThemeKeys.SYSTEM or default
+                }
             ) {
                 // Onboarding Logic
                 val onboardingStatusFromDataStore by onboardingPreferences.onboardingCompletedFlow.collectAsState(initial = null)
@@ -189,66 +178,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    private fun checkAndRequestFullScreenIntentPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // NotificationManager.canUseFullScreenIntent() is API 34
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            if (!notificationManager.canUseFullScreenIntent()) {
-                Log.w(TAG_MAIN_ACTIVITY, "App cannot use full-screen intents. Sending user to settings.")
-                val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
-                    data = Uri.parse("package:$packageName")
-                }
-                try {
-                    requestFullScreenIntentLauncher.launch(intent)
-                } catch (e: Exception) {
-                    Log.e(TAG_MAIN_ACTIVITY, "Could not open ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT settings", e)
-                }
-            } else {
-                Log.i(TAG_MAIN_ACTIVITY, "App can use full-screen intents.")
-            }
-        } else {
-            // For API < 34, the USE_FULL_SCREEN_INTENT permission declared in manifest is usually sufficient,
-            // though behavior might vary by OEM. No special runtime check via NotificationManager.
-            Log.d(TAG_MAIN_ACTIVITY, "Full-screen intent permission check not applicable for API < 34 via NotificationManager.")
-        }
-    }
-    private fun requestPostNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when {
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Log.i("MainActivity", "POST_NOTIFICATIONS permission already granted.")
-                }
-                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    // Log.i("MainActivity", "Showing rationale for POST_NOTIFICATIONS permission.")
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-                else -> {
-                    // Log.i("MainActivity", "Requesting POST_NOTIFICATIONS permission.")
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-        }
-    }
-
-    private fun checkAndRequestExactAlarmPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) {
-                // Log.w("MainActivity", "SCHEDULE_EXACT_ALARM permission not granted. Requesting...")
-                Intent().apply {
-                    action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
-                }.also {
-                    try {
-                        startActivity(it)
-                    } catch (e: Exception) {
-                        // Log.e("MainActivity", "Could not open ACTION_REQUEST_SCHEDULE_EXACT_ALARM settings", e)
-                    }
-                }
-            } else {
-                // Log.d("MainActivity", "SCHEDULE_EXACT_ALARM permission already granted.")
-            }
-        }
-    }
+    // Removed checkAndRequestFullScreenIntentPermission()
+    // Removed requestPostNotificationPermission()
+    // Removed checkAndRequestExactAlarmPermission()
 }
