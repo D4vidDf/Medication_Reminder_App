@@ -37,12 +37,14 @@ import com.d4viddf.medicationreminder.ui.onboarding.OnboardingScreen
 import com.d4viddf.medicationreminder.workers.TestSimpleWorker
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.runtime.mutableStateOf // Added for onboarding
+import androidx.compose.runtime.rememberSaveable // Added for onboarding
 import androidx.compose.runtime.setValue // Added for onboarding (if directly using by rememberSaveable)
 import androidx.compose.foundation.layout.Box // Added for onboarding
 import androidx.compose.foundation.layout.fillMaxSize // Added for onboarding
 import androidx.compose.material3.CircularProgressIndicator // Added for onboarding
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment // Added for onboarding
+import androidx.compose.foundation.isSystemInDarkTheme // Needed for theme wrapper
+import com.d4viddf.medicationreminder.ui.theme.MedicationReminderTheme // Theme wrapper
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -146,38 +148,48 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            // Onboarding Logic
-            val onboardingStatusFromDataStore by onboardingPreferences.onboardingCompletedFlow.collectAsState(initial = null)
-            var internalOnboardingJustFinished by rememberSaveable { mutableStateOf(false) }
-
-            // The LaunchedEffect from the prompt for onboardingStatusFromDataStore isn't strictly necessary here
-            // as the `when` block handles the transitions based on its value.
-
-            when {
-                internalOnboardingJustFinished -> { // Onboarding was just finished in this session
-                    MedicationReminderApp(
-                        themePreference = themePreference,
-                        widthSizeClass = windowSizeClass.widthSizeClass
-                    )
+            // Apply MedicationReminderTheme to wrap the conditional logic
+            MedicationReminderTheme(
+                dynamicColor = themePreference == ThemeKeys.SYSTEM, // Or your specific logic for dynamic color
+                darkTheme = when (themePreference) {
+                    ThemeKeys.LIGHT -> false
+                    ThemeKeys.DARK -> true
+                    else -> isSystemInDarkTheme() // ThemeKeys.SYSTEM or default
                 }
-                onboardingStatusFromDataStore == false -> { // DataStore says onboarding not done, and not just finished
-                    OnboardingScreen(
-                        activity = this, // Pass MainActivity instance
-                        onOnboardingComplete = {
-                            internalOnboardingJustFinished = true
-                            // OnboardingViewModel handles setting DataStore flag
+            ) {
+                // Onboarding Logic
+                val onboardingStatusFromDataStore by onboardingPreferences.onboardingCompletedFlow.collectAsState(initial = null)
+                var internalOnboardingJustFinished by rememberSaveable { mutableStateOf(false) }
+
+                when {
+                    internalOnboardingJustFinished -> { // Onboarding was just finished in this session
+                        MedicationReminderApp(
+                            // themePreference is now handled by the outer MedicationReminderTheme.
+                            // MedicationReminderApp should ideally not re-apply MaterialTheme.
+                            // For now, keeping themePreference pass-through as per conceptual example.
+                            themePreference = themePreference,
+                            widthSizeClass = windowSizeClass.widthSizeClass
+                        )
+                    }
+                    onboardingStatusFromDataStore == false -> { // DataStore says onboarding not done, and not just finished
+                        OnboardingScreen(
+                            activity = this, // Pass MainActivity instance
+                            onOnboardingComplete = {
+                                internalOnboardingJustFinished = true
+                                // OnboardingViewModel handles setting DataStore flag
+                            }
+                        )
+                    }
+                    onboardingStatusFromDataStore == true -> { // DataStore says onboarding is done
+                         MedicationReminderApp(
+                            themePreference = themePreference,
+                            widthSizeClass = windowSizeClass.widthSizeClass
+                        )
+                    }
+                    else -> { // onboardingStatusFromDataStore is null (still loading preference)
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
                         }
-                    )
-                }
-                onboardingStatusFromDataStore == true -> { // DataStore says onboarding is done
-                     MedicationReminderApp(
-                        themePreference = themePreference,
-                        widthSizeClass = windowSizeClass.widthSizeClass
-                    )
-                }
-                else -> { // onboardingStatusFromDataStore is null (still loading preference)
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
                     }
                 }
             }
