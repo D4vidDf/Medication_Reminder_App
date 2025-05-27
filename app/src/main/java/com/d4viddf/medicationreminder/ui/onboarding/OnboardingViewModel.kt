@@ -1,15 +1,6 @@
 package com.d4viddf.medicationreminder.ui.onboarding
 
-import androidx.lifecycle.ViewModel
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.d4viddf.medicationreminder.settings.OnboardingPreferences
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+// Consolidated and de-duplicated imports:
 import android.app.AlarmManager
 import android.content.Context
 import android.content.pm.PackageManager
@@ -19,11 +10,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.d4viddf.medicationreminder.settings.OnboardingPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(

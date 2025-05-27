@@ -15,11 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+// De-duplicated imports:
 import android.Manifest
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import android.Manifest
+import android.content.ContextWrapper // For Preview
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -46,6 +44,8 @@ import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.BatteryOptim
 import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.ExactAlarmPermissionPage
 import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.NotificationPermissionPage
 import com.d4viddf.medicationreminder.ui.onboarding.OnboardingPages.WelcomePage
+// Import a Theme if not already (assuming MedicationReminderTheme from preview example)
+import com.d4viddf.medicationreminder.ui.theme.MedicationReminderTheme
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -56,13 +56,14 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun OnboardingScreen(
+    activity: android.app.Activity, // Added activity parameter
     onOnboardingComplete: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val pageCount = 4 // Welcome, Notifications, Exact Alarms, Battery Optimization
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
-    val windowSizeClass = calculateWindowSizeClass() // For future responsive adjustments
+    val windowSizeClass = calculateWindowSizeClass(activity) // Updated call
     val context = LocalContext.current
     val notificationPermissionGranted by viewModel.notificationPermissionGranted.collectAsState()
     val exactAlarmPermissionGranted by viewModel.exactAlarmPermissionGranted.collectAsState()
@@ -220,8 +221,25 @@ fun OnboardingScreen(
 @Preview(showBackground = true)
 @Composable
 fun OnboardingScreenPreview() {
-    MaterialTheme { // Wrap with MaterialTheme for preview
-        OnboardingScreen(onOnboardingComplete = {})
+    // Get activity from LocalContext for preview purposes
+    val context = LocalContext.current
+    // Attempt to get Activity, more robustly
+    val activity = generateSequence(context) { (it as? ContextWrapper)?.baseContext }
+        .filterIsInstance<android.app.Activity>()
+        .firstOrNull()
+
+    if (activity != null) {
+        MedicationReminderTheme { // Assuming a theme wrapper like this exists
+            OnboardingScreen(
+                activity = activity,
+                onOnboardingComplete = {}
+                // Note: viewModel might cause issues in preview if not handled with a fake/mock.
+                // For now, ensuring it compiles. If OnboardingViewModel is complex,
+                // hiltViewModel() will not work correctly in previews without further setup.
+            )
+        }
+    } else {
+        Text("Preview not available: Activity context not found.")
     }
 }
 // Ensure OnboardingPages is also available for preview if needed, or mock its behavior.

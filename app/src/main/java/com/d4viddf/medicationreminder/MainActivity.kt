@@ -21,6 +21,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier // Added to resolve Modifier unresolved reference
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
@@ -161,6 +162,7 @@ class MainActivity : ComponentActivity() {
                 }
                 onboardingStatusFromDataStore == false -> { // DataStore says onboarding not done, and not just finished
                     OnboardingScreen(
+                        activity = this, // Pass MainActivity instance
                         onOnboardingComplete = {
                             internalOnboardingJustFinished = true
                             // OnboardingViewModel handles setting DataStore flag

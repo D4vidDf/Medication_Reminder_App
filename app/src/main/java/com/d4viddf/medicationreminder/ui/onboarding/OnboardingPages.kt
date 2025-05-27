@@ -9,20 +9,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.NotificationsActive // Already present, ensure it's used
+import androidx.compose.material.icons.filled.Alarm // For ExactAlarmPermissionPage
+import androidx.compose.material.icons.outlined.BatterySaver // For BatteryOptimizationPage (changed from filled)
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Button // Already present, ensure it's used
+// androidx.compose.runtime.Composable is listed once at the top by the tool if de-duplicated.
+// Explicitly ensuring only one Composable import if there were multiple distinct ones.
+import androidx.compose.runtime.Composable // Ensure this is the only one
+import androidx.compose.runtime.collectAsState // Already present
+import androidx.compose.runtime.getValue // Already present
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material3.Button
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+// Remove OnboardingPreferences and LocalContext from here if they were added for previews
+// import com.d4viddf.medicationreminder.settings.OnboardingPreferences - REMOVE IF PRESENT
+// import androidx.compose.ui.platform.LocalContext - REMOVE IF PRESENT
 
 
 @Composable
@@ -67,7 +73,7 @@ fun BatteryOptimizationPage(onRequestSettings: () -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Filled.BatterySaver,
+            imageVector = Icons.Outlined.BatterySaver, // Changed from Filled.BatterySaver
             contentDescription = "Battery Icon",
             modifier = Modifier.size(100.dp),
             tint = MaterialTheme.colorScheme.primary
@@ -161,14 +167,9 @@ fun ExactAlarmPermissionPage(
 @Composable
 fun ExactAlarmPermissionPagePreview() {
     MaterialTheme {
-        class PreviewOnboardingViewModel : OnboardingViewModel(OnboardingPreferences(androidx.compose.ui.platform.LocalContext.current))) {
-            // You can override flows here for different preview states if needed
-            // override val exactAlarmPermissionGranted = MutableStateFlow(true).asStateFlow()
-        }
-        ExactAlarmPermissionPage(
-            viewModel = PreviewOnboardingViewModel(),
-            onRequestPermissionSettings = {}
-        )
+        // Removed problematic ViewModel instantiation for preview
+        // Replace with a placeholder or a more robust preview setup if possible
+        Text("Preview for ExactAlarmPermissionPage (ViewModel dependent)")
     }
 }
 
@@ -236,13 +237,8 @@ fun NotificationPermissionPagePreview() {
     // This preview won't have a real ViewModel, so it will show the initial state.
     // For more complex previews, you might need a fake ViewModel.
     MaterialTheme {
-        // A simplified OnboardingViewModel for preview purposes
-        class PreviewOnboardingViewModel : OnboardingViewModel(OnboardingPreferences(androidx.compose.ui.platform.LocalContext.current))) {
-            // Override or mock necessary properties/functions if needed for different states
-        }
-        NotificationPermissionPage(
-            viewModel = PreviewOnboardingViewModel(),
-            onRequestPermission = {}
-        )
+        // Removed problematic ViewModel instantiation for preview
+        // Replace with a placeholder or a more robust preview setup if possible
+        Text("Preview for NotificationPermissionPage (ViewModel dependent)")
     }
 }
