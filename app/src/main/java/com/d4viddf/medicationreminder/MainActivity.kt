@@ -37,11 +37,11 @@ import com.d4viddf.medicationreminder.ui.onboarding.OnboardingScreen
 import com.d4viddf.medicationreminder.workers.TestSimpleWorker
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.runtime.mutableStateOf // Added for onboarding
-import androidx.compose.runtime.rememberSaveable // Added for onboarding
 import androidx.compose.runtime.setValue // Added for onboarding (if directly using by rememberSaveable)
 import androidx.compose.foundation.layout.Box // Added for onboarding
 import androidx.compose.foundation.layout.fillMaxSize // Added for onboarding
 import androidx.compose.material3.CircularProgressIndicator // Added for onboarding
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment // Added for onboarding
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
