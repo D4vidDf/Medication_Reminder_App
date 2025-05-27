@@ -29,9 +29,19 @@ import androidx.work.WorkManager
 import com.d4viddf.medicationreminder.data.ThemeKeys
 import com.d4viddf.medicationreminder.data.UserPreferencesRepository
 import com.d4viddf.medicationreminder.notifications.NotificationHelper
+// Onboarding imports
+import com.d4viddf.medicationreminder.settings.OnboardingPreferences
 import com.d4viddf.medicationreminder.ui.MedicationReminderApp
+import com.d4viddf.medicationreminder.ui.onboarding.OnboardingScreen
 import com.d4viddf.medicationreminder.workers.TestSimpleWorker
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.runtime.mutableStateOf // Added for onboarding
+import androidx.compose.runtime.rememberSaveable // Added for onboarding
+import androidx.compose.runtime.setValue // Added for onboarding (if directly using by rememberSaveable)
+import androidx.compose.foundation.layout.Box // Added for onboarding
+import androidx.compose.foundation.layout.fillMaxSize // Added for onboarding
+import androidx.compose.material3.CircularProgressIndicator // Added for onboarding
+import androidx.compose.ui.Alignment // Added for onboarding
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -42,6 +52,8 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
+    @Inject
+    lateinit var onboardingPreferences: OnboardingPreferences // Added for onboarding
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -133,10 +145,40 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            MedicationReminderApp(
-                themePreference = themePreference,
-                widthSizeClass = windowSizeClass.widthSizeClass
-            )
+            // Onboarding Logic
+            val onboardingStatusFromDataStore by onboardingPreferences.onboardingCompletedFlow.collectAsState(initial = null)
+            var internalOnboardingJustFinished by rememberSaveable { mutableStateOf(false) }
+
+            // The LaunchedEffect from the prompt for onboardingStatusFromDataStore isn't strictly necessary here
+            // as the `when` block handles the transitions based on its value.
+
+            when {
+                internalOnboardingJustFinished -> { // Onboarding was just finished in this session
+                    MedicationReminderApp(
+                        themePreference = themePreference,
+                        widthSizeClass = windowSizeClass.widthSizeClass
+                    )
+                }
+                onboardingStatusFromDataStore == false -> { // DataStore says onboarding not done, and not just finished
+                    OnboardingScreen(
+                        onOnboardingComplete = {
+                            internalOnboardingJustFinished = true
+                            // OnboardingViewModel handles setting DataStore flag
+                        }
+                    )
+                }
+                onboardingStatusFromDataStore == true -> { // DataStore says onboarding is done
+                     MedicationReminderApp(
+                        themePreference = themePreference,
+                        widthSizeClass = windowSizeClass.widthSizeClass
+                    )
+                }
+                else -> { // onboardingStatusFromDataStore is null (still loading preference)
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
         }
     }
     private fun checkAndRequestFullScreenIntentPermission() {
