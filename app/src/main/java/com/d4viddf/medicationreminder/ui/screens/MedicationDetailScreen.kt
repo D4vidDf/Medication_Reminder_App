@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn // Added import
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -202,13 +203,18 @@ fun MedicationDetailsScreen(
                     .padding(innerPadding) // Apply innerPadding
             ) {
                 item {
-                    // Removed: val sharedTransitionScope = LocalSharedTransitionScope.current
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = color.backgroundColor, // This background might be redundant if TopAppBar uses it
-                                shape = RoundedCornerShape(bottomStart = 36.dp, bottomEnd = 36.dp)
+                    Box(
+                        modifier = Modifier.fillMaxWidth(), // This Box will center the content
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Removed: val sharedTransitionScope = LocalSharedTransitionScope.current
+                        Column(
+                            modifier = Modifier
+                                .widthIn(max = 700.dp) // Constrain the width
+                                .fillMaxWidth() // Still allow it to fill up to 700.dp
+                                .background(
+                                    color = color.backgroundColor, // This background might be redundant if TopAppBar uses it
+                                    shape = RoundedCornerShape(bottomStart = 36.dp, bottomEnd = 36.dp)
                             )
                             .then(
                                 if (sharedTransitionScope != null && animatedVisibilityScope != null) {
