@@ -2,14 +2,14 @@
 package com.d4viddf.medicationreminder.ui.screens
 
 // ScheduleItem will be local, so no import from components
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.AnimatedVisibility // Keep for ScheduleItem if not simplified
+import androidx.compose.animation.AnimatedVisibilityScope // Keep for ScheduleItem if not simplified
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.fadeIn // Keep for ScheduleItem if not simplified
+import androidx.compose.animation.slideInVertically // Keep for ScheduleItem if not simplified
+import androidx.compose.foundation.background // Keep for ScheduleItem if not simplified
+import androidx.compose.foundation.clickable // Keep for ScheduleItem if not simplified
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,60 +20,60 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn // Added import
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.widthIn // Keep for ScheduleItem if not simplified
+import androidx.compose.foundation.lazy.LazyColumn // Keep for ScheduleItem if not simplified
+import androidx.compose.foundation.lazy.items // Keep for ScheduleItem if not simplified
+import androidx.compose.foundation.shape.CircleShape // Keep for ScheduleItem if not simplified
+import androidx.compose.foundation.shape.RoundedCornerShape // Keep for ScheduleItem if not simplified
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft // Keep for ScheduleItem if not simplified
+import androidx.compose.material.icons.filled.Add // Keep for ScheduleItem if not simplified
+import androidx.compose.material3.CircularProgressIndicator // Keep for ScheduleItem if not simplified
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.FloatingActionButtonDefaults // Keep for ScheduleItem if not simplified
+import androidx.compose.material3.HorizontalDivider // Keep for ScheduleItem if not simplified
+import androidx.compose.material3.Icon // Keep for ScheduleItem if not simplified
+import androidx.compose.material3.IconButton // Keep for ScheduleItem if not simplified
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Scaffold // Keep for ScheduleItem if not simplified
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBar // Keep for ScheduleItem if not simplified
+import androidx.compose.material3.TopAppBarDefaults // Keep for ScheduleItem if not simplified
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect // Keep for ScheduleItem if not simplified
+import androidx.compose.runtime.collectAsState // Keep for ScheduleItem if not simplified
+import androidx.compose.runtime.getValue // Keep for ScheduleItem if not simplified
+import androidx.compose.runtime.mutableStateOf // Keep for ScheduleItem if not simplified
+import androidx.compose.runtime.remember // Keep for ScheduleItem if not simplified
+import androidx.compose.runtime.setValue // Keep for ScheduleItem if not simplified
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color // Keep for ScheduleItem if not simplified
+import androidx.compose.ui.res.stringResource // Keep for ScheduleItem if not simplified
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextAlign // Keep for ScheduleItem if not simplified
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.d4viddf.medicationreminder.R
-import com.d4viddf.medicationreminder.data.Medication
-import com.d4viddf.medicationreminder.data.MedicationSchedule
-import com.d4viddf.medicationreminder.data.MedicationType
-import com.d4viddf.medicationreminder.ui.colors.MedicationColor
-import com.d4viddf.medicationreminder.ui.components.AddPastMedicationDialog
-import com.d4viddf.medicationreminder.ui.components.MedicationDetailCounters
-import com.d4viddf.medicationreminder.ui.components.MedicationDetailHeader
-import com.d4viddf.medicationreminder.ui.components.MedicationProgressDisplay
+import androidx.compose.ui.unit.sp // Keep for ScheduleItem if not simplified
+import androidx.hilt.navigation.compose.hiltViewModel // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.R // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.data.Medication // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.data.MedicationSchedule // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.data.MedicationType // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.ui.colors.MedicationColor // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.ui.components.AddPastMedicationDialog // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.ui.components.MedicationDetailCounters // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.ui.components.MedicationDetailHeader // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.ui.components.MedicationProgressDisplay // Keep for ScheduleItem if not simplified
 import com.d4viddf.medicationreminder.ui.theme.AppTheme
-import com.d4viddf.medicationreminder.viewmodel.MedicationReminderViewModel
-import com.d4viddf.medicationreminder.viewmodel.MedicationScheduleViewModel
-import com.d4viddf.medicationreminder.viewmodel.MedicationTypeViewModel
-import com.d4viddf.medicationreminder.viewmodel.MedicationViewModel
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
+import com.d4viddf.medicationreminder.viewmodel.MedicationReminderViewModel // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.viewmodel.MedicationScheduleViewModel // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.viewmodel.MedicationTypeViewModel // Keep for ScheduleItem if not simplified
+import com.d4viddf.medicationreminder.viewmodel.MedicationViewModel // Keep for ScheduleItem if not simplified
+import java.time.format.DateTimeFormatter // Keep for ScheduleItem if not simplified
+import java.time.format.FormatStyle // Keep for ScheduleItem if not simplified
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class) // Removed ExperimentalSharedTransitionApi
@@ -89,6 +89,7 @@ fun MedicationDetailsScreen(
     medicationTypeViewModel: MedicationTypeViewModel = hiltViewModel(),
     medicationReminderViewModel: MedicationReminderViewModel = hiltViewModel() // Added
 ) {
+    /*
     var medicationState by remember { mutableStateOf<Medication?>(null) }
     var scheduleState by remember { mutableStateOf<MedicationSchedule?>(null) }
     var medicationTypeState by remember { mutableStateOf<MedicationType?>(null) }
@@ -215,53 +216,54 @@ fun MedicationDetailsScreen(
                                 .background(
                                     color = color.backgroundColor, // This background might be redundant if TopAppBar uses it
                                     shape = RoundedCornerShape(bottomStart = 36.dp, bottomEnd = 36.dp)
+                                )
+                                .then(
+                                    if (sharedTransitionScope != null && animatedVisibilityScope != null) {
+                                        with(sharedTransitionScope) { // Use with(scope)
+                                            Modifier.sharedElement(
+                                                rememberSharedContentState(key = "medication-background-${medicationId}"),
+                                                animatedVisibilityScope!!
+                                            )
+                                        }
+                                    } else Modifier
+                                )
+                                .padding(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = 24.dp
+                                ) // Removed top padding, TopAppBar handles it
+                        ) {
+                            // Row for Back and Edit is removed from here
+                            // Spacer after the Row is also removed
+
+                            // Usar el nuevo componente MedicationDetailHeader
+                            MedicationDetailHeader(
+                                medicationId = medicationId, // Pass medicationId
+                                medicationName = medicationState?.name,
+                                medicationDosage = medicationState?.dosage,
+                                medicationImageUrl = medicationTypeState?.imageUrl, // Pasar la URL de la imagen del tipo
+                                colorScheme = color,
+                                modifier = Modifier.padding(top = 16.dp) // Add padding to push content below TopAppBar
+                                // El modifier por defecto del componente ya tiene fillMaxWidth
                             )
-                            .then(
-                                if (sharedTransitionScope != null && animatedVisibilityScope != null) {
-                                    with(sharedTransitionScope) { // Use with(scope)
-                                        Modifier.sharedElement(
-                                            rememberSharedContentState(key = "medication-background-${medicationId}"),
-                                            animatedVisibilityScope!!
-                                        )
-                                    }
-                                } else Modifier
+
+                            // Spacer(modifier = Modifier.height(16.dp)) // This spacer might need adjustment or removal. Keeping for now.
+
+                            MedicationProgressDisplay(
+                                progressDetails = progressDetails,
+                                colorScheme = color,
+                                indicatorSizeDp = 220.dp // Explicitly pass the size
                             )
-                            .padding(
-                                start = 16.dp,
-                                end = 16.dp,
-                                bottom = 24.dp
-                            ) // Removed top padding, TopAppBar handles it
-                    ) {
-                        // Row for Back and Edit is removed from here
-                        // Spacer after the Row is also removed
 
-                        // Usar el nuevo componente MedicationDetailHeader
-                        MedicationDetailHeader(
-                            medicationId = medicationId, // Pass medicationId
-                            medicationName = medicationState?.name,
-                            medicationDosage = medicationState?.dosage,
-                            medicationImageUrl = medicationTypeState?.imageUrl, // Pasar la URL de la imagen del tipo
-                            colorScheme = color,
-                            modifier = Modifier.padding(top = 16.dp) // Add padding to push content below TopAppBar
-                            // El modifier por defecto del componente ya tiene fillMaxWidth
-                        )
+                            Spacer(modifier = Modifier.height(16.dp)) // Espacio original antes de contadores
 
-                        // Spacer(modifier = Modifier.height(16.dp)) // This spacer might need adjustment or removal. Keeping for now.
-
-                        MedicationProgressDisplay(
-                            progressDetails = progressDetails,
-                            colorScheme = color,
-                            indicatorSizeDp = 220.dp // Explicitly pass the size
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp)) // Espacio original antes de contadores
-
-                        MedicationDetailCounters(
-                            colorScheme = color,
-                            medication = medicationState,
-                            schedule = scheduleState,
-                            modifier = Modifier.padding(horizontal = 12.dp)
-                        )
+                            MedicationDetailCounters(
+                                colorScheme = color,
+                                medication = medicationState,
+                                schedule = scheduleState,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+                        }
                     }
                 }
 
@@ -370,8 +372,11 @@ fun MedicationDetailsScreen(
             )
         }
     }
+    */
+    Box(modifier = Modifier.fillMaxSize().padding(16.dp)) { // Added padding for visibility
+        Text("Simplified MedicationDetailsScreen")
+    }
 }
-
 
 
     // ScheduleItem Composable - Adapted
@@ -411,6 +416,7 @@ fun MedicationDetailsScreen(
 @Composable
 fun MedicationDetailsScreenPreview() {
     AppTheme {
+        /*
         // ViewModel parameters are omitted to use defaults,
         // which might result in a preview with no dynamic data.
         MedicationDetailsScreen(
@@ -420,6 +426,8 @@ fun MedicationDetailsScreenPreview() {
             animatedVisibilityScope = null, // Preview won't have a real scope
             enableSharedTransition = false // Added for preview
         )
+        */
+        Text("Preview MedicationDetailsScreen")
     }
 }
 
@@ -427,6 +435,7 @@ fun MedicationDetailsScreenPreview() {
 @Composable
 fun ScheduleItemNotTakenPreview() {
     AppTheme {
+        /*
         ScheduleItem(
             time = "10:00 AM",
             label = "Aspirin",
@@ -434,6 +443,8 @@ fun ScheduleItemNotTakenPreview() {
             onTakenChange = {},
             enabled = true
         )
+        */
+        Text("Preview ScheduleItemNotTaken")
     }
 }
 
@@ -441,6 +452,7 @@ fun ScheduleItemNotTakenPreview() {
 @Composable
 fun ScheduleItemTakenPreview() {
     AppTheme {
+        /*
         ScheduleItem(
             time = "02:00 PM",
             label = "Ibuprofen",
@@ -448,6 +460,8 @@ fun ScheduleItemTakenPreview() {
             onTakenChange = {},
             enabled = true
         )
+        */
+        Text("Preview ScheduleItemTaken")
     }
 }
 
@@ -455,6 +469,7 @@ fun ScheduleItemTakenPreview() {
 @Composable
 fun ScheduleItemDisabledPreview() {
     AppTheme {
+        /*
         ScheduleItem(
             time = "08:00 PM",
             label = "Vitamin C",
@@ -462,5 +477,7 @@ fun ScheduleItemDisabledPreview() {
             onTakenChange = {},
             enabled = false
         )
+        */
+        Text("Preview ScheduleItemDisabled")
     }
 }
