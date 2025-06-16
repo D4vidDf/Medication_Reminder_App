@@ -185,11 +185,15 @@ fun MedicationHistoryScreen(
                             viewModel = viewModel,
                             listModifier = Modifier.weight(2f).padding(horizontal = 8.dp) // Adjusted weight to 2f
                         )
-                        HistoryFilterPane(
-                            viewModel = viewModel,
-                            medicationColor = medicationColor,
-                            modifier = Modifier.weight(1f).padding(start = 8.dp, end = 16.dp)
-                        )
+                        if (viewModel != null) {
+                            HistoryFilterPane(
+                                viewModel = viewModel,
+                                medicationColor = medicationColor,
+                                modifier = Modifier.weight(1f).padding(start = 8.dp, end = 16.dp)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f)) // Placeholder for filter pane
+                        }
                     }
                 }
             }
@@ -232,12 +236,16 @@ fun MedicationHistoryScreen(
                     drawerState = drawerState,
                     drawerContent = {
                         ModalDrawerSheet(modifier = Modifier.fillMaxWidth(0.85f)) {
-                            HistoryFilterPane(
-                                viewModel = viewModel,
-                                medicationColor = medicationColor,
-                                modifier = Modifier.padding(16.dp),
-                                onFiltersApplied = { scope.launch { drawerState.close() } }
-                            )
+                            if (viewModel != null) {
+                                PhoneFilterSheetContent( // Changed from HistoryFilterPane to PhoneFilterSheetContent
+                                    viewModel = viewModel,
+                                    medicationColor = medicationColor,
+                                    onDismiss = { scope.launch { drawerState.close() } },
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            } else {
+                                Text("Loading filters...", modifier = Modifier.padding(16.dp))
+                            }
                         }
                     }
                 ) {
@@ -253,6 +261,106 @@ fun MedicationHistoryScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PhoneFilterSheetContent(
+    viewModel: MedicationHistoryViewModel,
+    medicationColor: MedicationColor,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showDateDialog by remember { mutableStateOf(false) }
+    val currentFilter by viewModel.dateFilter.collectAsState()
+    val sortAscending by viewModel.sortAscending.collectAsState()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Filter",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 20.dp)
+        )
+
+        // Date Range Button
+        val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT) }
+        val dateButtonText = currentFilter?.let {
+            val start = it.first?.format(dateFormatter) ?: "..."
+            val end = it.second?.format(dateFormatter) ?: "..."
+            if (it.first != null && it.second != null) "$start - $end" else "Select Date Range"
+        } ?: "Select Date Range"
+
+        OutlinedButton(
+            onClick = { showDateDialog = true },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+        ) {
+            Text(dateButtonText)
+        }
+
+        if (showDateDialog) {
+            val dateRangePickerState = rememberDateRangePickerState(
+                initialSelectedStartDateMillis = currentFilter?.first?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                initialSelectedEndDateMillis = currentFilter?.second?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                selectableDates = object : SelectableDates {
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis <= Instant.now().toEpochMilli()
+                    override fun isSelectableYear(year: Int): Boolean = year <= LocalDate.now().year
+                }
+            )
+            DatePickerDialog(
+                onDismissRequest = { showDateDialog = false },
+                confirmButton = {
+                    androidx.compose.material3.Button(
+                        onClick = {
+                            val startDateMillis = dateRangePickerState.selectedStartDateMillis
+                            val endDateMillis = dateRangePickerState.selectedEndDateMillis
+                            if (startDateMillis != null && endDateMillis != null) {
+                                val startDate = Instant.ofEpochMilli(startDateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                                val endDate = Instant.ofEpochMilli(endDateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                                viewModel.setDateFilter(startDate, endDate)
+                            }
+                            showDateDialog = false
+                            onDismiss()
+                        },
+                        enabled = dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null
+                    ) { Text("OK") }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = { showDateDialog = false }) { Text("Cancel") }
+                }
+            ) {
+                DateRangePicker(state = dateRangePickerState, title = null, headline = null, showModeToggle = true)
+            }
+        }
+
+        // Sort Order Button
+        OutlinedButton(
+            onClick = {
+                viewModel.setSortOrder(!sortAscending)
+                onDismiss()
+            },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+        ) {
+            Text(if (sortAscending) "Sort: Oldest First" else "Sort: Newest First")
+        }
+
+        // Clear All Filters Button
+        OutlinedButton(
+            onClick = {
+                viewModel.setDateFilter(null, null)
+                // Optionally reset sort order here if desired: viewModel.setSortOrder(false) // Default to newest
+                onDismiss()
+            },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)
+        ) {
+            Text("Clear All Filters")
+        }
+    }
+}
+
 // OriginalFilterControlsRow is no longer needed and should be deleted.
 // @OptIn(ExperimentalMaterial3Api::class)
 // @Composable
@@ -262,115 +370,75 @@ fun MedicationHistoryScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HistoryFilterPane(
-    viewModel: MedicationHistoryViewModel?,
+    viewModel: MedicationHistoryViewModel?, // Nullable for preview, but logic below assumes non-null for core functionality
     medicationColor: MedicationColor,
-    modifier: Modifier = Modifier,
-    onFiltersApplied: (() -> Unit)? = null
+    modifier: Modifier = Modifier
+    // Removed onFiltersApplied parameter
 ) {
-    val currentFilter by viewModel?.dateFilter?.collectAsState() ?: remember { mutableStateOf<Pair<LocalDate?, LocalDate?>?>(null) }
-    val sortAscending by viewModel?.sortAscending?.collectAsState() ?: remember { mutableStateOf(false) }
-    var showDateRangeDialogInPane by remember { mutableStateOf(false) }
+    // Ensure viewModel is not null for the core logic
+    if (viewModel == null) {
+        // Optionally display a placeholder or nothing if viewModel is null (e.g., in Preview)
+        Text("Filter pane unavailable in this preview.", modifier = modifier)
+        return
+    }
 
-    if (showDateRangeDialogInPane) {
-        val dateRangePickerState = rememberDateRangePickerState(
-            initialSelectedStartDateMillis = currentFilter?.first?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-            initialSelectedEndDateMillis = currentFilter?.second?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-            selectableDates = object : SelectableDates {
-                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                    return utcTimeMillis <= Instant.now().toEpochMilli()
-                }
-                override fun isSelectableYear(year: Int): Boolean {
-                    return year <= LocalDate.now().year
-                }
+    val currentFilter by viewModel.dateFilter.collectAsState()
+    val sortAscending by viewModel.sortAscending.collectAsState()
+
+    // Initialize DateRangePickerState, keyed to currentFilter for re-initialization
+    val dateRangePickerState = rememberDateRangePickerState(
+        key1 = currentFilter,
+        initialSelectedStartDateMillis = currentFilter?.first?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+        initialSelectedEndDateMillis = currentFilter?.second?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis <= Instant.now().toEpochMilli()
+            override fun isSelectableYear(year: Int): Boolean = year <= LocalDate.now().year
+        }
+    )
+
+    // Sync DateRangePicker selections back to ViewModel
+    LaunchedEffect(dateRangePickerState.selectedStartDateMillis, dateRangePickerState.selectedEndDateMillis) {
+        val startMillis = dateRangePickerState.selectedStartDateMillis
+        val endMillis = dateRangePickerState.selectedEndDateMillis
+        if (startMillis != null && endMillis != null) {
+            val startDate = Instant.ofEpochMilli(startMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+            val endDate = Instant.ofEpochMilli(endMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+            if (startDate != currentFilter?.first || endDate != currentFilter?.second) {
+                viewModel.setDateFilter(startDate, endDate)
             }
-        )
-        DatePickerDialog(
-            onDismissRequest = { showDateRangeDialogInPane = false },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val startDateMillis = dateRangePickerState.selectedStartDateMillis
-                        val endDateMillis = dateRangePickerState.selectedEndDateMillis
-                        if (startDateMillis != null && endDateMillis != null) {
-                            val startDate = Instant.ofEpochMilli(startDateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-                            val endDate = Instant.ofEpochMilli(endDateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-                            viewModel?.setDateFilter(startDate, endDate)
-                        }
-                        showDateRangeDialogInPane = false
-                        onFiltersApplied?.invoke()
-                    },
-                    enabled = dateRangePickerState.selectedStartDateMillis != null && dateRangePickerState.selectedEndDateMillis != null,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = medicationColor.onBackgroundColor,
-                        contentColor = medicationColor.cardColor
-                    )
-                ) {
-                    Text(stringResource(id = android.R.string.ok))
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = { showDateRangeDialogInPane = false },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = medicationColor.onBackgroundColor,
-                        contentColor = medicationColor.cardColor
-                    )
-                ) {
-                    Text(stringResource(id = android.R.string.cancel))
-                }
-            }
-        ) {
-            DateRangePicker(state = dateRangePickerState, title = null, headline = null, showModeToggle = true)
+        } else if (startMillis == null && endMillis == null && currentFilter != null) {
+            // This handles if user deselects range in picker (though not a standard action for DateRangePicker)
+            // More robustly handled by the "Clear Date Filter" button.
+            // viewModel.setDateFilter(null, null)
         }
     }
 
     Column(
-        modifier = modifier.padding(top = 16.dp), // Add some top padding for the pane
+        modifier = modifier.padding(top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Date Range Filter Section
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                stringResource(id = R.string.med_history_filter_by_date_label),
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
-            OutlinedButton(
-                onClick = { showDateRangeDialogInPane = true },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                shape = MaterialTheme.shapes.medium,
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_calendar),
-                    contentDescription = null,
-                    modifier = Modifier.size(ButtonDefaults.IconSize)
-                )
-                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text(
-                    text = currentFilter?.let {
-                        val start = it.first?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) ?: "..."
-                        val end = it.second?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)) ?: "..."
-                        "$start - $end"
-                    } ?: stringResource(id = R.string.med_history_filter_select_range_button_label),
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            if (currentFilter != null) {
-                OutlinedButton(
-                    onClick = {
-                        viewModel?.setDateFilter(null, null)
-                        onFiltersApplied?.invoke()
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
-                ) {
-                    Text(stringResource(id = R.string.med_history_filter_clear_button))
-                }
-            }
+        Text(
+            stringResource(id = R.string.med_history_filter_by_date_label),
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+
+        DateRangePicker(
+            state = dateRangePickerState,
+            modifier = Modifier.fillMaxWidth(),
+            title = null,
+            headline = null,
+            showModeToggle = true
+        )
+
+        OutlinedButton(
+            onClick = { viewModel.setDateFilter(null, null) },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
+        ) {
+            Text("Clear Date Filter")
         }
 
-        Divider(modifier = Modifier.padding(horizontal = 4.dp))
+        Divider(modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp))
 
         // Sort Order Section
         Column(verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.Start) {
@@ -381,8 +449,8 @@ private fun HistoryFilterPane(
             )
             OutlinedButton(
                 onClick = {
-                    viewModel?.setSortOrder(!sortAscending)
-                    onFiltersApplied?.invoke()
+                    viewModel.setSortOrder(!sortAscending)
+                    // No onDismiss here anymore
                 },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                 shape = MaterialTheme.shapes.medium,
@@ -402,43 +470,7 @@ private fun HistoryFilterPane(
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (viewModel != null) {
-            val currentFilterState = currentFilter // Local val for use
-            val startDate = currentFilterState?.first
-
-            val datePickerState = rememberDatePickerState(
-                // key = currentFilterState, // Removed: DatePickerState does not have a direct 'key' parameter like this. Re-initialization is handled by `initialSelectedDateMillis` changing.
-                initialSelectedDateMillis = startDate?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-                initialDisplayedMonthMillis = startDate?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli() ?: System.currentTimeMillis(),
-                yearRange = (LocalDate.now().year - 5)..(LocalDate.now().year + 5),
-                selectableDates = object : SelectableDates {
-                    override fun isSelectableDate(utcTimeMillis: Long): Boolean = true
-                    override fun isSelectableYear(year: Int): Boolean = true
-                }
-            )
-
-            DatePicker(
-                state = datePickerState,
-                modifier = Modifier.fillMaxWidth(),
-                showModeToggle = false,
-                title = null,
-                headline = null,
-                colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = medicationColor.onBackgroundColor.copy(alpha = 0.3f),
-                    selectedDayContentColor = medicationColor.cardColor,
-                    // dayInSelectionRangeContainerColor = medicationColor.backgroundColor.copy(alpha = 0.4f), // REMOVED
-                    // dayInSelectionRangeContentColor = medicationColor.textColor, // REMOVED
-                    todayDateBorderColor = medicationColor.onBackgroundColor.copy(alpha = 0.7f),
-                    todayContentColor = medicationColor.onBackgroundColor
-                    // Example of other optional color settings:
-                    // subheadContentColor = medicationColor.textColor,
-                    // navigationContentColor = medicationColor.textColor
-                )
-            )
-        }
+        // Removed the old display-only DatePicker and related Spacer
     }
 }
 
