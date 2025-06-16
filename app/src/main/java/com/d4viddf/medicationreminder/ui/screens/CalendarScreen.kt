@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -53,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.ParentDataModifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource // Added import
 import androidx.compose.ui.res.stringResource
@@ -98,6 +100,8 @@ fun CalendarScreen(
     // animatedVisibilityScope: AnimatedVisibilityScope?, // Make nullable // REMOVED
     viewModel: CalendarViewModel = hiltViewModel()
 ) {
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val isPhone = screenWidthDp < 600
     val uiState by viewModel.uiState.collectAsState() // Still needed for medicationSchedules
     var showDatePickerDialog by remember { mutableStateOf(false) }
     // val weekCalendarScrollState = rememberLazyListState() // Removed
@@ -217,7 +221,8 @@ fun CalendarScreen(
                         onMedicationClicked = { medicationId -> onNavigateToMedicationDetail(medicationId) },
                             // sharedTransitionScope = sharedTransitionScope, // Pass this // REMOVED
                             // animatedVisibilityScope = animatedVisibilityScope, // Pass it here // REMOVED
-                        modifier = Modifier.fillMaxWidth().weight(1f)
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        contentPadding = if (isPhone) PaddingValues(bottom = 24.dp) else PaddingValues()
                     )
                 }
 
@@ -414,12 +419,13 @@ fun MedicationRowsLayout(
     onMedicationClicked: (Int) -> Unit,
     // sharedTransitionScope: SharedTransitionScope?, // Add this // REMOVED
     // animatedVisibilityScope: AnimatedVisibilityScope?, // Make nullable // REMOVED
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues()
 ) {
     val density = LocalDensity.current
     // Removed: val sharedTransitionScope = LocalSharedTransitionScope.current
 
-    LazyColumn(modifier = modifier) {
+    LazyColumn(modifier = modifier, contentPadding = contentPadding) {
         items(medicationSchedules, key = { it.medication.id.toString() + "-" + it.schedule.id.toString() }) { scheduleItem ->
             Box(modifier = Modifier.fillParentMaxWidth().height(55.dp).padding(vertical = 4.dp, horizontal = 8.dp)) { // Changed height and vertical padding
                 val med = scheduleItem.medication
@@ -582,7 +588,8 @@ fun CalendarScreenPreviewLight() {
                             onMedicationClicked = { /* Dummy action */ },
                             // sharedTransitionScope = null, // Preview // REMOVED
                             // animatedVisibilityScope = null, // Preview // REMOVED
-                            modifier = Modifier.fillMaxWidth().weight(1f)
+                            modifier = Modifier.fillMaxWidth().weight(1f),
+                            contentPadding = PaddingValues(bottom = 24.dp) // Example for phone preview
                         )
                     }
                 }
@@ -651,7 +658,8 @@ fun CalendarScreenPreviewDark() {
                             onMedicationClicked = { },
                             // sharedTransitionScope = null, // Preview // REMOVED
                             // animatedVisibilityScope = null, // Preview // REMOVED
-                            modifier = Modifier.fillMaxWidth().weight(1f)
+                            modifier = Modifier.fillMaxWidth().weight(1f),
+                            contentPadding = PaddingValues(bottom = 24.dp) // Example for phone preview
                         )
                     }
                 }
