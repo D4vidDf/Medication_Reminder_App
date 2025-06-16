@@ -385,9 +385,8 @@ private fun HistoryFilterPane(
     val currentFilter by viewModel.dateFilter.collectAsState()
     val sortAscending by viewModel.sortAscending.collectAsState()
 
-    // Initialize DateRangePickerState, keyed to currentFilter for re-initialization
+    // Initialize DateRangePickerState
     val dateRangePickerState = rememberDateRangePickerState(
-        key1 = currentFilter,
         initialSelectedStartDateMillis = currentFilter?.first?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
         initialSelectedEndDateMillis = currentFilter?.second?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
         selectableDates = object : SelectableDates {
@@ -395,6 +394,8 @@ private fun HistoryFilterPane(
             override fun isSelectableYear(year: Int): Boolean = year <= LocalDate.now().year
         }
     )
+
+    // Removed redundant LaunchedEffect(currentFilter) as rememberDateRangePickerState handles re-initialization based on initial...Millis properties.
 
     // Sync DateRangePicker selections back to ViewModel
     LaunchedEffect(dateRangePickerState.selectedStartDateMillis, dateRangePickerState.selectedEndDateMillis) {
@@ -407,9 +408,8 @@ private fun HistoryFilterPane(
                 viewModel.setDateFilter(startDate, endDate)
             }
         } else if (startMillis == null && endMillis == null && currentFilter != null) {
-            // This handles if user deselects range in picker (though not a standard action for DateRangePicker)
-            // More robustly handled by the "Clear Date Filter" button.
-            // viewModel.setDateFilter(null, null)
+            // This handles if user deselects range in picker (if possible) and current filter is not already null
+            viewModel.setDateFilter(null, null)
         }
     }
 
