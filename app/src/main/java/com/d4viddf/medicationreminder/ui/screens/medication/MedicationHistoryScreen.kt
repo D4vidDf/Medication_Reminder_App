@@ -406,12 +406,13 @@ private fun HistoryFilterPane(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (viewModel != null) {
-            val currentFilterState = currentFilter // Local val for use in remember key
+            val currentFilterState = currentFilter // Local val for use
+            val startDate = currentFilterState?.first
 
             val datePickerState = rememberDatePickerState(
-                key = currentFilterState, // Re-initializes when currentFilterState changes
-                initialSelectedStartDateMillis = currentFilterState?.first?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-                initialSelectedEndDateMillis = currentFilterState?.second?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                // key = currentFilterState, // Removed: DatePickerState does not have a direct 'key' parameter like this. Re-initialization is handled by `initialSelectedDateMillis` changing.
+                initialSelectedDateMillis = startDate?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                initialDisplayedMonthMillis = startDate?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli() ?: System.currentTimeMillis(),
                 yearRange = (LocalDate.now().year - 5)..(LocalDate.now().year + 5),
                 selectableDates = object : SelectableDates {
                     override fun isSelectableDate(utcTimeMillis: Long): Boolean = true
@@ -426,12 +427,15 @@ private fun HistoryFilterPane(
                 title = null,
                 headline = null,
                 colors = DatePickerDefaults.colors(
-                    selectedDayContainerColor = medicationColor.onBackgroundColor.copy(alpha = 0.2f),
+                    selectedDayContainerColor = medicationColor.onBackgroundColor.copy(alpha = 0.3f),
                     selectedDayContentColor = medicationColor.cardColor,
-                    dayInSelectionRangeContainerColor = medicationColor.backgroundColor.copy(alpha = 0.4f),
-                    dayInSelectionRangeContentColor = medicationColor.textColor,
+                    // dayInSelectionRangeContainerColor = medicationColor.backgroundColor.copy(alpha = 0.4f), // REMOVED
+                    // dayInSelectionRangeContentColor = medicationColor.textColor, // REMOVED
                     todayDateBorderColor = medicationColor.onBackgroundColor.copy(alpha = 0.7f),
                     todayContentColor = medicationColor.onBackgroundColor
+                    // Example of other optional color settings:
+                    // subheadContentColor = medicationColor.textColor,
+                    // navigationContentColor = medicationColor.textColor
                 )
             )
         }
