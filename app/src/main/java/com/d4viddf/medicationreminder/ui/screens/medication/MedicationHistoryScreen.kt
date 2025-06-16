@@ -417,9 +417,35 @@ private fun HistoryFilterPane(
         modifier = modifier.padding(top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            stringResource(id = R.string.med_history_filter_by_date_label),
-            style = MaterialTheme.typography.titleSmall,
+        val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT) }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = currentFilter?.first?.format(dateFormatter) ?: "",
+                onValueChange = {},
+                label = { Text("From") },
+                readOnly = true,
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Start Date") }
+            )
+            OutlinedTextField(
+                value = currentFilter?.second?.format(dateFormatter) ?: "",
+                onValueChange = {},
+                label = { Text("To") },
+                readOnly = true,
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("End Date") }
+            )
+        }
+
+        Text( // This Text was for the DateRangePicker title, it might need to be adjusted or removed if the Row above serves as a good enough header.
+            stringResource(id = R.string.med_history_filter_by_date_label), // Or a more specific title for the picker itself
+            style = MaterialTheme.typography.titleSmall, // Consider if this is still needed or if the OutlinedTextField labels are enough
             modifier = Modifier.padding(horizontal = 4.dp)
         )
 
