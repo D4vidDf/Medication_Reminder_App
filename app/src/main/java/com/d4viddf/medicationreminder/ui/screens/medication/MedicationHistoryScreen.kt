@@ -25,6 +25,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker // Added
+import androidx.compose.material3.DatePickerDefaults // Added
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.Divider
@@ -121,7 +123,7 @@ fun MedicationHistoryScreen(
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
     val isLargeScreen = screenWidthDp >= 840.dp
 
-    var currentMonthYearText by remember { mutableStateOf("") } // Added state for MonthYear text
+    // var currentMonthYearText by remember { mutableStateOf("") } // REMOVED state for MonthYear text
 
     LaunchedEffect(medicationId, viewModel, selectedDate, selectedMonth) { // Added selectedMonth to key
         var parsedSelectedDate: LocalDate? = null
@@ -151,96 +153,99 @@ fun MedicationHistoryScreen(
     // REMOVED DateRangePickerDialog for Phone Layout - It's now inside HistoryFilterPane, used by ModalDrawer
 
     MedicationSpecificTheme(medicationColor = medicationColor) {
-        Scaffold(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = {
-                LargeTopAppBar( // Changed from MediumTopAppBar
-                    title = { Text("History") }, // Changed title
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.rounded_arrow_back_ios_24),
-                                contentDescription = stringResource(id = R.string.back_button_cd)
-                            )
-                        }
-                    },
-                    scrollBehavior = scrollBehavior, // Passed scrollBehavior
-                    colors = TopAppBarDefaults.largeTopAppBarColors( // Changed to largeTopAppBarColors
-                        containerColor = Color.Transparent,
-                        scrolledContainerColor = Color.Transparent,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                )
-            }
-        ) { paddingValues ->
-            Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) { // paddingValues from Scaffold
-                if (isLargeScreen) {
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        Spacer(modifier = Modifier.weight(1f)) // Left third (empty)
-
-                        HistoryListContent( // Middle third
-                            viewModel = viewModel,
-                            listModifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+        if (isLargeScreen) {
+            Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                topBar = {
+                    LargeTopAppBar(
+                        title = { Text("History") },
+                        navigationIcon = {
+                            IconButton(onClick = onNavigateBack) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.rounded_arrow_back_ios_24),
+                                    contentDescription = stringResource(id = R.string.back_button_cd)
+                                )
+                            }
+                        },
+                        actions = { /* No actions for large screen */ },
+                        scrollBehavior = scrollBehavior,
+                        colors = TopAppBarDefaults.largeTopAppBarColors(
+                            containerColor = Color.Transparent,
+                            scrolledContainerColor = Color.Transparent,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface
                         )
-
-                        HistoryFilterPane( // Right third
+                    )
+                }
+            ) { paddingValues ->
+                Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                    Row(modifier = Modifier.fillMaxSize()) {
+                        // Spacer(modifier = Modifier.weight(1f)) // REMOVED Spacer
+                        HistoryListContent(
                             viewModel = viewModel,
-                            medicationColor = medicationColor, // Pass the screen's medicationColor
+                            listModifier = Modifier.weight(2f).padding(horizontal = 8.dp) // Adjusted weight to 2f
+                        )
+                        HistoryFilterPane(
+                            viewModel = viewModel,
+                            medicationColor = medicationColor,
                             modifier = Modifier.weight(1f).padding(start = 8.dp, end = 16.dp)
                         )
                     }
-                } else { // Phone layout - Replaced with ModalNavigationDrawer
-                    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-                    val scope = rememberCoroutineScope()
+                }
+            }
+        } else { // Phone layout
+            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+            val scope = rememberCoroutineScope()
 
-                    ModalNavigationDrawer(
-                        drawerState = drawerState,
-                        drawerContent = {
-                            ModalDrawerSheet(modifier = Modifier.fillMaxWidth(0.85f)) {
-                                HistoryFilterPane(
-                                    viewModel = viewModel,
-                                    medicationColor = medicationColor,
-                                    modifier = Modifier.padding(16.dp),
-                                    onFiltersApplied = {
-                                        scope.launch {
-                                            drawerState.close()
-                                        }
-                                    }
+            Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                topBar = {
+                    LargeTopAppBar(
+                        title = { Text("History") },
+                        navigationIcon = {
+                            IconButton(onClick = onNavigateBack) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.rounded_arrow_back_ios_24),
+                                    contentDescription = stringResource(id = R.string.back_button_cd)
                                 )
                             }
-                        }
-                    ) {
-                        // Main content area when drawer is closed
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = currentMonthYearText,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.weight(1f, fill = false)
+                        },
+                        actions = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(
+                                    imageVector = Icons.Filled.FilterList,
+                                    contentDescription = stringResource(id = R.string.med_history_filter_drawer_button_cd)
                                 )
-                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.FilterList,
-                                        contentDescription = stringResource(id = R.string.med_history_filter_drawer_button_cd)
-                                    )
-                                }
                             }
-                            Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
-                            HistoryListContent(
+                        },
+                        scrollBehavior = scrollBehavior,
+                        colors = TopAppBarDefaults.largeTopAppBarColors(
+                            containerColor = Color.Transparent,
+                            scrolledContainerColor = Color.Transparent,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                }
+            ) { paddingValues ->
+                ModalNavigationDrawer(
+                    drawerState = drawerState,
+                    drawerContent = {
+                        ModalDrawerSheet(modifier = Modifier.fillMaxWidth(0.85f)) {
+                            HistoryFilterPane(
                                 viewModel = viewModel,
-                                listModifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                                onVisibleMonthYearChanged = { newMonthYear ->
-                                    currentMonthYearText = newMonthYear
-                                }
+                                medicationColor = medicationColor,
+                                modifier = Modifier.padding(16.dp),
+                                onFiltersApplied = { scope.launch { drawerState.close() } }
                             )
                         }
+                    }
+                ) {
+                    Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                        HistoryListContent(
+                            viewModel = viewModel,
+                            listModifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
+                        )
                     }
                 }
             }
@@ -397,6 +402,39 @@ private fun HistoryFilterPane(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (viewModel != null) {
+            val currentFilterState = currentFilter // Local val for use in remember key
+
+            val datePickerState = rememberDatePickerState(
+                key = currentFilterState, // Re-initializes when currentFilterState changes
+                initialSelectedStartDateMillis = currentFilterState?.first?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                initialSelectedEndDateMillis = currentFilterState?.second?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                yearRange = (LocalDate.now().year - 5)..(LocalDate.now().year + 5),
+                selectableDates = object : SelectableDates {
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean = true
+                    override fun isSelectableYear(year: Int): Boolean = true
+                }
+            )
+
+            DatePicker(
+                state = datePickerState,
+                modifier = Modifier.fillMaxWidth(),
+                showModeToggle = false,
+                title = null,
+                headline = null,
+                colors = DatePickerDefaults.colors(
+                    selectedDayContainerColor = medicationColor.onBackgroundColor.copy(alpha = 0.2f),
+                    selectedDayContentColor = medicationColor.cardColor,
+                    dayInSelectionRangeContainerColor = medicationColor.backgroundColor.copy(alpha = 0.4f),
+                    dayInSelectionRangeContentColor = medicationColor.textColor,
+                    todayDateBorderColor = medicationColor.onBackgroundColor.copy(alpha = 0.7f),
+                    todayContentColor = medicationColor.onBackgroundColor
+                )
+            )
+        }
     }
 }
 
@@ -404,8 +442,8 @@ private fun HistoryFilterPane(
 @Composable
 private fun HistoryListContent(
     viewModel: MedicationHistoryViewModel?,
-    listModifier: Modifier = Modifier,
-    onVisibleMonthYearChanged: (String) -> Unit = {}
+    listModifier: Modifier = Modifier
+    // REMOVED onVisibleMonthYearChanged parameter
 ) {
     val historyEntries by viewModel?.filteredAndSortedHistory?.collectAsState() ?: remember { mutableStateOf(emptyList()) }
     val isLoading by viewModel?.isLoading?.collectAsState() ?: remember { mutableStateOf(false) }
@@ -432,29 +470,9 @@ private fun HistoryListContent(
                 processHistoryEntries(historyEntries, sortAscending)
             }
 
-            val listState = rememberLazyListState()
-            val monthYearFormatter = remember { DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault()) }
-
-            LaunchedEffect(listState, groupedItems) {
-                snapshotFlow { listState.firstVisibleItemIndex }
-                    .collect { index ->
-                        if (groupedItems.isNotEmpty() && index >= 0 && index < groupedItems.size) {
-                            val currentItem = groupedItems[index]
-                            val monthYearStr = when (currentItem) {
-                                is MonthHeader -> currentItem.monthYear
-                                is HistoryEntryItem -> currentItem.entry.originalDateTimeTaken.format(monthYearFormatter)
-                            }
-                            val capitalizedMonthYear = monthYearStr.replaceFirstChar {
-                                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-                            }
-                            if (capitalizedMonthYear.isNotBlank()) {
-                                onVisibleMonthYearChanged(capitalizedMonthYear)
-                            }
-                        } else if (groupedItems.isEmpty()) {
-                            onVisibleMonthYearChanged("")
-                        }
-                    }
-            }
+            // REMOVED listState definition
+            // REMOVED monthYearFormatter definition
+            // REMOVED LaunchedEffect for observing scroll and updating month year
 
             if (groupedItems.isEmpty()) {
                 Box(modifier = listModifier, contentAlignment = Alignment.Center) {
@@ -466,7 +484,7 @@ private fun HistoryListContent(
                     )
                 }
             } else {
-                LazyColumn(state = listState, modifier = listModifier) {
+                LazyColumn(modifier = listModifier) { // REMOVED state = listState
                     items(groupedItems, key = { item ->
                         when (item) {
                             is MonthHeader -> item.id
