@@ -428,7 +428,8 @@ private fun HistoryFilterPane(
             modifier = Modifier.fillMaxWidth(),
             title = null,
             headline = null,
-            showModeToggle = true
+            showModeToggle = true,
+            numberOfMonths = 1 // Added this line
         )
 
         OutlinedButton(
