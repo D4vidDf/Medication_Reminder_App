@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 // Row import is already present
 // Spacer import is already present
+import androidx.compose.foundation.layout.fillMaxHeight // Added
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,9 +15,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState // Added
-// import androidx.compose.material.icons.Icons
+// import androidx.compose.material.icons.Icons // Base for Icons.Filled.FilterList
 import androidx.compose.material.icons.Icons // Base for Icons.Filled.FilterList and Icons.Filled.Close
-import androidx.compose.material.icons.filled.Close // Added
+import androidx.compose.material.icons.filled.Close // Already present, but good to confirm
 import androidx.compose.material.icons.filled.FilterList // Specific import for FilterList
 // import androidx.compose.material.icons.automirrored.filled.ArrowBack // Removed in previous step
 // import androidx.compose.material.icons.filled.CalendarToday // Removed
@@ -30,23 +31,29 @@ import androidx.compose.material3.DatePicker // Added
 import androidx.compose.material3.DatePickerDefaults // Added
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
-import androidx.compose.material3.HorizontalDivider // Added for clarity, though Divider might resolve to this.
-import androidx.compose.material3.Divider // Keep for existing Sort Order Divider if different.
-import androidx.compose.material3.DrawerValue // Added
+// import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
+import androidx.compose.material3.VerticalDivider // Added
+// import androidx.compose.material3.DrawerValue // REMOVED for ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheet // ADDED
+import androidx.compose.material3.rememberModalBottomSheetState // ADDED
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField // Added
+import androidx.compose.material3.TextButton // Added
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
+// import androidx.compose.material3.LargeTopAppBar // REMOVED
+import androidx.compose.material3.TopAppBar // ADDED
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet // Added
-import androidx.compose.material3.ModalNavigationDrawer // Added
+import androidx.compose.material3.ModalDrawerSheet // No longer primary for phone filters
+// import androidx.compose.material3.ModalNavigationDrawer // REPLACED with ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDateRangePickerState
-import androidx.compose.material3.rememberDrawerState // Added
+// import androidx.compose.material3.rememberDrawerState // REMOVED for ModalBottomSheet
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -120,7 +127,9 @@ fun MedicationHistoryScreen(
     // var showDateRangeDialog by remember { mutableStateOf(false) } // REMOVED - No longer needed at screen level
     // val currentFilter by viewModel?.dateFilter?.collectAsState() ?: remember { mutableStateOf<Pair<LocalDate?, LocalDate?>?>(null) } // REMOVED - No longer needed for screen-level dialog
 
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState()) // Changed scroll behavior
+    // val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState()) // REMOVED
+    // For TopAppBar, scrollBehavior is typically not needed unless you implement custom collapse logic.
+    // For a standard fixed TopAppBar, it's not used.
 
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
     val isLargeScreen = screenWidthDp >= 840.dp
@@ -157,9 +166,10 @@ fun MedicationHistoryScreen(
     MedicationSpecificTheme(medicationColor = medicationColor) {
         if (isLargeScreen) {
             Scaffold(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                // modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection), // REMOVED
+                modifier = Modifier.fillMaxSize(), // Ensure Scaffold takes full size
                 topBar = {
-                    LargeTopAppBar(
+                    TopAppBar( // Changed from LargeTopAppBar
                         title = { Text("History") },
                         navigationIcon = {
                             IconButton(onClick = onNavigateBack) {
@@ -170,12 +180,12 @@ fun MedicationHistoryScreen(
                             }
                         },
                         actions = { /* No actions for large screen */ },
-                        scrollBehavior = scrollBehavior,
-                        colors = TopAppBarDefaults.largeTopAppBarColors(
+                        // scrollBehavior = scrollBehavior, // REMOVED
+                        colors = TopAppBarDefaults.topAppBarColors( // Changed to topAppBarColors
                             containerColor = Color.Transparent,
-                            scrolledContainerColor = Color.Transparent,
                             navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                             titleContentColor = MaterialTheme.colorScheme.onSurface
+                            // actionIconContentColor for actions, if any, would be MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -185,85 +195,95 @@ fun MedicationHistoryScreen(
                         // Spacer(modifier = Modifier.weight(1f)) // REMOVED Spacer
                         HistoryListContent(
                             viewModel = viewModel,
-                            listModifier = Modifier.weight(2f).padding(horizontal = 8.dp) // Adjusted weight to 2f
+                            listModifier = Modifier
+                                .weight(2f)
+                                .padding(horizontal = 8.dp)
                         )
+
+                        VerticalDivider(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(vertical = 8.dp)
+                                .width(1.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+
                         if (viewModel != null) {
                             HistoryFilterPane(
                                 viewModel = viewModel,
                                 medicationColor = medicationColor,
-                                modifier = Modifier.weight(1f).padding(start = 8.dp, end = 16.dp)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 8.dp, end = 16.dp)
                             )
                         } else {
-                            Spacer(modifier = Modifier.weight(1f)) // Placeholder for filter pane
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
             }
         } else { // Phone layout
-            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            var showBottomSheet by remember { mutableStateOf(false) }
             val scope = rememberCoroutineScope()
 
-            ModalNavigationDrawer(
-                drawerState = drawerState,
-                drawerContent = {
-                    ModalDrawerSheet(modifier = Modifier.fillMaxSize()) { // Sheet takes full screen
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            if (viewModel != null) {
-                                PhoneFilterSheetContent(
-                                    viewModel = viewModel,
-                                    medicationColor = medicationColor,
-                                    onDismiss = { scope.launch { drawerState.close() } },
-                                    modifier = Modifier.align(Alignment.Center)
-                                                // .padding(top = 48.dp) // Example padding
-                                )
-                            } else {
-                                Text("Loading filters...",
-                                     modifier = Modifier.align(Alignment.Center).padding(16.dp))
-                            }
-
-                            IconButton(
-                                onClick = { scope.launch { drawerState.close() } },
-                                modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
-                            ) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(id = R.string.medication_history_screen_title)) },
+                        navigationIcon = {
+                            IconButton(onClick = onNavigateBack) {
                                 Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = stringResource(R.string.close_drawer_cd)
+                                    painter = painterResource(id = R.drawable.rounded_arrow_back_ios_24),
+                                    contentDescription = stringResource(id = R.string.back_button_cd)
                                 )
                             }
-                        }
-                    }
+                        },
+                        actions = {
+                            IconButton(onClick = { showBottomSheet = true }) { // Show bottom sheet
+                                Icon(
+                                    imageVector = Icons.Filled.FilterList,
+                                    contentDescription = stringResource(id = R.string.med_history_filter_button_cd)
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color.Transparent,
+                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface,
+                            actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
                 }
-            ) { // Main content for ModalNavigationDrawer (visible when drawer is closed)
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(), // Modifier for the Scaffold itself
-                    topBar = {
-                        LargeTopAppBar(
-                            title = { Text(stringResource(id = R.string.medication_history_screen_title)) },
-                            navigationIcon = {
-                                IconButton(onClick = onNavigateBack) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.rounded_arrow_back_ios_24),
-                                        contentDescription = stringResource(id = R.string.back_button_cd)
-                                    )
+            ) { innerPadding ->
+                Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                    HistoryListContent(
+                        viewModel = viewModel,
+                        listModifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                if (showBottomSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showBottomSheet = false },
+                        sheetState = sheetState,
+                    ) {
+                        if (viewModel != null) {
+                            PhoneFilterSheetContent(
+                                viewModel = viewModel,
+                                medicationColor = medicationColor,
+                                onDismiss = {
+                                    scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            showBottomSheet = false
+                                        }
+                                    }
                                 }
-                            },
-                            actions = {
-                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.FilterList,
-                                        contentDescription = stringResource(id = R.string.med_history_filter_button_cd)
-                                    )
-                                }
-                            },
-                            scrollBehavior = scrollBehavior // Apply scrollBehavior here
-                        )
-                    }
-                ) { innerPadding ->
-                    Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-                        HistoryListContent(
-                            viewModel = viewModel,
-                            listModifier = Modifier.fillMaxSize() // Original padding is within HistoryListContent now if needed
-                        )
+                            )
+                        } else {
+                            Text("Loading filters...", modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally))
+                        }
                     }
                 }
             }
@@ -277,16 +297,18 @@ private fun PhoneFilterSheetContent(
     viewModel: MedicationHistoryViewModel,
     medicationColor: MedicationColor,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier // modifier parameter is fine
 ) {
+    // Removed Box and explicit Close IconButton, onDismiss is handled by ModalBottomSheet an internal actions
     var showDateDialog by remember { mutableStateOf(false) }
     val currentFilter by viewModel.dateFilter.collectAsState()
     val sortAscending by viewModel.sortAscending.collectAsState()
 
     Column(
-        modifier = modifier
+        // modifier = modifier.align(Alignment.Center) // This was from the drawer structure, adjust if needed
+        modifier = modifier // Apply passed modifier, padding now likely handled by ModalBottomSheet caller or here
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp) // Keep internal padding for content
     ) {
         Text(
             text = "Filter",
@@ -380,58 +402,27 @@ private fun PhoneFilterSheetContent(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HistoryFilterPane(
-    viewModel: MedicationHistoryViewModel?, // Nullable for preview, but logic below assumes non-null for core functionality
+    viewModel: MedicationHistoryViewModel?,
     medicationColor: MedicationColor,
     modifier: Modifier = Modifier
-    // Removed onFiltersApplied parameter
 ) {
-    // Ensure viewModel is not null for the core logic
     if (viewModel == null) {
-        // Optionally display a placeholder or nothing if viewModel is null (e.g., in Preview)
         Text("Filter pane unavailable in this preview.", modifier = modifier)
         return
     }
 
     val currentFilter by viewModel.dateFilter.collectAsState()
     val sortAscending by viewModel.sortAscending.collectAsState()
-
-    // Initialize DateRangePickerState
-    val dateRangePickerState = rememberDateRangePickerState(
-        initialSelectedStartDateMillis = currentFilter?.first?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-        initialSelectedEndDateMillis = currentFilter?.second?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis <= Instant.now().toEpochMilli()
-            override fun isSelectableYear(year: Int): Boolean = year <= LocalDate.now().year
-        }
-    )
-
-    // Removed redundant LaunchedEffect(currentFilter) as rememberDateRangePickerState handles re-initialization based on initial...Millis properties.
-
-    // Sync DateRangePicker selections back to ViewModel
-    LaunchedEffect(dateRangePickerState.selectedStartDateMillis, dateRangePickerState.selectedEndDateMillis) {
-        val startMillis = dateRangePickerState.selectedStartDateMillis
-        val endMillis = dateRangePickerState.selectedEndDateMillis
-        if (startMillis != null && endMillis != null) {
-            val startDate = Instant.ofEpochMilli(startMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-            val endDate = Instant.ofEpochMilli(endMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-            if (startDate != currentFilter?.first || endDate != currentFilter?.second) {
-                viewModel.setDateFilter(startDate, endDate)
-            }
-        } else if (startMillis == null && endMillis == null && currentFilter != null) {
-            // This handles if user deselects range in picker (if possible) and current filter is not already null
-            viewModel.setDateFilter(null, null)
-        }
-    }
+    var showDateDialog by remember { mutableStateOf(false) }
+    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT) }
 
     Column(
-        modifier = modifier.padding(top = 16.dp), // Keep overall padding
-        verticalArrangement = Arrangement.spacedBy(8.dp) // Adjust spacing for tighter layout
+        modifier = modifier.padding(top = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT) }
-
         // Date Display Fields (Top)
         Row(
-            modifier = Modifier.fillMaxWidth(), // Removed bottom padding, handled by Column's spacedBy
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedTextField(
@@ -452,40 +443,68 @@ private fun HistoryFilterPane(
             )
         }
 
-        // Label and Clear Button Row
-        Row(
-            modifier = Modifier.fillMaxWidth(), // Removed bottom padding
-            verticalAlignment = Alignment.CenterVertically
+        // "Select Date Range" Button
+        val dateButtonText = currentFilter?.let {
+            val start = it.first?.format(dateFormatter) ?: "..."
+            val end = it.second?.format(dateFormatter) ?: "..."
+            if (it.first != null && it.second != null) "$start - $end" else "Select Date Range"
+        } ?: "Select Date Range"
+
+        OutlinedButton(
+            onClick = { showDateDialog = true },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "Selected Range",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 4.dp, end = 8.dp) // Adjusted padding
+            Text(dateButtonText)
+        }
+
+        // "Clear Date Filter" Button
+        OutlinedButton(
+            onClick = { viewModel.setDateFilter(null, null) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Clear Date Filter")
+        }
+
+        if (showDateDialog) {
+            val dialogDatePickerState = rememberDateRangePickerState(
+                initialSelectedStartDateMillis = currentFilter?.first?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                initialSelectedEndDateMillis = currentFilter?.second?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                selectableDates = object : SelectableDates {
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis <= Instant.now().toEpochMilli()
+                    override fun isSelectableYear(year: Int): Boolean = year <= LocalDate.now().year
+                }
             )
-            Spacer(Modifier.weight(1f))
-            OutlinedButton(
-                onClick = { viewModel.setDateFilter(null, null) }
-                // No specific padding here, relies on Row's arrangement or default button padding
+            DatePickerDialog(
+                onDismissRequest = { showDateDialog = false },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            val startDateMillis = dialogDatePickerState.selectedStartDateMillis
+                            val endDateMillis = dialogDatePickerState.selectedEndDateMillis
+                            if (startDateMillis != null && endDateMillis != null) {
+                                val startDate = Instant.ofEpochMilli(startDateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                                val endDate = Instant.ofEpochMilli(endDateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+                                viewModel.setDateFilter(startDate, endDate)
+                            }
+                            showDateDialog = false
+                        },
+                        enabled = dialogDatePickerState.selectedStartDateMillis != null && dialogDatePickerState.selectedEndDateMillis != null
+                    ) { Text("OK") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDateDialog = false }) { Text("Cancel") }
+                }
             ) {
-                Text("Clear")
+                DateRangePicker(
+                    state = dialogDatePickerState,
+                    title = null,
+                    headline = null,
+                    showModeToggle = true
+                )
             }
         }
 
-        // Docked DateRangePicker
-        DateRangePicker(
-            state = dateRangePickerState,
-            modifier = Modifier.fillMaxWidth(),
-            numberOfMonths = 1,
-            showModeToggle = false,   // Changed to false as per refined plan
-            title = null,
-            headline = null
-            // Colors should be preserved if set previously from DatePickerDefaults call (not shown here)
-        )
-
-        // REMOVED the old "Clear Date Filter" button as it's now combined with the label above.
-        // REMOVED the old Text label for DateRangePicker as "Selected Range" serves this purpose.
-
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        Divider(modifier = Modifier.padding(vertical = 8.dp))
 
         // Sort Order Section
         Column(verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.Start) {
