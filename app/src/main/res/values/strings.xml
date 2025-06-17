@@ -367,6 +367,9 @@
     <string name="med_history_sort_order_label">Sort order:</string>
     <string name="med_history_sort_by_oldest_button">Sort: Oldest First</string>
     <string name="med_history_sort_by_newest_button">Sort: Newest First</string>
+    <string name="medication_history_screen_title">History</string>
+    <string name="med_history_filter_button_cd">Filter history</string>
+    <string name="close_drawer_cd">Close filter panel</string>
     <!-- Note: "medication_history_title" was already added in a previous step for MedicationDetailScreen -->
     <!-- It's value is "Medication History". Re-adding it here for completeness of this subtask's list, but it should be the same. -->
     <!-- <string name="medication_history_title">Medication History</string> -->
