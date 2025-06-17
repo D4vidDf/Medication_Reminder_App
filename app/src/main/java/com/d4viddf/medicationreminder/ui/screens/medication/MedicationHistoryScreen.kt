@@ -14,8 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState // Added
-// import androidx.compose.material.icons.Icons // Keep this if other icons from core material are used, if not, specific imports are better.
-import androidx.compose.material.icons.Icons // Base for Icons.Filled.FilterList
+// import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.Icons // Base for Icons.Filled.FilterList and Icons.Filled.Close
+import androidx.compose.material.icons.filled.Close // Added
 import androidx.compose.material.icons.filled.FilterList // Specific import for FilterList
 // import androidx.compose.material.icons.automirrored.filled.ArrowBack // Removed in previous step
 // import androidx.compose.material.icons.filled.CalendarToday // Removed
@@ -29,7 +30,8 @@ import androidx.compose.material3.DatePicker // Added
 import androidx.compose.material3.DatePickerDefaults // Added
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DateRangePicker
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider // Added for clarity, though Divider might resolve to this.
+import androidx.compose.material3.Divider // Keep for existing Sort Order Divider if different.
 import androidx.compose.material3.DrawerValue // Added
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -201,58 +203,66 @@ fun MedicationHistoryScreen(
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
 
-            Scaffold(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                topBar = {
-                    LargeTopAppBar(
-                        title = { Text("History") },
-                        navigationIcon = {
-                            IconButton(onClick = onNavigateBack) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.rounded_arrow_back_ios_24),
-                                    contentDescription = stringResource(id = R.string.back_button_cd)
-                                )
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(
-                                    imageVector = Icons.Filled.FilterList,
-                                    contentDescription = stringResource(id = R.string.med_history_filter_drawer_button_cd)
-                                )
-                            }
-                        },
-                        scrollBehavior = scrollBehavior,
-                        colors = TopAppBarDefaults.largeTopAppBarColors(
-                            containerColor = Color.Transparent,
-                            scrolledContainerColor = Color.Transparent,
-                            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                            titleContentColor = MaterialTheme.colorScheme.onSurface
-                        )
-                    )
-                }
-            ) { paddingValues ->
-                ModalNavigationDrawer(
-                    drawerState = drawerState,
-                    drawerContent = {
-                        ModalDrawerSheet(modifier = Modifier.fillMaxWidth(0.85f)) {
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                drawerContent = {
+                    ModalDrawerSheet(modifier = Modifier.fillMaxSize()) { // Sheet takes full screen
+                        Box(modifier = Modifier.fillMaxSize()) {
                             if (viewModel != null) {
-                                PhoneFilterSheetContent( // Changed from HistoryFilterPane to PhoneFilterSheetContent
+                                PhoneFilterSheetContent(
                                     viewModel = viewModel,
                                     medicationColor = medicationColor,
                                     onDismiss = { scope.launch { drawerState.close() } },
-                                    modifier = Modifier.padding(16.dp)
+                                    modifier = Modifier.align(Alignment.Center)
+                                                // .padding(top = 48.dp) // Example padding
                                 )
                             } else {
-                                Text("Loading filters...", modifier = Modifier.padding(16.dp))
+                                Text("Loading filters...",
+                                     modifier = Modifier.align(Alignment.Center).padding(16.dp))
+                            }
+
+                            IconButton(
+                                onClick = { scope.launch { drawerState.close() } },
+                                modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = stringResource(R.string.close_drawer_cd)
+                                )
                             }
                         }
                     }
-                ) {
-                    Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+                }
+            ) { // Main content for ModalNavigationDrawer (visible when drawer is closed)
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(), // Modifier for the Scaffold itself
+                    topBar = {
+                        LargeTopAppBar(
+                            title = { Text(stringResource(id = R.string.medication_history_screen_title)) },
+                            navigationIcon = {
+                                IconButton(onClick = onNavigateBack) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.rounded_arrow_back_ios_24),
+                                        contentDescription = stringResource(id = R.string.back_button_cd)
+                                    )
+                                }
+                            },
+                            actions = {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.FilterList,
+                                        contentDescription = stringResource(id = R.string.med_history_filter_button_cd)
+                                    )
+                                }
+                            },
+                            scrollBehavior = scrollBehavior // Apply scrollBehavior here
+                        )
+                    }
+                ) { innerPadding ->
+                    Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
                         HistoryListContent(
                             viewModel = viewModel,
-                            listModifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
+                            listModifier = Modifier.fillMaxSize() // Original padding is within HistoryListContent now if needed
                         )
                     }
                 }
@@ -414,15 +424,14 @@ private fun HistoryFilterPane(
     }
 
     Column(
-        modifier = modifier.padding(top = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = modifier.padding(top = 16.dp), // Keep overall padding
+        verticalArrangement = Arrangement.spacedBy(8.dp) // Adjust spacing for tighter layout
     ) {
         val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT) }
 
+        // Date Display Fields (Top)
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 12.dp),
+            modifier = Modifier.fillMaxWidth(), // Removed bottom padding, handled by Column's spacedBy
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedTextField(
@@ -443,29 +452,40 @@ private fun HistoryFilterPane(
             )
         }
 
-        Text( // This Text was for the DateRangePicker title, it might need to be adjusted or removed if the Row above serves as a good enough header.
-            stringResource(id = R.string.med_history_filter_by_date_label), // Or a more specific title for the picker itself
-            style = MaterialTheme.typography.titleSmall, // Consider if this is still needed or if the OutlinedTextField labels are enough
-            modifier = Modifier.padding(horizontal = 4.dp)
-        )
+        // Label and Clear Button Row
+        Row(
+            modifier = Modifier.fillMaxWidth(), // Removed bottom padding
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Selected Range",
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.padding(start = 4.dp, end = 8.dp) // Adjusted padding
+            )
+            Spacer(Modifier.weight(1f))
+            OutlinedButton(
+                onClick = { viewModel.setDateFilter(null, null) }
+                // No specific padding here, relies on Row's arrangement or default button padding
+            ) {
+                Text("Clear")
+            }
+        }
 
+        // Docked DateRangePicker
         DateRangePicker(
             state = dateRangePickerState,
             modifier = Modifier.fillMaxWidth(),
+            numberOfMonths = 1,
+            showModeToggle = false,   // Changed to false as per refined plan
             title = null,
-            headline = null,
-            showModeToggle = true,
-            numberOfMonths = 1 // Added this line
+            headline = null
+            // Colors should be preserved if set previously from DatePickerDefaults call (not shown here)
         )
 
-        OutlinedButton(
-            onClick = { viewModel.setDateFilter(null, null) },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
-        ) {
-            Text("Clear Date Filter")
-        }
+        // REMOVED the old "Clear Date Filter" button as it's now combined with the label above.
+        // REMOVED the old Text label for DateRangePicker as "Selected Range" serves this purpose.
 
-        Divider(modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
         // Sort Order Section
         Column(verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.Start) {
