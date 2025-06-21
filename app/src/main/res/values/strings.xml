@@ -363,4 +363,19 @@
     <string name="medGraph_chart_doses_suffix">doses</string>
     <string name="medGraph_yearly_changeYear_cd_prefix">Change year, current year:</string>
     <string name="medGraph_yearly_chart_description_prefix">Yearly doses taken.</string>
+
+    <!-- Today Screen -->
+    <string name="today_screen_title">Today</string>
+    <string name="today_screen_content_placeholder">Today\'s reminders will appear here.</string>
+    <string name="today_screen_no_reminders">No reminders for today. Enjoy your day!</string>
+
+    <!-- Dialog for Taking Future Medication -->
+    <string name="dialog_take_future_title">Take Future Medication</string>
+    <string name="dialog_take_future_message">Mark \'%1$s\' (scheduled for %2$s) as taken?</string>
+    <string name="dialog_take_future_action_now">Take Now</string>
+    <string name="dialog_take_future_action_scheduled_time">Take at Scheduled Time</string>
+
+    <!-- Navigation -->
+    <string name="medication_library_screen_title">Library</string>
+    <string name="select_reminder_placeholder">Select a reminder to see its details.</string>
 </resources>

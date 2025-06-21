@@ -19,10 +19,11 @@ import androidx.compose.ui.res.stringResource
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppHorizontalFloatingToolbar(
-    onHomeClick: () -> Unit,
+    onHomeClick: () -> Unit, // Navigates to TodayScreen
+    onMedicationLibraryClick: () -> Unit, // New: Navigates to MedicationLibraryScreen
     onCalendarClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onSettingsClick: () -> Unit,
+    // onSettingsClick is removed
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
     currentRoute: String? = null
@@ -40,17 +41,29 @@ fun AppHorizontalFloatingToolbar(
             }
         }
     ) {
-        val homeSelected = currentRoute == Screen.Home.route
-        IconButton(onClick = { if (currentRoute != Screen.Home.route) onHomeClick() }) {
+        // Home (Today Screen)
+        val homeSelected = currentRoute == Screen.Today.route
+        IconButton(onClick = { if (!homeSelected) onHomeClick() }) {
             Icon(
                 painter = painterResource(id = if (homeSelected) R.drawable.ic_home_filled else R.drawable.rounded_home_24),
-                contentDescription = stringResource(id = R.string.home_screen_title),
+                contentDescription = stringResource(id = R.string.today_screen_title),
                 tint = if (homeSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
+        // Medication Library
+        val librarySelected = currentRoute == Screen.MedicationLibrary.route
+        IconButton(onClick = { if (!librarySelected) onMedicationLibraryClick() }) {
+            Icon(
+                painter = painterResource(id = if (librarySelected) R.drawable.ic_list_alt_filled_24 else R.drawable.ic_list_alt_24), // Using list_alt
+                contentDescription = stringResource(id = R.string.medication_library_screen_title),
+                tint = if (librarySelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // Calendar
         val calendarSelected = currentRoute == Screen.Calendar.route
-        IconButton(onClick = { if (currentRoute != Screen.Calendar.route) onCalendarClick() }) {
+        IconButton(onClick = { if (!calendarSelected) onCalendarClick() }) {
             Icon(
                 painter = painterResource(id = if (calendarSelected) R.drawable.ic_calendar_filled else R.drawable.ic_calendar),
                 contentDescription = stringResource(id = R.string.calendar_screen_title),
@@ -58,23 +71,16 @@ fun AppHorizontalFloatingToolbar(
             )
         }
 
+        // Profile
         val profileSelected = currentRoute == Screen.Profile.route
-        IconButton(onClick = { if (currentRoute != Screen.Profile.route) onProfileClick() }) {
+        IconButton(onClick = { if (!profileSelected) onProfileClick() }) {
             Icon(
                 painter = painterResource(id = if (profileSelected) R.drawable.ic_person_filled else R.drawable.rounded_person_24),
                 contentDescription = stringResource(id = R.string.profile_screen_title),
                 tint = if (profileSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-
-        val settingsSelected = currentRoute == Screen.Settings.route
-        IconButton(onClick = { if (currentRoute != Screen.Settings.route) onSettingsClick() }) {
-            Icon(
-                painter = painterResource(id = if (settingsSelected) R.drawable.ic_outline_settings_24 else R.drawable.ic_outline_settings_24),
-                contentDescription = stringResource(id = R.string.settings_screen_title),
-                tint = if (settingsSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        // Settings icon is removed from here
     }
 }
 
@@ -85,11 +91,12 @@ fun AppHorizontalFloatingToolbarPreview() {
     com.d4viddf.medicationreminder.ui.theme.AppTheme(dynamicColor = false) {
         AppHorizontalFloatingToolbar(
             onHomeClick = {},
+            onMedicationLibraryClick = {},
             onCalendarClick = {},
             onProfileClick = {},
-            onSettingsClick = {},
+            // onSettingsClick = {}, // Removed
             onAddClick = {},
-            currentRoute = Screen.Home.route
+            currentRoute = Screen.Today.route // Updated preview to use Today
         )
     }
 }

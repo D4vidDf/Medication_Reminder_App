@@ -22,7 +22,8 @@ import com.d4viddf.medicationreminder.ui.screens.Screen // Required for Screen r
 
 @Composable
 fun AppNavigationRail(
-    onHomeClick: () -> Unit,
+    onHomeClick: () -> Unit, // Navigates to TodayScreen
+    onMedicationLibraryClick: () -> Unit, // New: Navigates to MedicationLibraryScreen
     onCalendarClick: () -> Unit,
     onProfileClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -53,23 +54,44 @@ fun AppNavigationRail(
             }
         }
     ) {
-        val homeSelected = currentRoute == Screen.Home.route
+        val homeSelected = currentRoute == Screen.Today.route // Changed to Today
         NavigationRailItem(
             icon = {
                 Icon(
                     painter = painterResource(id = if (homeSelected) R.drawable.ic_home_filled else R.drawable.rounded_home_24),
-                    contentDescription = stringResource(R.string.home_screen_title)
+                    contentDescription = stringResource(R.string.today_screen_title) // Changed to Today title
                 )
             },
             selected = homeSelected,
-            onClick = onHomeClick,
-            label = { Text(stringResource(R.string.home_screen_title)) },
+            onClick = onHomeClick, // This onHomeClick is already wired in MedicationReminderApp to navigate to Screen.Today.route
+            label = { Text(stringResource(R.string.today_screen_title)) }, // Changed to Today title
             colors = NavigationRailItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.primary,
                 selectedTextColor = MaterialTheme.colorScheme.primary,
                 unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 indicatorColor = MaterialTheme.colorScheme.primaryContainer // Or adjust as needed
+            )
+        )
+
+        // Medication Library
+        val librarySelected = currentRoute == Screen.MedicationLibrary.route
+        NavigationRailItem(
+            icon = {
+                Icon(
+                    painter = painterResource(id = if (librarySelected) R.drawable.ic_list_alt_filled_24 else R.drawable.ic_list_alt_24), // Using list_alt
+                    contentDescription = stringResource(R.string.medication_library_screen_title)
+                )
+            },
+            selected = librarySelected,
+            onClick = onMedicationLibraryClick,
+            label = { Text(stringResource(R.string.medication_library_screen_title)) },
+            colors = NavigationRailItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.primary,
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                indicatorColor = MaterialTheme.colorScheme.primaryContainer
             )
         )
 
@@ -142,11 +164,12 @@ fun AppNavigationRailPreview() {
     com.d4viddf.medicationreminder.ui.theme.AppTheme(dynamicColor = false) {
         AppNavigationRail(
             onHomeClick = {},
+            onMedicationLibraryClick = {},
             onCalendarClick = {},
             onProfileClick = {},
             onSettingsClick = {},
             onAddClick = {},
-            currentRoute = Screen.Home.route
+            currentRoute = Screen.Today.route // Updated preview
         )
     }
 }

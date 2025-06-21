@@ -37,7 +37,7 @@ fun MedicationReminderApp(
 ) {
 
     // This logic will now be at the top level inside MedicationReminderApp, after parameters
-    val startRoute = if (onboardingCompleted) Screen.Home.route else Screen.Onboarding.route
+    val startRoute = if (onboardingCompleted) Screen.Today.route else Screen.Onboarding.route // Changed to Today
 
     AppTheme(themePreference = themePreference) {
         val navController = rememberNavController()
@@ -45,7 +45,14 @@ fun MedicationReminderApp(
             val currentRoute = navBackStackEntry?.destination?.route
 
             // Determine if the current screen is a "main" screen that should show common navigation elements
-            val isMainScreen = currentRoute in listOf(Screen.Home.route, Screen.Calendar.route, Screen.Profile.route)
+            // Screen.Home.route is now Screen.MedicationLibrary.route, which will also be a main screen.
+            // Screen.Today.route is the new home.
+            val isMainScreen = currentRoute in listOf(
+                Screen.Today.route, // New Home
+                Screen.MedicationLibrary.route, // Old Home, now library
+                Screen.Calendar.route,
+                Screen.Profile.route
+            )
 
             // Specific routes that should not show the main navigation (Scaffold with FAB or NavRail)
             val hideAllMainChrome = currentRoute in listOf(
@@ -67,11 +74,12 @@ fun MedicationReminderApp(
                     // Large screens: Use Row with NavigationRail
                     Row(modifier = Modifier.fillMaxSize()) {
                         AppNavigationRail(
-                            onHomeClick = { navController.navigate(Screen.Home.route) { popUpTo(Screen.Home.route) { inclusive = true } } },
-                            onCalendarClick = { navController.navigate(Screen.Calendar.route) { popUpTo(Screen.Home.route) } },
-                            onProfileClick = { navController.navigate(Screen.Profile.route) { popUpTo(Screen.Home.route) } },
-                            onSettingsClick = { navController.navigate(Screen.Settings.route) }, // Removed popUpTo for settings
-                            onAddClick = { navController.navigate(Screen.AddMedicationChoice.route) }, // Changed here
+                            onHomeClick = { navController.navigate(Screen.Today.route) { popUpTo(Screen.Today.route) { inclusive = true } } },
+                            onMedicationLibraryClick = { navController.navigate(Screen.MedicationLibrary.route) { popUpTo(Screen.Today.route) } }, // New
+                            onCalendarClick = { navController.navigate(Screen.Calendar.route) { popUpTo(Screen.Today.route) } },
+                            onProfileClick = { navController.navigate(Screen.Profile.route) { popUpTo(Screen.Today.route) } },
+                            onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                            onAddClick = { navController.navigate(Screen.AddMedicationChoice.route) },
                             currentRoute = currentRoute
                         )
                         AppNavigation(
@@ -91,10 +99,11 @@ fun MedicationReminderApp(
                         floatingActionButton = {
                             if (isMainScreen && widthSizeClass == WindowWidthSizeClass.Compact) {
                                 AppHorizontalFloatingToolbar(
-                                    onHomeClick = { navController.navigate(Screen.Home.route) { popUpTo(Screen.Home.route) { inclusive = true } } },
-                                    onCalendarClick = { navController.navigate(Screen.Calendar.route) { popUpTo(Screen.Home.route) } },
-                                    onProfileClick = { navController.navigate(Screen.Profile.route) { popUpTo(Screen.Home.route) } },
-                                    onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                                    onHomeClick = { navController.navigate(Screen.Today.route) { popUpTo(Screen.Today.route) { inclusive = true } } },
+                                    onMedicationLibraryClick = { navController.navigate(Screen.MedicationLibrary.route) { popUpTo(Screen.Today.route) } }, // New
+                                    onCalendarClick = { navController.navigate(Screen.Calendar.route) { popUpTo(Screen.Today.route) } },
+                                    onProfileClick = { navController.navigate(Screen.Profile.route) { popUpTo(Screen.Today.route) } },
+                                    // onSettingsClick removed
                                     onAddClick = { navController.navigate(Screen.AddMedicationChoice.route) },
                                     currentRoute = currentRoute
                                 )

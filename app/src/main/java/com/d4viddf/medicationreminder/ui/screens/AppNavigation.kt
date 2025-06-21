@@ -42,7 +42,8 @@ const val MEDICATION_ID_ARG = "medicationId" // Common argument name
 const val SHOW_TODAY_ARG = "showToday" // Argument for AllSchedulesScreen
 
 sealed class Screen(val route: String) {
-    object Home : Screen("home")
+    object Today : Screen("today") // New home screen
+    object MedicationLibrary : Screen("medication_library") // Old home screen
     object AddMedication : Screen("addMedication")
     object AddMedicationChoice : Screen("addMedicationChoice")
     object MedicationDetails : Screen("medicationDetails/{$MEDICATION_ID_ARG}?enableSharedTransition={enableSharedTransition}") {
@@ -103,18 +104,23 @@ fun AppNavigation(
                     userPreferencesRepository = userPreferencesRepository // Pass it here
                 )
             }
-            composable(Screen.Home.route) {
+            // Define TodayScreen (New Home)
+            composable(Screen.Today.route) {
+                TodayScreen(
+                    navController = navController,
+                    widthSizeClass = widthSizeClass
+                )
+            }
+            composable(Screen.MedicationLibrary.route) { // Was Screen.Home.route
                 // `this` is an AnimatedVisibilityScope
-                HomeScreen(
-                    navController = navController, // Added this line
-                    // Kept
-                    onMedicationClick = { medicationId -> // Kept
+                HomeScreen( // This is the original HomeScreen, now for the medication library
+                    navController = navController,
+                    onMedicationClick = { medicationId ->
                         navController.navigate(Screen.MedicationDetails.createRoute(medicationId, enableSharedTransition = widthSizeClass == WindowWidthSizeClass.Compact))
                     },
-                    // Removed onNavigateToSettings, onNavigateToCalendar, onNavigateToProfile
-                    widthSizeClass = widthSizeClass, // Kept
-                    sharedTransitionScope = currentSharedTransitionScope, // Pass captured scope
-                    animatedVisibilityScope = this // Pass scope
+                    widthSizeClass = widthSizeClass,
+                    sharedTransitionScope = currentSharedTransitionScope,
+                    animatedVisibilityScope = this
                 )
             }
             composable(Screen.AddMedicationChoice.route) { // New entry
