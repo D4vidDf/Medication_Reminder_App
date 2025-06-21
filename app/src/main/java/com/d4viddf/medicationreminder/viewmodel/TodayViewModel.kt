@@ -3,7 +3,8 @@ package com.d4viddf.medicationreminder.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.d4viddf.medicationreminder.data.MedicationReminderRepository
-import com.d4viddf.medicationreminder.data.MedicationRepository
+// Corrected import for MedicationRepository
+import com.d4viddf.medicationreminder.repository.MedicationRepository
 import com.d4viddf.medicationreminder.data.MedicationSchedule
 import com.d4viddf.medicationreminder.data.MedicationTypeRepository
 import com.d4viddf.medicationreminder.ui.components.TodayMedicationData
@@ -210,12 +211,12 @@ class TodayViewModel @Inject constructor(
             //   historyRepository.removeTakenEntry(updatedReminder.id, updatedReminder.scheduledTime)
             // }
 
-            val newListForSlot = currentGroups[originalTimeSlot]?.map {
+            val newListForSlot = currentGroups[timeSlot]?.map { // Corrected: use timeSlot
                 if (it.id == reminderId) updatedReminder else it
             } ?: emptyList()
 
             val newGroups = currentGroups.toMutableMap()
-            newGroups[originalTimeSlot] = newListForSlot
+            newGroups[timeSlot] = newListForSlot // Corrected: use timeSlot
 
             _uiState.value = _uiState.value.copy(groupedReminders = newGroups)
             _showTakeFutureDialog.value = null // Ensure dialog is dismissed
