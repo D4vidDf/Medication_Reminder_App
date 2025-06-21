@@ -245,7 +245,7 @@ fun OnboardingPhoneLayout(
                                 pagerState.animateScrollToPage(pagerState.currentPage + 1)
                             } else {
                                 userPreferencesRepository.updateOnboardingCompleted(true) // Add this line
-                                navController.navigate(Screen.Home.route) { popUpTo(Screen.Onboarding.route) { inclusive = true } }
+                                navController.navigate(Screen.Today.route) { popUpTo(Screen.Onboarding.route) { inclusive = true } } // Changed to Today
                             }
                         }
                     },
@@ -358,7 +358,7 @@ fun OnboardingTabletLayout(
                                 pagerState.animateScrollToPage(pagerState.currentPage + 1)
                             } else {
                                 userPreferencesRepository.updateOnboardingCompleted(true) // Add this line
-                                navController.navigate(Screen.Home.route) { popUpTo(Screen.Onboarding.route) { inclusive = true } }
+                                navController.navigate(Screen.Today.route) { popUpTo(Screen.Onboarding.route) { inclusive = true } } // Changed to Today
                             }
                         }
                     },

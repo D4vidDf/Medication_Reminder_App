@@ -7,6 +7,7 @@ import com.d4viddf.medicationreminder.data.MedicationReminderRepository
 import com.d4viddf.medicationreminder.repository.MedicationRepository
 import com.d4viddf.medicationreminder.data.MedicationSchedule
 import com.d4viddf.medicationreminder.data.MedicationTypeRepository
+// Removed local definition, ensure this import is correct if TodayMedicationData is in its own file in ui.components
 import com.d4viddf.medicationreminder.ui.components.TodayMedicationData
 import com.d4viddf.medicationreminder.ui.colors.MedicationColor
 import com.d4viddf.medicationreminder.data.MedicationType
@@ -24,24 +25,11 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
-
-// Moved TodayMedicationData here as it's primarily part of this ViewModel's state structure
-data class TodayMedicationData(
-    val id: String, // Reminder ID or unique key for this specific reminder instance
-    val medicationId: Int, // The ID of the medication itself, for fetching details
-    val medicationName: String,
-    val dosage: String,
-    val medicationType: MedicationType,
-    val scheduledTime: LocalTime,
-    val actualTakenTime: LocalTime? = null,
-    val isTaken: Boolean,
-    val isFuture: Boolean,
-    val medicationColor: MedicationColor,
-    val onToggle: (Boolean) -> Unit
-)
+// TodayMedicationData class definition is now removed from here.
+// It should be in app/src/main/java/com/d4viddf/medicationreminder/ui/components/TodayMedicationData.kt
 
 data class TodayScreenUiState(
-    val groupedReminders: Map<LocalTime, List<TodayMedicationData>> = emptyMap(),
+    val groupedReminders: Map<LocalTime, List<TodayMedicationData>> = emptyMap(), // Uses imported TodayMedicationData
     val currentTime: LocalTime = LocalTime.now(),
     val isLoading: Boolean = true,
     val error: String? = null
@@ -95,42 +83,46 @@ class TodayViewModel @Inject constructor(
                 // For now, let's assume medicationReminderRepository.getRemindersForDate(today)
                 // gives us objects that can be mapped to TodayMedicationData.
 
-                // Placeholder: Replace with actual data fetching and processing
-                // The MedicationSchedule might be a better source if it contains all necessary info
-                // or can be combined with Medication and MedicationReminder.
-
-                // Let's assume we have a function that gives us relevant MedicationSchedule objects for today
-                val allSchedules = medicationReminderRepository.getAllSchedules().firstOrNull() ?: emptyList()
-                val todaySchedules = allSchedules.filter { it.scheduleDate == today } // Simplified
-
+                val allMedications = medicationRepository.getAllMedications().firstOrNull() ?: emptyList()
                 val remindersData = mutableListOf<TodayMedicationData>()
+                val isoDateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME // For parsing reminderTime and takenAt
 
-                for (schedule in todaySchedules) {
-                    val medication = medicationRepository.getMedicationById(schedule.medicationId).firstOrNull()
-                    val medicationType = medication?.typeId?.let { typeId ->
+                for (medication in allMedications) {
+                    val medicationReminders = medicationReminderRepository.getRemindersForMedication(medication.id).firstOrNull() ?: emptyList()
+                    val medicationType = medication.typeId?.let { typeId ->
                         medicationTypeRepository.getMedicationTypeById(typeId).firstOrNull()
-                    }
+                    } ?: MedicationType.defaultType() // Provide a default if type is somehow null
 
-                    if (medication != null && medicationType != null) {
-                        // TODO: Determine actualTakenTime and isTaken from history
-                        val isTaken = false // Placeholder
-                        val actualTakenTime = null // Placeholder
+                    for (reminder in medicationReminders) {
+                        try {
+                            val scheduledLocalDateTime = LocalDateTime.parse(reminder.reminderTime, isoDateTimeFormatter)
+                            if (scheduledLocalDateTime.toLocalDate() == today) {
+                                val actualTakenTimeLocal: LocalTime? = reminder.takenAt?.let {
+                                    try { LocalDateTime.parse(it, isoDateTimeFormatter).toLocalTime() }
+                                    catch (e: Exception) { null }
+                                }
 
-                        remindersData.add(
-                            TodayMedicationData(
-                                id = schedule.id.toString(), // Or a more specific reminder ID if available
-                                medicationId = medication.id, // Added medicationId
-                                medicationName = medication.name,
-                                dosage = medication.dosage ?: "",
-                                medicationType = medicationType,
-                                scheduledTime = schedule.scheduledTime, // Assuming MedicationSchedule has LocalTime
-                                actualTakenTime = actualTakenTime,
-                                isTaken = isTaken,
-                                isFuture = schedule.scheduledTime.isAfter(LocalTime.now()), // Initial future status
-                                medicationColor = MedicationColor.valueOf(medication.color ?: MedicationColor.LIGHT_GRAY.name),
-                                onToggle = { checked -> handleToggle(schedule.id.toString(), checked) }
-                            )
-                        )
+                                remindersData.add(
+                                    TodayMedicationData(
+                                        id = reminder.id.toString(),
+                                        medicationId = medication.id,
+                                        medicationName = medication.name,
+                                        dosage = medication.dosage ?: "",
+                                        medicationType = medicationType,
+                                        scheduledTime = scheduledLocalDateTime.toLocalTime(),
+                                        actualTakenTime = actualTakenTimeLocal,
+                                        isTaken = reminder.isTaken,
+                                        // isFuture will be re-evaluated against uiState.currentTime later
+                                        isFuture = scheduledLocalDateTime.toLocalTime().isAfter(LocalTime.now()), // Initial check
+                                        medicationColor = MedicationColor.valueOf(medication.color ?: MedicationColor.LIGHT_GRAY.name),
+                                        onToggle = { checked -> handleToggle(reminder.id.toString(), checked) }
+                                    )
+                                )
+                            }
+                        } catch (e: Exception) {
+                            // Log error parsing reminder.reminderTime or other issues
+                            Log.e("TodayViewModel", "Error processing reminder ${reminder.id} for med ${medication.name}: ${e.message}")
+                        }
                     }
                 }
 

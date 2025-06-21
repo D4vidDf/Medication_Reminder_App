@@ -50,6 +50,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.d4viddf.medicationreminder.ui.screens.medication.MedicationDetailsScreen
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row // Added for TakeFutureMedicationDialog
+import androidx.compose.foundation.layout.Spacer // Added for TakeFutureMedicationDialog
+import androidx.compose.foundation.layout.width // Added for TakeFutureMedicationDialog
+import androidx.compose.material3.AlertDialog // Added for TakeFutureMedicationDialog
+import androidx.compose.material3.TextButton // Added for TakeFutureMedicationDialog
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
@@ -130,8 +135,6 @@ fun TodayScreen(
                     },
                     isHostedInPane = true, // Important for correct behavior in pane
                     widthSizeClass = widthSizeClass, // Pass width class
-                    // Shared transition scope and animated visibility scope are null from here
-                    // as this instance of MedicationDetailsScreen is not the primary shared element target
                     sharedTransitionScope = null,
                     animatedVisibilityScope = null,
                     onNavigateToAllSchedules = { medId, colorName -> navController.navigate(Screen.AllSchedules.createRoute(medId, colorName, true)) },
@@ -140,7 +143,6 @@ fun TodayScreen(
                     onNavigateToMedicationInfo = { medId, colorName -> navController.navigate(Screen.MedicationInfo.createRoute(medId, colorName)) }
                 )
             } else {
-                // Placeholder when no item is selected in detail view on large screens
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(stringResource(id = R.string.select_reminder_placeholder))
                 }
@@ -154,8 +156,8 @@ fun TodayScreen(
 private fun HandleUiState(
     uiState: TodayScreenUiState,
     innerPadding: androidx.compose.foundation.layout.PaddingValues,
-    viewModel: TodayViewModel, // Added viewModel parameter
-    onReminderClick: (medicationId: Int) -> Unit // Added click handler
+    viewModel: TodayViewModel,
+    onReminderClick: (medicationId: Int) -> Unit
 ) {
     when {
         uiState.isLoading -> {
@@ -173,15 +175,16 @@ private fun HandleUiState(
                 )
             }
         }
-        uiState.groupedReminders.isEmpty() && !uiState.isLoading -> { // Ensure not loading before showing empty
+        uiState.groupedReminders.isEmpty() && !uiState.isLoading -> {
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) { // Ensure text and potential future elements are centered
                     Text(
                         text = stringResource(id = R.string.today_screen_no_reminders),
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
+                    // The CurrentTimeSeparator will be added by TodayRemindersList if list is empty.
                 }
             }
         }
@@ -190,7 +193,7 @@ private fun HandleUiState(
                 groupedReminders = uiState.groupedReminders,
                 currentTime = uiState.currentTime,
                 modifier = Modifier.padding(innerPadding),
-                onReminderClick = onReminderClick // Pass click handler down
+                onReminderClick = onReminderClick
             )
         }
     }
@@ -201,7 +204,7 @@ fun TodayRemindersList(
     groupedReminders: Map<LocalTime, List<TodayMedicationData>>,
     currentTime: LocalTime,
     modifier: Modifier = Modifier,
-    onReminderClick: (medicationId: Int) -> Unit // Added click handler
+    onReminderClick: (medicationId: Int) -> Unit
 ) {
     val sortedTimeGroups = groupedReminders.keys.sorted()
     var separatorInserted = false
@@ -235,7 +238,7 @@ fun TodayRemindersList(
                     shape = shape,
                     modifier = Modifier
                         .padding(bottom = if (cardIndex == remindersInGroup.size -1) 8.dp else 2.dp)
-                        .clickable { onReminderClick(reminderData.medicationId) } // Handle click
+                        .clickable { onReminderClick(reminderData.medicationId) }
                 )
             }
         }
@@ -246,7 +249,7 @@ fun TodayRemindersList(
             }
             separatorInserted = true
         }
-        if (sortedTimeGroups.isEmpty()) {
+        if (sortedTimeGroups.isEmpty()) { // Also show separator if the list is completely empty
             item(key = "separator_empty_list") {
                 CurrentTimeSeparator(currentTime = currentTime)
             }
@@ -328,210 +331,6 @@ fun TakeFutureMedicationDialog(
     )
 }
 
-
-// Need to add R.string.today_screen_no_reminders, dialog strings, and R.string.select_reminder_placeholder
-@Preview(showBackground = true, name = "Today Screen Compact")
-@Composable
-fun TodayScreenCompactPreview() {
-                dialogState = dialogState,
-                onConfirmTakeNow = {
-                    viewModel.markFutureMedicationAsTaken(dialogState.reminderId, dialogState.scheduledTime, true)
-                },
-                onConfirmTakeAtScheduledTime = {
-                    viewModel.markFutureMedicationAsTaken(dialogState.reminderId, dialogState.scheduledTime, false)
-                },
-                onDismiss = { viewModel.dismissTakeFutureDialog() }
-            )
-        }
-    }
-}
-
-@Composable
-private fun HandleUiState(
-    uiState: TodayScreenUiState,
-    innerPadding: androidx.compose.foundation.layout.PaddingValues,
-    viewModel: TodayViewModel // Added viewModel parameter
-) {
-    when {
-        uiState.isLoading -> {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        }
-        uiState.error != null -> {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "Error: ${uiState.error}",
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-        }
-        uiState.groupedReminders.isEmpty() && !uiState.isLoading -> { // Ensure not loading before showing empty
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = stringResource(id = R.string.today_screen_no_reminders),
-                        style = MaterialTheme.typography.headlineSmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                    // Optionally, still show the current time separator if the list is empty
-                    // This might be better placed inside TodayRemindersList or as a separate element
-                    // For now, keeping it simple. The TodayRemindersList handles separator for empty groupedReminders.
-                }
-            }
-        }
-        else -> { // This will also cover the case where groupedReminders is empty but isLoading is true initially
-            TodayRemindersList(
-                groupedReminders = uiState.groupedReminders,
-                currentTime = uiState.currentTime,
-                modifier = Modifier.padding(innerPadding)
-                // Removed viewModel pass here, TodayRemindersList doesn't directly use it.
-                // Callbacks like onToggle are part of TodayMedicationData passed down.
-            )
-        }
-    }
-}
-
-@Composable
-fun TodayRemindersList(
-    groupedReminders: Map<LocalTime, List<TodayMedicationData>>,
-    currentTime: LocalTime,
-    modifier: Modifier = Modifier
-) {
-    val sortedTimeGroups = groupedReminders.keys.sorted()
-    var separatorInserted = false
-
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        sortedTimeGroups.forEachIndexed { groupIndex, time ->
-            // Check if separator needs to be inserted BEFORE this time group
-            if (!separatorInserted && time.isAfter(currentTime)) {
-                item(key = "separator_before_${time}") {
-                    CurrentTimeSeparator(currentTime = currentTime)
-                }
-                separatorInserted = true
-            }
-
-            // Time Group Header
-            item(key = "header_${time}") {
-                Text(
-                    text = time.format(DateTimeFormatter.ofPattern("HH:mm")),
-                    style = MaterialTheme.typography.titleLarge, // Prominent time
-                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp)
-                )
-            }
-
-            // Medication Cards within this time group
-            val remindersInGroup = groupedReminders[time] ?: emptyList()
-            items(remindersInGroup.size, key = { index -> remindersInGroup[index].id }) { cardIndex ->
-                val reminderData = remindersInGroup[cardIndex]
-                val shape = getCardShape(cardIndex, remindersInGroup.size)
-                MedicationCardTodayFinal(
-                    data = reminderData.copy(isFuture = reminderData.scheduledTime.isAfter(currentTime)), // Ensure isFuture is up-to-date
-                    shape = shape,
-                    modifier = Modifier.padding(bottom = if (cardIndex == remindersInGroup.size -1) 8.dp else 2.dp) // Add more space after last card in group
-                )
-            }
-        }
-
-        // If separator hasn't been inserted yet (all reminders are in the past or exactly at current time)
-        if (!separatorInserted && sortedTimeGroups.isNotEmpty()) {
-            item(key = "separator_at_end") {
-                CurrentTimeSeparator(currentTime = currentTime)
-            }
-            separatorInserted = true // Technically not needed here but good for clarity
-        }
-         // Case: No reminders at all, but we still want to show the current time line if the list is empty
-        // This is handled by the empty state in HandleUiState, but if we wanted a line even then:
-        if (sortedTimeGroups.isEmpty()) {
-            item(key = "separator_empty_list") {
-                CurrentTimeSeparator(currentTime = currentTime)
-            }
-        }
-    }
-}
-
-@Composable
-fun CurrentTimeSeparator(currentTime: LocalTime) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp)
-    ) {
-        Canvas(modifier = Modifier.size(8.dp)) {
-            drawCircle(color = MaterialTheme.colorScheme.primary, radius = size.minDimension / 2)
-        }
-        HorizontalDivider(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 8.dp, end = 8.dp),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
-        Text(
-            text = currentTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-fun getCardShape(index: Int, totalItemsInGroup: Int): RoundedCornerShape {
-    val cornerRadius = 12.dp
-    val noCornerRadius = 0.dp // For flat edges
-
-    return when {
-        totalItemsInGroup == 1 -> RoundedCornerShape(cornerRadius) // Single item gets all corners rounded
-        index == 0 -> RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius, bottomStart = noCornerRadius, bottomEnd = noCornerRadius) // First item
-        index == totalItemsInGroup - 1 -> RoundedCornerShape(topStart = noCornerRadius, topEnd = noCornerRadius, bottomStart = cornerRadius, bottomEnd = cornerRadius) // Last item
-        else -> RoundedCornerShape(noCornerRadius) // Middle items
-    }
-}
-
-@Composable
-fun TakeFutureMedicationDialog(
-    dialogState: TodayViewModel.TakeFutureDialogState,
-    onConfirmTakeNow: () -> Unit,
-    onConfirmTakeAtScheduledTime: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = stringResource(R.string.dialog_take_future_title)) },
-        text = {
-            Text(text = stringResource(
-                R.string.dialog_take_future_message,
-                dialogState.medicationName,
-                dialogState.scheduledTime.format(DateTimeFormatter.ofPattern("HH:mm"))
-            ))
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirmTakeNow) {
-                Text(stringResource(R.string.dialog_take_future_action_now))
-            }
-        },
-        dismissButton = {
-            Row {
-                TextButton(onClick = onConfirmTakeAtScheduledTime) {
-                    Text(stringResource(R.string.dialog_take_future_action_scheduled_time))
-                }
-                Spacer(Modifier.width(8.dp))
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.dialog_cancel_button))
-                }
-            }
-        }
-    )
-}
-
-
-// Need to add R.string.today_screen_no_reminders, and dialog strings
 @Preview(showBackground = true, name = "Today Screen Compact")
 @Composable
 fun TodayScreenCompactPreview() {
