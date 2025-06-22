@@ -135,7 +135,12 @@ class TodayViewModel @Inject constructor(
                 val finalTimeGroups = processedReminders
                     .groupBy { it.scheduledTime }
                     .map { (time, reminderList) ->
-                        TimeGroupDisplayData(scheduledTime = time, reminders = reminderList)
+                        TimeGroupDisplayData(
+                            scheduledTime = time,
+                            reminders = reminderList,
+                            takenCount = reminderList.count { it.isTaken },
+                            totalInGroup = reminderList.size
+                        )
                     }
                     .sortedBy { it.scheduledTime } // Ensure the final list of groups is sorted by time
 
@@ -212,7 +217,14 @@ class TodayViewModel @Inject constructor(
             if (it.id == reminderId) updatedReminder else it
         }
 
-        val updatedTimeGroup = targetGroup.copy(reminders = updatedRemindersInGroup)
+        // Recalculate takenCount for the updated group
+        val newTakenCount = updatedRemindersInGroup.count { it.isTaken }
+
+        val updatedTimeGroup = targetGroup.copy(
+            reminders = updatedRemindersInGroup,
+            takenCount = newTakenCount
+            // totalInGroup remains the same
+        )
 
         val newTimeGroups = currentTimeGroups.toMutableList().apply {
             this[targetGroupIndex] = updatedTimeGroup

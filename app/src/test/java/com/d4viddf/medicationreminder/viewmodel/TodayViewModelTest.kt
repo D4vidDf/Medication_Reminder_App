@@ -102,11 +102,15 @@ class TodayViewModelTest {
             assertNotNull(morningGroup)
             assertEquals(2, morningGroup.reminders.size)
             assertEquals("Med A", morningGroup.reminders[0].medicationName)
+            assertEquals(0, morningGroup.takenCount) // Assuming none taken initially in this test setup
+            assertEquals(2, morningGroup.totalInGroup)
 
             val eveningGroup = state.timeGroups.find { it.scheduledTime == timeEvening }
             assertNotNull(eveningGroup)
             assertEquals(1, eveningGroup.reminders.size)
             assertEquals("Med B", eveningGroup.reminders[0].medicationName)
+            assertEquals(0, eveningGroup.takenCount) // Assuming none taken
+            assertEquals(1, eveningGroup.totalInGroup)
         }
     }
 
@@ -179,6 +183,7 @@ class TodayViewModelTest {
             assertNotNull(toggledItem)
             assertTrue(toggledItem.isTaken, "Item was not marked as taken")
             assertNotNull(toggledItem.actualTakenTime, "Actual taken time was not set")
+            assertEquals(1, updatedGroup.takenCount) // Verify takenCount updated
             // Check if actualTakenTime is very close to LocalTime.now() (within a second or so)
             assertTrue(java.time.Duration.between(toggledItem.actualTakenTime, LocalTime.now()).seconds < 2)
         }
@@ -257,6 +262,7 @@ class TodayViewModelTest {
             assertNotNull(updatedItem)
             assertTrue(updatedItem.isTaken)
             assertNotNull(updatedItem.actualTakenTime)
+            assertEquals(1, updatedGroup.takenCount) // Verify takenCount
              assertTrue(java.time.Duration.between(updatedItem.actualTakenTime, LocalTime.now()).seconds < 2)
         }
         assertNull(viewModel.showTakeFutureDialog.value) // Dialog should be dismissed
@@ -296,6 +302,7 @@ class TodayViewModelTest {
             assertNotNull(updatedItem)
             assertTrue(updatedItem.isTaken)
             assertEquals(futureTime, updatedItem.actualTakenTime)
+            assertEquals(1, updatedGroup.takenCount) // Verify takenCount
         }
         assertNull(viewModel.showTakeFutureDialog.value)
     }

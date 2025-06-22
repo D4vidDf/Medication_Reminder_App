@@ -41,13 +41,34 @@ class TimeGroupCardTest {
     }
 
     @Test
+    fun displaysTakenDosageSummary() {
+        val time = LocalTime.of(9, 0)
+        val reminder1 = TodayMedicationData("r1", 1, "MedA", "10mg", sampleMedicationType, time, actualTakenTime = time, isTaken = true, isFuture = false, medicationColor = MedicationColor.LIGHT_BLUE, onToggle = {})
+        val reminder2 = TodayMedicationData("r2", 2, "MedB", "20mg", sampleMedicationType, time, null, isTaken = false, isFuture = false, medicationColor = MedicationColor.LIGHT_RED, onToggle = {})
+        val groupData = TimeGroupDisplayData(
+            scheduledTime = time,
+            reminders = listOf(reminder1, reminder2),
+            takenCount = 1,
+            totalInGroup = 2
+        )
+        composeTestRule.setContent {
+            AppTheme {
+                TimeGroupCard(timeGroupData = groupData, onReminderClick = mockOnReminderClick)
+            }
+        }
+        composeTestRule.onNodeWithText("1 / 2 Taken").assertIsDisplayed()
+    }
+
+    @Test
     fun displaysMultipleMedicationCards() {
         val time = LocalTime.of(10, 0)
         val reminder1 = TodayMedicationData("r1", 101, "Med A", "50mg", sampleMedicationType, time, null, false, false, MedicationColor.LIGHT_BLUE, {})
         val reminder2 = TodayMedicationData("r2", 102, "Med B", "10ml", sampleMedicationType, time, null, true, false, MedicationColor.LIGHT_GREEN, {})
         val groupData = TimeGroupDisplayData(
             scheduledTime = time,
-            reminders = listOf(reminder1, reminder2)
+            reminders = listOf(reminder1, reminder2),
+            takenCount = 1, // reflect one taken
+            totalInGroup = 2
         )
 
         composeTestRule.setContent {

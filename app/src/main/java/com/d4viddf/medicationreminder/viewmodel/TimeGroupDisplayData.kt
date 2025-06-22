@@ -5,6 +5,7 @@ import java.time.LocalTime
 
 data class TimeGroupDisplayData(
     val scheduledTime: LocalTime,
-    val reminders: List<TodayMedicationData>
-    // Future: val takenCount: Int, val totalInGroup: Int
+    val reminders: List<TodayMedicationData>,
+    val takenCount: Int,
+    val totalInGroup: Int
 )
