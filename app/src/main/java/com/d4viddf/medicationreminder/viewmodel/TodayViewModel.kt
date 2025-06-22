@@ -25,6 +25,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import android.util.Log // Added import for Log
+import java.time.LocalDateTime
 
 // TodayMedicationData class definition is now removed from here.
 // It should be in app/src/main/java/com/d4viddf/medicationreminder/ui/components/TodayMedicationData.kt
@@ -78,21 +79,16 @@ class TodayViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
                 val today = LocalDate.now()
-                // This is a simplified fetching logic.
-                // Actual implementation would involve querying schedules, then reminders,
-                // then medication details, and medication history for taken status.
-                // For now, let's assume medicationReminderRepository.getRemindersForDate(today)
-                // gives us objects that can be mapped to TodayMedicationData.
-
                 val allMedications = medicationRepository.getAllMedications().firstOrNull() ?: emptyList()
                 val remindersData = mutableListOf<TodayMedicationData>()
-                val isoDateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME // For parsing reminderTime and takenAt
+                val isoDateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
                 for (medication in allMedications) {
                     val medicationReminders = medicationReminderRepository.getRemindersForMedication(medication.id).firstOrNull() ?: emptyList()
+                    // Ensure MedicationType.defaultType() exists or handle null medicationType
                     val medicationType = medication.typeId?.let { typeId ->
                         medicationTypeRepository.getMedicationTypeById(typeId).firstOrNull()
-                    } ?: MedicationType.defaultType() // Provide a default if type is somehow null
+                    } ?: MedicationType(id = -1, name = "Unknown", imageUrl = null) // Fallback directly here if defaultType() is an issue
 
                     for (reminder in medicationReminders) {
                         try {
@@ -109,30 +105,26 @@ class TodayViewModel @Inject constructor(
                                         medicationId = medication.id,
                                         medicationName = medication.name,
                                         dosage = medication.dosage ?: "",
-                                        medicationType = medicationType,
+                                        medicationType = medicationType, // medicationType will not be null here
                                         scheduledTime = scheduledLocalDateTime.toLocalTime(),
                                         actualTakenTime = actualTakenTimeLocal,
                                         isTaken = reminder.isTaken,
-                                        // isFuture will be re-evaluated against uiState.currentTime later
-                                        isFuture = scheduledLocalDateTime.toLocalTime().isAfter(LocalTime.now()), // Initial check
-                                        medicationColor = MedicationColor.valueOf(medication.color ?: MedicationColor.LIGHT_GRAY.name),
+                                        isFuture = scheduledLocalDateTime.toLocalTime().isAfter(LocalTime.now()),
+                                        medicationColor = MedicationColor.valueOf(medication.color ?: MedicationColor.LIGHT_ORANGE.name), // Default to LIGHT_ORANGE if color is null
                                         onToggle = { checked -> handleToggle(reminder.id.toString(), checked) }
                                     )
                                 )
                             }
                         } catch (e: Exception) {
-                            // Log error parsing reminder.reminderTime or other issues
                             Log.e("TodayViewModel", "Error processing reminder ${reminder.id} for med ${medication.name}: ${e.message}")
                         }
                     }
                 }
 
-                // Update isFuture based on current time from state for consistent comparison
                 val currentTimeFromState = _uiState.value.currentTime
                 val processedReminders = remindersData.map { data ->
                     data.copy(isFuture = data.scheduledTime.isAfter(currentTimeFromState))
                 }.sortedBy { it.scheduledTime }
-
 
                 val grouped = processedReminders.groupBy { it.scheduledTime }
                 _uiState.value = _uiState.value.copy(groupedReminders = grouped, isLoading = false, error = null)
@@ -163,15 +155,12 @@ class TodayViewModel @Inject constructor(
             val isActuallyFuture = reminderData!!.scheduledTime.isAfter(currentTime)
 
             if (isChecked && isActuallyFuture && !reminderData!!.isTaken) {
-                // Trying to mark a future, untaken item as taken: Show dialog
-                _showTakeFutureDialog.value = TakeFutureDialogState(
+                _showTakeFutureDialog.value = TakeFutureDialogState( // Corrected: Use _showTakeFutureDialog
                     reminderId = reminderId,
                     medicationName = reminderData!!.medicationName,
                     scheduledTime = reminderData!!.scheduledTime
                 )
-                // Do not proceed further with toggle; dialog will handle action
             } else {
-                // Proceed with normal toggle logic (marking past/present, or un-marking any)
                 val newActualTakenTime = if (isChecked) currentTime else null
                 updateReminderState(reminderId, timeSlot!!, isChecked, newActualTakenTime)
             }
@@ -182,11 +171,10 @@ class TodayViewModel @Inject constructor(
         viewModelScope.launch {
             val actualTakenTime = if (takeAtCurrentTime) _uiState.value.currentTime else scheduledTime
             updateReminderState(reminderId, scheduledTime, true, actualTakenTime)
-            _showTakeFutureDialog.value = null // Dismiss dialog
+            _showTakeFutureDialog.value = null // Corrected: Use _showTakeFutureDialog
         }
     }
 
-    // Helper function to update reminder state and persist (actual persistence is placeholder)
     private fun updateReminderState(reminderId: String, timeSlot: LocalTime, isTaken: Boolean, actualTakenTime: LocalTime?) {
         val currentGroups = _uiState.value.groupedReminders
         val reminderToUpdate = currentGroups[timeSlot]?.find { it.id == reminderId } ?: return
@@ -197,36 +185,29 @@ class TodayViewModel @Inject constructor(
             isFuture = reminderToUpdate.scheduledTime.isAfter(_uiState.value.currentTime)
         )
 
-        // Persist to DB (placeholder)
-            // if (updatedReminder.isTaken) {
-            //   historyRepository.addTakenEntry(updatedReminder.id, medicationId, updatedReminder.actualTakenTime!!, updatedReminder.scheduledTime)
-            // } else {
-            //   historyRepository.removeTakenEntry(updatedReminder.id, updatedReminder.scheduledTime)
-            // }
+        val newListForSlot = currentGroups[timeSlot]?.map {
+            if (it.id == reminderId) updatedReminder else it
+        } ?: emptyList()
 
-            val newListForSlot = currentGroups[timeSlot]?.map { // Corrected: use timeSlot
-                if (it.id == reminderId) updatedReminder else it
-            } ?: emptyList()
+        val newGroups = currentGroups.toMutableMap()
+        newGroups[timeSlot] = newListForSlot
 
-            val newGroups = currentGroups.toMutableMap()
-            newGroups[timeSlot] = newListForSlot // Corrected: use timeSlot
-
-            _uiState.value = _uiState.value.copy(groupedReminders = newGroups)
-            _showTakeFutureDialog.value = null // Ensure dialog is dismissed
+        _uiState.value = _uiState.value.copy(groupedReminders = newGroups)
+        if(isTaken || !reminderToUpdate.isFuture) { // Only dismiss dialog if not triggering it again
+             _showTakeFutureDialog.value = null // Corrected: Use _showTakeFutureDialog
         }
     }
 
     fun dismissTakeFutureDialog() {
-        _showTakeFutureDialog.value = null
+        _showTakeFutureDialog.value = null // Corrected: Use _showTakeFutureDialog
     }
 
-    // Call this if medication taken status changes from outside (e.g. notification)
-    fun refreshReminderStatus() {
-        loadTodayReminders() // Simplest way to refresh
+    fun refreshReminderStatus() { // Corrected: Use loadTodayReminders
+        loadTodayReminders()
     }
 
     override fun onCleared() {
         super.onCleared()
-        timerJob?.cancel()
+        timerJob?.cancel() // Corrected: Use timerJob
     }
-}
+} // Added missing class closing brace
