@@ -214,12 +214,12 @@ fun TodayRemindersList(
         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     ) {
         sortedTimeGroups.forEachIndexed { groupIndex, time ->
-            if (!separatorInserted && time.isAfter(currentTime)) {
-                item(key = "separator_before_${time}") {
-                    CurrentTimeSeparator(currentTime = currentTime)
-                }
-                separatorInserted = true
-            }
+            // if (!separatorInserted && time.isAfter(currentTime)) {
+            //     item(key = "separator_before_${time}") {
+            //         CurrentTimeSeparator(currentTime = currentTime)
+            //     }
+            //     separatorInserted = true
+            // }
 
             item(key = "header_${time}") {
                 Text(
@@ -243,17 +243,17 @@ fun TodayRemindersList(
             }
         }
 
-        if (!separatorInserted && sortedTimeGroups.isNotEmpty()) {
-            item(key = "separator_at_end") {
-                CurrentTimeSeparator(currentTime = currentTime)
-            }
-            separatorInserted = true
-        }
-        if (sortedTimeGroups.isEmpty()) { // Also show separator if the list is completely empty
-            item(key = "separator_empty_list") {
-                CurrentTimeSeparator(currentTime = currentTime)
-            }
-        }
+        // if (!separatorInserted && sortedTimeGroups.isNotEmpty()) {
+        //     item(key = "separator_at_end") {
+        //         CurrentTimeSeparator(currentTime = currentTime)
+        //     }
+        //     separatorInserted = true
+        // }
+        // if (sortedTimeGroups.isEmpty()) { // Also show separator if the list is completely empty
+        //     item(key = "separator_empty_list") {
+        //         CurrentTimeSeparator(currentTime = currentTime)
+        //     }
+        // }
     }
 }
 
@@ -266,7 +266,8 @@ fun CurrentTimeSeparator(currentTime: LocalTime) {
             .padding(vertical = 16.dp)
     ) {
         Canvas(modifier = Modifier.size(8.dp)) {
-            drawCircle(color = MaterialTheme.colorScheme.primary, radius = size.minDimension / 2)
+            // Line 274: drawCircle(color = MaterialTheme.colorScheme.primary, radius = size.minDimension / 2)
+            // Temporarily commenting out to see if it's the source of the Composable invocation error
         }
         HorizontalDivider(
             modifier = Modifier
