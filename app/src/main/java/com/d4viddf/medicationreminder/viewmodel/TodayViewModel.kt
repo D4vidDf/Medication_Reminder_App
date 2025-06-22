@@ -24,6 +24,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
+import android.util.Log // Added import for Log
 
 // TodayMedicationData class definition is now removed from here.
 // It should be in app/src/main/java/com/d4viddf/medicationreminder/ui/components/TodayMedicationData.kt
