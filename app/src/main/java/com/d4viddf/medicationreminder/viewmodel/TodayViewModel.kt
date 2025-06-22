@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.firstOrNull // Ensure this is present
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -79,18 +79,22 @@ class TodayViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true)
             try {
                 val today = LocalDate.now()
-                val allMedications = medicationRepository.getAllMedications().firstOrNull() ?: emptyList()
+                // Explicitly type to see if it helps with inference
+                val allMedications: List<com.d4viddf.medicationreminder.data.Medication>? = medicationRepository.getAllMedications().firstOrNull()
                 val remindersData = mutableListOf<TodayMedicationData>()
                 val isoDateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 
-                for (medication in allMedications) {
-                    val medicationReminders = medicationReminderRepository.getRemindersForMedication(medication.id).firstOrNull() ?: emptyList()
-                    // Ensure MedicationType.defaultType() exists or handle null medicationType
-                    val medicationType = medication.typeId?.let { typeId ->
-                        medicationTypeRepository.getMedicationTypeById(typeId).firstOrNull()
-                    } ?: MedicationType(id = -1, name = "Unknown", imageUrl = null) // Fallback directly here if defaultType() is an issue
+                for (medication in (allMedications ?: emptyList())) { // Iterate over potentially null list
+                    // Explicitly type
+                    val medicationReminders: List<com.d4viddf.medicationreminder.data.MedicationReminder>? = medicationReminderRepository.getRemindersForMedication(medication.id).firstOrNull()
 
-                    for (reminder in medicationReminders) {
+                    val medicationType = medication.typeId?.let { typeId ->
+                        // Explicitly type result of firstOrNull
+                        val typeResult: com.d4viddf.medicationreminder.data.MedicationType? = medicationTypeRepository.getMedicationTypeById(typeId).firstOrNull()
+                        typeResult
+                    } ?: MedicationType(id = -1, name = "Unknown", imageUrl = null) // Fallback directly here
+
+                    for (reminder in (medicationReminders ?: emptyList())) { // Iterate over potentially null list
                         try {
                             val scheduledLocalDateTime = LocalDateTime.parse(reminder.reminderTime, isoDateTimeFormatter)
                             if (scheduledLocalDateTime.toLocalDate() == today) {
