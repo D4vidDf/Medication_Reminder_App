@@ -183,22 +183,23 @@ private fun HandleUiState(
                 )
             }
         }
-        uiState.groupedReminders.isEmpty() && !uiState.isLoading -> {
+        uiState.timeGroups.isEmpty() && !uiState.isLoading -> { // Use timeGroups
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) { // Ensure text and potential future elements are centered
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = stringResource(id = R.string.today_screen_no_reminders),
                         style = MaterialTheme.typography.headlineSmall,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
-                    // The CurrentTimeSeparator will be added by TodayRemindersList if list is empty.
+                    // Show separator even if list is empty, directly in this Box
+                    CurrentTimeSeparator(currentTime = uiState.currentTime)
                 }
             }
         }
         else -> {
             TodayRemindersList(
-                groupedReminders = uiState.groupedReminders,
+                timeGroups = uiState.timeGroups, // Pass timeGroups
                 currentTime = uiState.currentTime,
                 modifier = Modifier.padding(innerPadding),
                 onReminderClick = onReminderClick
@@ -209,59 +210,45 @@ private fun HandleUiState(
 
 @Composable
 fun TodayRemindersList(
-    groupedReminders: Map<LocalTime, List<TodayMedicationData>>,
+    timeGroups: List<TimeGroupDisplayData>, // Changed to List<TimeGroupDisplayData>
     currentTime: LocalTime,
     modifier: Modifier = Modifier,
     onReminderClick: (medicationId: Int) -> Unit
 ) {
-    val sortedTimeGroups = groupedReminders.keys.sorted()
+    // timeGroups are already sorted by the ViewModel
     var separatorInserted = false
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp) // Only vertical padding for LazyColumn itself
     ) {
-        sortedTimeGroups.forEachIndexed { groupIndex, time ->
-            // if (!separatorInserted && time.isAfter(currentTime)) {
-            //     item(key = "separator_before_${time}") {
-            //         CurrentTimeSeparator(currentTime = currentTime)
-            //     }
-            //     separatorInserted = true
-            // }
-
-            item(key = "header_${time}") {
-                Text(
-                    text = time.format(DateTimeFormatter.ofPattern("HH:mm")),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 4.dp)
-                )
+        timeGroups.forEach { timeGroupData ->
+            // Check if separator needs to be inserted BEFORE this time group
+            if (!separatorInserted && timeGroupData.scheduledTime.isAfter(currentTime)) {
+                item(key = "separator_before_${timeGroupData.scheduledTime}") {
+                    CurrentTimeSeparator(currentTime = currentTime) // Uncommented
+                }
+                separatorInserted = true
             }
 
-            val remindersInGroup = groupedReminders[time] ?: emptyList()
-            items(remindersInGroup.size, key = { index -> remindersInGroup[index].id }) { cardIndex ->
-                val reminderData = remindersInGroup[cardIndex]
-                val shape = getCardShape(cardIndex, remindersInGroup.size)
-                MedicationCardTodayFinal(
-                    data = reminderData.copy(isFuture = reminderData.scheduledTime.isAfter(currentTime)),
-                    shape = shape,
-                    modifier = Modifier
-                        .padding(bottom = if (cardIndex == remindersInGroup.size -1) 8.dp else 2.dp)
-                        .clickable { onReminderClick(reminderData.medicationId) }
+            item(key = "group_${timeGroupData.scheduledTime}") {
+                TimeGroupCard(
+                    timeGroupData = timeGroupData,
+                    onReminderClick = onReminderClick,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp) // Padding for each TimeGroupCard
                 )
             }
         }
 
-        // if (!separatorInserted && sortedTimeGroups.isNotEmpty()) {
-        //     item(key = "separator_at_end") {
-        //         CurrentTimeSeparator(currentTime = currentTime)
-        //     }
-        //     separatorInserted = true
-        // }
-        // if (sortedTimeGroups.isEmpty()) { // Also show separator if the list is completely empty
-        //     item(key = "separator_empty_list") {
-        //         CurrentTimeSeparator(currentTime = currentTime)
-        //     }
-        // }
+        // If separator hasn't been inserted yet (all reminders are in the past or exactly at current time)
+        // and there are items in the list.
+        if (!separatorInserted && timeGroups.isNotEmpty()) {
+            item(key = "separator_at_end") {
+                CurrentTimeSeparator(currentTime = currentTime) // Uncommented
+            }
+            // No need to set separatorInserted = true here as it's the end
+        }
+        // If timeGroups is empty, the empty state in HandleUiState shows the separator. (This was already handled there)
     }
 }
 
@@ -274,8 +261,7 @@ fun CurrentTimeSeparator(currentTime: LocalTime) {
             .padding(vertical = 16.dp)
     ) {
         Canvas(modifier = Modifier.size(8.dp)) {
-            // Line 274: drawCircle(color = MaterialTheme.colorScheme.primary, radius = size.minDimension / 2)
-            // Temporarily commenting out to see if it's the source of the Composable invocation error
+            drawCircle(color = MaterialTheme.colorScheme.primary, radius = size.minDimension / 2) // Uncommented
         }
         HorizontalDivider(
             modifier = Modifier

@@ -33,7 +33,7 @@ import java.time.LocalDateTime
 // It should be in app/src/main/java/com/d4viddf/medicationreminder/ui/components/TodayMedicationData.kt
 
 data class TodayScreenUiState(
-    val groupedReminders: Map<LocalTime, List<TodayMedicationData>> = emptyMap(), // Uses imported TodayMedicationData
+    val timeGroups: List<TimeGroupDisplayData> = emptyList(), // Changed from groupedReminders Map
     val currentTime: LocalTime = LocalTime.now(),
     val isLoading: Boolean = true,
     val error: String? = null
@@ -131,43 +131,54 @@ class TodayViewModel @Inject constructor(
                     data.copy(isFuture = data.scheduledTime.isAfter(currentTimeFromState))
                 }.sortedBy { it.scheduledTime }
 
-                val grouped = processedReminders.groupBy { it.scheduledTime }
-                _uiState.value = _uiState.value.copy(groupedReminders = grouped, isLoading = false, error = null)
+                // Group by scheduledTime and then map to TimeGroupDisplayData
+                val finalTimeGroups = processedReminders
+                    .groupBy { it.scheduledTime }
+                    .map { (time, reminderList) ->
+                        TimeGroupDisplayData(scheduledTime = time, reminders = reminderList)
+                    }
+                    .sortedBy { it.scheduledTime } // Ensure the final list of groups is sorted by time
+
+                _uiState.value = _uiState.value.copy(timeGroups = finalTimeGroups, isLoading = false, error = null)
 
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to load reminders: ${e.message}")
+                // Ensure timeGroups is empty on error, not just relying on initial state
+                _uiState.value = _uiState.value.copy(timeGroups = emptyList(), isLoading = false, error = "Failed to load reminders: ${e.message}")
             }
         }
     }
 
     private fun handleToggle(reminderId: String, isChecked: Boolean) {
         viewModelScope.launch {
-            val currentGroups = _uiState.value.groupedReminders
+            val currentTimeGroups = _uiState.value.timeGroups
             var reminderData: TodayMedicationData? = null
-            var timeSlot: LocalTime? = null
+            var groupIndex = -1
 
-            currentGroups.forEach { (ts, list) ->
-                list.find { it.id == reminderId }?.let {
-                    reminderData = it
-                    timeSlot = ts
-                    return@forEach
+            for (idx in currentTimeGroups.indices) {
+                val foundReminder = currentTimeGroups[idx].reminders.find { it.id == reminderId }
+                if (foundReminder != null) {
+                    reminderData = foundReminder
+                    groupIndex = idx
+                    break
                 }
             }
 
-            if (reminderData == null || timeSlot == null) return@launch
+            if (reminderData == null || groupIndex == -1) return@launch
 
             val currentTime = _uiState.value.currentTime
+            // Use reminderData which is non-null here
             val isActuallyFuture = reminderData!!.scheduledTime.isAfter(currentTime)
 
             if (isChecked && isActuallyFuture && !reminderData!!.isTaken) {
-                _showTakeFutureDialog.value = TakeFutureDialogState( // Corrected: Use _showTakeFutureDialog
+                _showTakeFutureDialog.value = TakeFutureDialogState(
                     reminderId = reminderId,
                     medicationName = reminderData!!.medicationName,
                     scheduledTime = reminderData!!.scheduledTime
                 )
             } else {
                 val newActualTakenTime = if (isChecked) currentTime else null
-                updateReminderState(reminderId, timeSlot!!, isChecked, newActualTakenTime)
+                // Pass groupIndex or scheduledTime for finding the group in updateReminderState
+                updateReminderState(reminderId, reminderData!!.scheduledTime, isChecked, newActualTakenTime)
             }
         }
     }
@@ -175,31 +186,43 @@ class TodayViewModel @Inject constructor(
     fun markFutureMedicationAsTaken(reminderId: String, scheduledTime: LocalTime, takeAtCurrentTime: Boolean) {
         viewModelScope.launch {
             val actualTakenTime = if (takeAtCurrentTime) _uiState.value.currentTime else scheduledTime
+            // Pass scheduledTime to identify the group
             updateReminderState(reminderId, scheduledTime, true, actualTakenTime)
-            _showTakeFutureDialog.value = null // Corrected: Use _showTakeFutureDialog
+            _showTakeFutureDialog.value = null
         }
     }
 
-    private fun updateReminderState(reminderId: String, timeSlot: LocalTime, isTaken: Boolean, actualTakenTime: LocalTime?) {
-        val currentGroups = _uiState.value.groupedReminders
-        val reminderToUpdate = currentGroups[timeSlot]?.find { it.id == reminderId } ?: return
+    // timeSlot parameter is now the original scheduledTime of the reminder to find its group
+    private fun updateReminderState(reminderId: String, originalScheduledTime: LocalTime, isTaken: Boolean, actualTakenTime: LocalTime?) {
+        val currentTimeGroups = _uiState.value.timeGroups
+
+        val targetGroupIndex = currentTimeGroups.indexOfFirst { it.scheduledTime == originalScheduledTime }
+        if (targetGroupIndex == -1) return
+
+        val targetGroup = currentTimeGroups[targetGroupIndex]
+        val reminderToUpdate = targetGroup.reminders.find { it.id == reminderId } ?: return
 
         val updatedReminder = reminderToUpdate.copy(
             isTaken = isTaken,
             actualTakenTime = actualTakenTime,
-            isFuture = reminderToUpdate.scheduledTime.isAfter(_uiState.value.currentTime)
+            isFuture = reminderToUpdate.scheduledTime.isAfter(_uiState.value.currentTime) // Re-evaluate isFuture
         )
 
-        val newListForSlot = currentGroups[timeSlot]?.map {
+        val updatedRemindersInGroup = targetGroup.reminders.map {
             if (it.id == reminderId) updatedReminder else it
-        } ?: emptyList()
+        }
 
-        val newGroups = currentGroups.toMutableMap()
-        newGroups[timeSlot] = newListForSlot
+        val updatedTimeGroup = targetGroup.copy(reminders = updatedRemindersInGroup)
 
-        _uiState.value = _uiState.value.copy(groupedReminders = newGroups)
-        if(isTaken || !reminderToUpdate.isFuture) { // Only dismiss dialog if not triggering it again
-             _showTakeFutureDialog.value = null // Corrected: Use _showTakeFutureDialog
+        val newTimeGroups = currentTimeGroups.toMutableList().apply {
+            this[targetGroupIndex] = updatedTimeGroup
+        }
+
+        _uiState.value = _uiState.value.copy(timeGroups = newTimeGroups)
+
+        // If the dialog was shown for this specific reminder, dismiss it now that action has been taken/processed.
+        if (_showTakeFutureDialog.value?.reminderId == reminderId) {
+            _showTakeFutureDialog.value = null
         }
     }
 

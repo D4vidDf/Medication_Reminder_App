@@ -81,9 +81,9 @@ class TodayScreenTest {
     @Test
     fun remindersLoaded_displaysTimeGroupsAndCards() {
         val time8AM = LocalTime.of(8, 0)
-        val medData1 = TodayMedicationData("r1", 1, "Med A", "10mg", MedicationType.PILL.copy(iconResId = com.d4viddf.medicationreminder.R.drawable.ic_medication_24), time8AM, null, false, false, MedicationColor.LIGHT_BLUE, {})
-        val grouped = mapOf(time8AM to listOf(medData1))
-        setupViewModel(initialUiState = TodayScreenUiState(isLoading = false, groupedReminders = grouped, currentTime = LocalTime.of(7,0)))
+        val medData1 = TodayMedicationData("r1", 1, "Med A", "10mg", MedicationType(1, "Pill", null), time8AM, null, false, false, MedicationColor.LIGHT_BLUE, {})
+        val timeGroups = listOf(TimeGroupDisplayData(scheduledTime = time8AM, reminders = listOf(medData1)))
+        setupViewModel(initialUiState = TodayScreenUiState(isLoading = false, timeGroups = timeGroups, currentTime = LocalTime.of(7,0)))
 
         composeTestRule.setContent {
             AppTheme {
@@ -154,9 +154,9 @@ class TodayScreenTest {
     @Test
     fun reminderCardClick_onCompactScreen_navigatesToDetails() {
         val time8AM = LocalTime.of(8, 0)
-        val medData1 = TodayMedicationData("r1", 101, "Med A", "10mg", MedicationType.PILL.copy(iconResId = com.d4viddf.medicationreminder.R.drawable.ic_medication_24), time8AM, null, false, false, MedicationColor.LIGHT_BLUE, {})
-        val grouped = mapOf(time8AM to listOf(medData1))
-        setupViewModel(initialUiState = TodayScreenUiState(isLoading = false, groupedReminders = grouped))
+        val medData1 = TodayMedicationData("r1", 101, "Med A", "10mg", MedicationType(1, "Pill", null), time8AM, null, false, false, MedicationColor.LIGHT_BLUE, {})
+        val timeGroups = listOf(TimeGroupDisplayData(scheduledTime = time8AM, reminders = listOf(medData1)))
+        setupViewModel(initialUiState = TodayScreenUiState(isLoading = false, timeGroups = timeGroups))
 
         composeTestRule.setContent {
             AppTheme {

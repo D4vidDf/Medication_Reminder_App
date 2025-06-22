@@ -88,21 +88,25 @@ class TodayViewModelTest {
 
 
         viewModel.uiState.test {
-            val state = awaitItem() // This might be initial or already loaded state.
-                                  // Depending on how quickly init completes vs test observation starts.
-                                  // If init is fast, this is already the loaded state.
+            // Skip initial loading state if it's emitted quickly
+            var state = awaitItem()
+            if (state.isLoading) {
+                state = awaitItem()
+            }
 
-            // If the first item is the initial empty/loading state, await another one.
-            val finalState = if (state.isLoading || state.groupedReminders.isEmpty()) awaitItem() else state
+            assertFalse(state.isLoading)
+            assertNull(state.error)
+            assertEquals(2, state.timeGroups.size) // Two time groups: 8 AM and 8 PM
 
-            assertFalse(finalState.isLoading)
-            assertNull(finalState.error)
-            assertNotNull(finalState.groupedReminders[timeMorning])
-            assertEquals(2, finalState.groupedReminders[timeMorning]?.size)
-            assertEquals("Med A", finalState.groupedReminders[timeMorning]?.get(0)?.medicationName)
-            assertNotNull(finalState.groupedReminders[timeEvening])
-            assertEquals(1, finalState.groupedReminders[timeEvening]?.size)
-            assertEquals("Med B", finalState.groupedReminders[timeEvening]?.get(0)?.medicationName) // Corrected Typo Med B
+            val morningGroup = state.timeGroups.find { it.scheduledTime == timeMorning }
+            assertNotNull(morningGroup)
+            assertEquals(2, morningGroup.reminders.size)
+            assertEquals("Med A", morningGroup.reminders[0].medicationName)
+
+            val eveningGroup = state.timeGroups.find { it.scheduledTime == timeEvening }
+            assertNotNull(eveningGroup)
+            assertEquals(1, eveningGroup.reminders.size)
+            assertEquals("Med B", eveningGroup.reminders[0].medicationName)
         }
     }
 
@@ -120,34 +124,61 @@ class TodayViewModelTest {
 
             assertFalse(finalState.isLoading)
             assertEquals("Failed to load reminders: $errorMessage", finalState.error)
-            assertTrue(finalState.groupedReminders.isEmpty())
+            assertTrue(finalState.timeGroups.isEmpty()) // Check timeGroups
         }
     }
 
     @Test
     fun `handleToggle for past item marks as taken with current time`() = runTest {
         val pastTime = LocalTime.now().minusHours(1)
-        val schedule = MedicationSchedule(id = 1, medicationId = 1, scheduleDate = today, scheduledTime = pastTime, takenAt = null)
-        whenever(mockReminderRepo.getAllSchedules()).thenReturn(flowOf(listOf(schedule)))
-        whenever(mockMedicationRepo.getMedicationById(1)).thenReturn(flowOf(sampleMedication1))
+        val reminderIdToToggle = "r1"
+        val schedules = listOf(
+            MedicationSchedule(id = 1, medicationId = 1, scheduleDate = today, scheduledTime = pastTime, takenAt = null)
+        )
+        // Mock so that the TodayMedicationData has id = "r1"
+        // This part of the test needs to be more careful about how schedule.id maps to TodayMedicationData.id
+        // In the VM, TodayMedicationData id is schedule.id.toString(). So if schedule.id is 1, data.id is "1".
+        // For this test, let's assume the TodayMedicationData we want to toggle will have id "1".
+        // So, if schedule.id = 1, then reminderIdToToggle should be "1".
+
+        whenever(mockReminderRepo.getAllSchedules()).thenReturn(flowOf(schedules)) // This is the old mock
+        // New mocking strategy based on current ViewModel logic:
+        val medication = sampleMedication1.copy(id = 1)
+        val reminder = com.d4viddf.medicationreminder.data.MedicationReminder(
+            id = 1, medicationId = 1, reminderTime = LocalDateTime.of(today, pastTime).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), isTaken = false, takenAt = null, medicationScheduleId = 1
+        )
+        whenever(mockMedicationRepo.getAllMedications()).thenReturn(flowOf(listOf(medication)))
+        whenever(mockReminderRepo.getRemindersForMedication(1)).thenReturn(flowOf(listOf(reminder)))
         whenever(mockMedicationTypeRepo.getMedicationTypeById(1)).thenReturn(flowOf(sampleMedicationType))
+
 
         setupViewModel()
         testDispatcher.scheduler.advanceUntilIdle() // Initial load
 
-        val reminderIdToToggle = viewModel.uiState.value.groupedReminders[pastTime]?.get(0)?.id ?: ""
-        assertFalse(reminderIdToToggle.isBlank())
+        // Find the item in the new structure
+        val targetGroup = viewModel.uiState.value.timeGroups.find { it.scheduledTime == pastTime }
+        assertNotNull(targetGroup)
+        val itemToToggle = targetGroup.reminders.find { it.id == "1" } // id from MedicationReminder
+        assertNotNull(itemToToggle)
+        assertEquals("1", itemToToggle.id)
 
-        viewModel.handleToggle(reminderIdToToggle, true)
+
+        viewModel.handleToggle(itemToToggle.id, true)
         testDispatcher.scheduler.advanceUntilIdle()
 
 
         viewModel.uiState.test {
-            val state = awaitItem() // Get current state after toggle
-            val toggledItem = state.groupedReminders[pastTime]?.find { it.id == reminderIdToToggle }
+            var state = awaitItem()
+            if(state.timeGroups.find { it.scheduledTime == pastTime }?.reminders?.find { it.id == "1"}?.isTaken == false) {
+                state = awaitItem() // ensure state update is captured
+            }
+
+            val updatedGroup = state.timeGroups.find { it.scheduledTime == pastTime }
+            assertNotNull(updatedGroup)
+            val toggledItem = updatedGroup.reminders.find { it.id == "1" }
             assertNotNull(toggledItem)
-            assertTrue(toggledItem.isTaken)
-            assertNotNull(toggledItem.actualTakenTime)
+            assertTrue(toggledItem.isTaken, "Item was not marked as taken")
+            assertNotNull(toggledItem.actualTakenTime, "Actual taken time was not set")
             // Check if actualTakenTime is very close to LocalTime.now() (within a second or so)
             assertTrue(java.time.Duration.between(toggledItem.actualTakenTime, LocalTime.now()).seconds < 2)
         }
@@ -156,30 +187,37 @@ class TodayViewModelTest {
     @Test
     fun `handleToggle for future item shows dialog`() = runTest {
         val futureTime = LocalTime.now().plusHours(2)
-        val schedule = MedicationSchedule(id = 1, medicationId = 1, scheduleDate = today, scheduledTime = futureTime, takenAt = null)
-        whenever(mockReminderRepo.getAllSchedules()).thenReturn(flowOf(listOf(schedule)))
-        whenever(mockMedicationRepo.getMedicationById(1)).thenReturn(flowOf(sampleMedication1))
+        val medication = sampleMedication1.copy(id = 1)
+        val reminder = com.d4viddf.medicationreminder.data.MedicationReminder(
+            id = 1, medicationId = 1, reminderTime = LocalDateTime.of(today, futureTime).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), isTaken = false, takenAt = null, medicationScheduleId = 1
+        )
+        whenever(mockMedicationRepo.getAllMedications()).thenReturn(flowOf(listOf(medication)))
+        whenever(mockReminderRepo.getRemindersForMedication(1)).thenReturn(flowOf(listOf(reminder)))
         whenever(mockMedicationTypeRepo.getMedicationTypeById(1)).thenReturn(flowOf(sampleMedicationType))
 
         setupViewModel()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val reminderToToggle = viewModel.uiState.value.groupedReminders[futureTime]?.get(0)
-        assertNotNull(reminderToToggle)
-        assertFalse(reminderToToggle.isTaken)
+        val targetGroup = viewModel.uiState.value.timeGroups.find { it.scheduledTime == futureTime }
+        assertNotNull(targetGroup)
+        val itemToToggle = targetGroup.reminders.find { it.id == "1" }
+        assertNotNull(itemToToggle)
+        assertFalse(itemToToggle.isTaken)
 
-        viewModel.handleToggle(reminderToToggle.id, true) // Try to mark as taken
+        viewModel.handleToggle(itemToToggle.id, true) // Try to mark as taken
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.showTakeFutureDialog.test {
             val dialogState = awaitItem()
             assertNotNull(dialogState)
-            assertEquals(reminderToToggle.id, dialogState.reminderId)
-            assertEquals(reminderToToggle.medicationName, dialogState.medicationName)
-            assertEquals(reminderToToggle.scheduledTime, dialogState.scheduledTime)
+            assertEquals(itemToToggle.id, dialogState.reminderId)
+            assertEquals(itemToToggle.medicationName, dialogState.medicationName)
+            assertEquals(itemToToggle.scheduledTime, dialogState.scheduledTime)
         }
         // Ensure original item is NOT marked as taken yet
-        val itemAfterToggleAttempt = viewModel.uiState.value.groupedReminders[futureTime]?.get(0)
+        val groupAfterToggle = viewModel.uiState.value.timeGroups.find { it.scheduledTime == futureTime }
+        assertNotNull(groupAfterToggle)
+        val itemAfterToggleAttempt = groupAfterToggle.reminders.find { it.id == "1" }
         assertNotNull(itemAfterToggleAttempt)
         assertFalse(itemAfterToggleAttempt.isTaken)
     }
@@ -188,26 +226,34 @@ class TodayViewModelTest {
     @Test
     fun `markFutureMedicationAsTaken at current time updates state`() = runTest {
         val futureTime = LocalTime.now().plusHours(2)
-        val reminderId = "future1"
-        // Simulate that the item is in the list (though load isn't strictly necessary for this specific method test if state is prepped)
-         val schedules = listOf(MedicationSchedule(id = 1, medicationId = 1, scheduleDate = today, scheduledTime = futureTime, takenAt = null))
-        whenever(mockReminderRepo.getAllSchedules()).thenReturn(flowOf(schedules))
-        whenever(mockMedicationRepo.getMedicationById(1)).thenReturn(flowOf(sampleMedication1.copy(id=1, name="MedFuture"))) // Ensure ID matches
+        // Simulate load to have the item in state
+        val medication = sampleMedication1.copy(id = 1, name = "MedFuture")
+        val reminder = com.d4viddf.medicationreminder.data.MedicationReminder(
+            id = 1, medicationId = 1, reminderTime = LocalDateTime.of(today, futureTime).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), isTaken = false, takenAt = null, medicationScheduleId = 1
+        )
+        whenever(mockMedicationRepo.getAllMedications()).thenReturn(flowOf(listOf(medication)))
+        whenever(mockReminderRepo.getRemindersForMedication(1)).thenReturn(flowOf(listOf(reminder)))
         whenever(mockMedicationTypeRepo.getMedicationTypeById(1)).thenReturn(flowOf(sampleMedicationType))
 
         setupViewModel()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        // Manually set dialog state as if it was shown
-        val initialItem = viewModel.uiState.value.groupedReminders[futureTime]?.find { it.id == "1" } // ID from schedule
+        val initialGroup = viewModel.uiState.value.timeGroups.find { it.scheduledTime == futureTime }
+        assertNotNull(initialGroup)
+        val initialItem = initialGroup.reminders.find { it.id == "1" }
         assertNotNull(initialItem)
 
         viewModel.markFutureMedicationAsTaken(initialItem.id, initialItem.scheduledTime, true)
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
-            val state = awaitItem()
-            val updatedItem = state.groupedReminders[futureTime]?.find { it.id == initialItem.id }
+            var state = awaitItem()
+             if(state.timeGroups.find { it.scheduledTime == futureTime }?.reminders?.find { it.id == "1"}?.isTaken == false) {
+                state = awaitItem()
+            }
+            val updatedGroup = state.timeGroups.find { it.scheduledTime == futureTime }
+            assertNotNull(updatedGroup)
+            val updatedItem = updatedGroup.reminders.find { it.id == "1" }
             assertNotNull(updatedItem)
             assertTrue(updatedItem.isTaken)
             assertNotNull(updatedItem.actualTakenTime)
@@ -220,23 +266,33 @@ class TodayViewModelTest {
     fun `markFutureMedicationAsTaken at scheduled time updates state`() = runTest {
         val futureTime = LocalTime.now().plusHours(2)
         // Simulate load
-        val schedules = listOf(MedicationSchedule(id = 1, medicationId = 1, scheduleDate = today, scheduledTime = futureTime, takenAt = null))
-        whenever(mockReminderRepo.getAllSchedules()).thenReturn(flowOf(schedules))
-        whenever(mockMedicationRepo.getMedicationById(1)).thenReturn(flowOf(sampleMedication1))
+        val medication = sampleMedication1.copy(id = 1)
+        val reminder = com.d4viddf.medicationreminder.data.MedicationReminder(
+            id = 1, medicationId = 1, reminderTime = LocalDateTime.of(today, futureTime).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), isTaken = false, takenAt = null, medicationScheduleId = 1
+        )
+        whenever(mockMedicationRepo.getAllMedications()).thenReturn(flowOf(listOf(medication)))
+        whenever(mockReminderRepo.getRemindersForMedication(1)).thenReturn(flowOf(listOf(reminder)))
         whenever(mockMedicationTypeRepo.getMedicationTypeById(1)).thenReturn(flowOf(sampleMedicationType))
 
         setupViewModel()
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val initialItem = viewModel.uiState.value.groupedReminders[futureTime]?.find { it.id == "1" }
+        val initialGroup = viewModel.uiState.value.timeGroups.find { it.scheduledTime == futureTime }
+        assertNotNull(initialGroup)
+        val initialItem = initialGroup.reminders.find { it.id == "1" }
         assertNotNull(initialItem)
 
         viewModel.markFutureMedicationAsTaken(initialItem.id, initialItem.scheduledTime, false) // false for takeAtCurrentTime
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.uiState.test {
-             val state = awaitItem()
-            val updatedItem = state.groupedReminders[futureTime]?.find { it.id == initialItem.id }
+            var state = awaitItem()
+            if(state.timeGroups.find { it.scheduledTime == futureTime }?.reminders?.find { it.id == "1"}?.isTaken == false) {
+                state = awaitItem()
+            }
+            val updatedGroup = state.timeGroups.find { it.scheduledTime == futureTime }
+            assertNotNull(updatedGroup)
+            val updatedItem = updatedGroup.reminders.find { it.id == "1" }
             assertNotNull(updatedItem)
             assertTrue(updatedItem.isTaken)
             assertEquals(futureTime, updatedItem.actualTakenTime)

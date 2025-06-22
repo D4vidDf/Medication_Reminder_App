@@ -101,10 +101,17 @@ fun MedicationCardTodayFinal(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
             ) {
+                val words = data.medicationName.split(" ")
+                val displayName = if (words.size > 3) {
+                    words.take(3).joinToString(" ") + "..."
+                } else {
+                    data.medicationName
+                }
                 Text(
-                    text = data.medicationName,
+                    text = displayName,
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-                    color = mainContentColor
+                    color = mainContentColor,
+                    maxLines = 2 // Allow a bit of wrapping for long 3 words, but ellipsis should handle overflow.
                 )
                 if (data.dosage.isNotBlank()) {
                     Text(
