@@ -86,18 +86,26 @@ fun TodayScreen(
         navigator = scaffoldNavigator,
         listPane = {
             // This is a ThreePaneScaffoldPaneScope
-            val listScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
+            val compactListScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState()) // For compact TopAppBar
+            // For LargeTopAppBar, if it should always be visible and large, no scrollBehavior is passed to it.
+            // The Scaffold's nestedScroll modifier will apply to the content area.
+
             Scaffold(
-                modifier = Modifier.nestedScroll(listScrollBehavior.nestedScrollConnection),
+                modifier = Modifier.then(
+                    // Apply nestedScroll only if a scroll behavior is used by the app bar
+                    if (widthSizeClass == WindowWidthSizeClass.Compact) Modifier.nestedScroll(compactListScrollBehavior.nestedScrollConnection)
+                    else Modifier // No nestedScroll connection if LargeTopAppBar is fixed
+                ),
                 topBar = {
-                    if (widthSizeClass == WindowWidthSizeClass.Compact) { // This check might be redundant if NavigableListDetailPaneScaffold handles it
+                    if (widthSizeClass == WindowWidthSizeClass.Compact) {
                         TopAppBar(
                             title = { Text(stringResource(id = R.string.today_screen_title)) },
-                            scrollBehavior = listScrollBehavior
+                            scrollBehavior = compactListScrollBehavior // Behavior for compact scrolling TopAppBar
                         )
                     } else {
                         LargeTopAppBar(
                             title = { Text(stringResource(id = R.string.today_screen_title)) }
+                            // No scrollBehavior, so it remains large and pinned
                         )
                     }
                 }
