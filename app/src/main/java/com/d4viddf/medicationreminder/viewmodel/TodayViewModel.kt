@@ -92,10 +92,8 @@ class TodayViewModel @Inject constructor(
                         medicationReminderRepository.getRemindersForMedication(medication.id).take(1).singleOrNull()
 
                     val medicationType = medication.typeId?.let { typeId ->
-                        val typeResult: com.d4viddf.medicationreminder.data.MedicationType? =
-                            medicationTypeRepository.getMedicationTypeById(typeId).take(1).singleOrNull()
-                        typeResult
-                    } ?: MedicationType.defaultType() // Use defaultType now that it's fixed
+                        medicationTypeRepository.getMedicationTypeById(typeId) // This is a suspend fun returning MedicationType?
+                    } ?: MedicationType.defaultType() // Use defaultType
 
                     for (reminder in (medicationReminders ?: emptyList())) { // Iterate over potentially null list
                         try {
