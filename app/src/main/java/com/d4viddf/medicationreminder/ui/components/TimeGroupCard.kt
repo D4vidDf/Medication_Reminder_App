@@ -71,14 +71,14 @@ fun TimeGroupCard(
 
 // Shape logic for items within the group
 private fun getReminderItemShapeWithinGroup(index: Int, totalItemsInGroup: Int): RoundedCornerShape {
-    val cornerRadius = 8.dp // Standard rounding for items if they are distinct or for ends of list
-    val connectedCornerRadius = 2.dp // Slight rounding for connected edges
+    val standardCornerRadius = 24.dp // Match original MedicationCard radius
+    val connectedEdgeRadius = 2.dp // Minimal rounding for connected edges to maintain slight separation
 
     return when {
-        totalItemsInGroup == 1 -> RoundedCornerShape(cornerRadius)
-        index == 0 -> RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius, bottomStart = connectedCornerRadius, bottomEnd = connectedCornerRadius)
-        index == totalItemsInGroup - 1 -> RoundedCornerShape(topStart = connectedCornerRadius, topEnd = connectedCornerRadius, bottomStart = cornerRadius, bottomEnd = cornerRadius)
-        else -> RoundedCornerShape(connectedCornerRadius)
+        totalItemsInGroup == 1 -> RoundedCornerShape(standardCornerRadius) // Single item gets full standard rounding
+        index == 0 -> RoundedCornerShape(topStart = standardCornerRadius, topEnd = standardCornerRadius, bottomStart = connectedEdgeRadius, bottomEnd = connectedEdgeRadius)
+        index == totalItemsInGroup - 1 -> RoundedCornerShape(topStart = connectedEdgeRadius, topEnd = connectedEdgeRadius, bottomStart = standardCornerRadius, bottomEnd = standardCornerRadius)
+        else -> RoundedCornerShape(connectedEdgeRadius) // Middle items
     }
 }
 
@@ -110,7 +110,7 @@ private fun ReminderItemRow(
             .fillMaxWidth()
             .background(itemBackgroundColor, shape = shape) // Apply background and shape to the Row
             .clip(shape) // Clip content to the shape
-            .padding(horizontal = 8.dp, vertical = 10.dp), // Inner padding for content
+            .padding(horizontal = 16.dp, vertical = 12.dp), // Adjusted padding
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -120,11 +120,11 @@ private fun ReminderItemRow(
                 placeholder = painterResource(id = R.drawable.ic_medication_24),
                 error = painterResource(id = R.drawable.ic_medication_24)
             ),
-            contentDescription = data.medicationType.name,
-            modifier = Modifier.size(28.dp)
+            contentDescription = data.medicationType.name, // TODO: Use stringResource
+            modifier = Modifier.size(40.dp) // Adjusted size
         )
 
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(16.dp)) // Adjusted spacer
 
         Column(modifier = Modifier.weight(1f)) {
             val words = data.medicationName.split(" ")
@@ -135,28 +135,30 @@ private fun ReminderItemRow(
             }
             Text(
                 text = displayName,
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold), // Adjusted style
                 color = contentColor,
-                maxLines = 2
+                maxLines = 1, // Ensure single line for name like original card
+                overflow = TextOverflow.Ellipsis // Add ellipsis for overflow
             )
             if (data.dosage.isNotBlank()) {
                 Text(
                     text = data.dosage,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyLarge, // Adjusted style
                     color = contentColor.copy(alpha = 0.8f)
                 )
             }
+            // "Taken at" time display can remain as is, or be adjusted if needed
             if (data.isTaken && data.actualTakenTime != null && data.actualTakenTime != data.scheduledTime) {
-                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 1.dp)) {
+                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) { // Increased top padding slightly
                     Text("Taken: ${data.actualTakenTime.format(DateTimeFormatter.ofPattern("HH:mm"))}", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium), color = contentColor)
                     Spacer(Modifier.width(4.dp))
                     Text(data.scheduledTime.format(DateTimeFormatter.ofPattern("HH:mm")), style = MaterialTheme.typography.labelSmall.copy(textDecoration = TextDecoration.LineThrough), color = contentColor.copy(alpha = 0.7f))
                 }
             } else if (data.isTaken && data.actualTakenTime != null) {
-                Text("Taken: ${data.actualTakenTime.format(DateTimeFormatter.ofPattern("HH:mm"))}", style = MaterialTheme.typography.labelSmall, color = contentColor.copy(alpha = 0.8f), modifier = Modifier.padding(top = 1.dp))
+                Text("Taken: ${data.actualTakenTime.format(DateTimeFormatter.ofPattern("HH:mm"))}", style = MaterialTheme.typography.labelSmall, color = contentColor.copy(alpha = 0.8f), modifier = Modifier.padding(top = 2.dp)) // Increased top padding
             }
         }
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(12.dp)) // Adjusted spacer
         Switch(
             checked = data.isTaken,
             onCheckedChange = data.onToggle,
