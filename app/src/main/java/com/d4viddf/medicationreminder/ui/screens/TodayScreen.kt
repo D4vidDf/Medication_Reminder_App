@@ -198,35 +198,101 @@ private fun HandleUiState(
             }
         }
         else -> {
-            TodayRemindersList(
-                timeGroups = uiState.timeGroups, // Pass timeGroups
-                currentTime = uiState.currentTime,
-                modifier = Modifier.padding(innerPadding),
-                onReminderClick = onReminderClick
-            )
+            BoxWithConstraints(modifier = Modifier.padding(innerPadding).fillMaxSize()) { // Wrap with BoxWithConstraints
+                val estimatedItemHeight = 120.dp // Estimate of a TimeGroupCard height
+                val bottomPadding = (this.maxHeight - estimatedItemHeight).coerceAtLeast(0.dp)
+
+                TodayRemindersList(
+                    timeGroups = uiState.timeGroups,
+                    currentTime = uiState.currentTime,
+                    modifier = Modifier.fillMaxSize(), // TodayRemindersList will fill BoxWithConstraints
+                    onReminderClick = onReminderClick,
+                    bottomContentPadding = bottomPadding // Pass calculated bottom padding
+                )
+            }
         }
     }
 }
 
 @Composable
 fun TodayRemindersList(
-    timeGroups: List<TimeGroupDisplayData>, // Changed to List<TimeGroupDisplayData>
+    timeGroups: List<TimeGroupDisplayData>,
     currentTime: LocalTime,
     modifier: Modifier = Modifier,
-    onReminderClick: (medicationId: Int) -> Unit
+    onReminderClick: (medicationId: Int) -> Unit,
+    bottomContentPadding: Dp // New parameter for bottom padding
 ) {
     // timeGroups are already sorted by the ViewModel
     var separatorInserted = false
+    val lazyListState = rememberLazyListState()
+
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(timeGroups, currentTime, lazyListState.isScrollInProgress, lazyListState.layoutInfo) {
+        if (lazyListState.isScrollInProgress) return@LaunchedEffect
+
+        val totalLazyColumnItems = lazyListState.layoutInfo.totalItemsCount
+        if (totalLazyColumnItems == 0 && timeGroups.isNotEmpty()) {
+            return@LaunchedEffect
+        }
+
+        var targetIndex = 0
+        var _separatorAlreadyInsertedUpToTarget = false
+
+        if (timeGroups.isEmpty()) {
+            targetIndex = 0
+        } else {
+            var found = false
+            var currentLazyIndex = 0
+            for (group in timeGroups) {
+                if (group.scheduledTime.isAfter(currentTime) && !_separatorAlreadyInsertedUpToTarget) {
+                    if (group.scheduledTime >= currentTime) {
+                        targetIndex = currentLazyIndex
+                        found = true
+                        break
+                    }
+                    currentLazyIndex++
+                    _separatorAlreadyInsertedUpToTarget = true
+                }
+                if (group.scheduledTime >= currentTime) {
+                    targetIndex = currentLazyIndex
+                    found = true
+                    break
+                }
+                currentLazyIndex++
+            }
+            if (!found && timeGroups.isNotEmpty()) {
+                var itemCount = 0
+                itemCount = timeGroups.size
+                targetIndex = itemCount
+            }
+        }
+
+        val currentTotalItems = lazyListState.layoutInfo.totalItemsCount
+        if (targetIndex >= 0 && targetIndex < currentTotalItems) {
+            coroutineScope.launch {
+                lazyListState.animateScrollToItem(targetIndex)
+            }
+        } else if (timeGroups.isEmpty() && currentTotalItems > 0 && targetIndex == 0) {
+             coroutineScope.launch {
+                lazyListState.animateScrollToItem(0)
+            }
+        } else if (currentTotalItems > 0 && targetIndex >= currentTotalItems) {
+            coroutineScope.launch {
+                lazyListState.animateScrollToItem((currentTotalItems - 1).coerceAtLeast(0))
+            }
+        }
+    }
 
     LazyColumn(
+        state = lazyListState,
         modifier = modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 8.dp) // Only vertical padding for LazyColumn itself
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 8.dp, bottom = bottomContentPadding) // Apply dynamic bottom padding
     ) {
         timeGroups.forEach { timeGroupData ->
-            // Check if separator needs to be inserted BEFORE this time group
             if (!separatorInserted && timeGroupData.scheduledTime.isAfter(currentTime)) {
                 item(key = "separator_before_${timeGroupData.scheduledTime}") {
-                    CurrentTimeSeparator(currentTime = currentTime) // Uncommented
+                    CurrentTimeSeparator(currentTime = currentTime)
                 }
                 separatorInserted = true
             }

@@ -89,82 +89,101 @@ private fun ReminderItemRow(
     data: TodayMedicationData,
     shape: RoundedCornerShape
 ) {
-    val baseMedicationColor = data.medicationColor.getColor()
-    // Colors based on state (similar to MedicationCardTodayFinal but for a Row background)
+    // Use properties from MedicationColor enum directly
+    val primaryMedicationColor = data.medicationColor.backgroundColor
+    val onPrimaryMedicationColor = data.medicationColor.textColor // Or onBackgroundColor, decide on one
+
     val itemBackgroundColor = if (data.isTaken) {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) // Slightly more distinct when taken
     } else if (data.isFuture) {
-        baseMedicationColor.copy(alpha = 0.20f) // Lighter alpha for non-card background
+        primaryMedicationColor.copy(alpha = 0.20f)
     } else {
-        Color.Transparent // Or a very subtle background if needed for past, untaken
+        Color.Transparent
     }
+
     val contentColor = if (data.isTaken || !data.isFuture) {
         MaterialTheme.colorScheme.onSurfaceVariant
     } else {
-        // Basic contrast for text on colored background, might need adjustment
-        if (baseMedicationColor.luminance() > 0.5f) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.9f)
+        onPrimaryMedicationColor // Use the 'on' color from the enum for future items
     }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(itemBackgroundColor, shape = shape) // Apply background and shape to the Row
-            .clip(shape) // Clip content to the shape
-            .padding(horizontal = 16.dp, vertical = 12.dp), // Adjusted padding
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .background(itemBackgroundColor, shape = shape)
+            .clip(shape)
+            .padding(horizontal = 16.dp, vertical = 16.dp), // Increased vertical padding
+        verticalAlignment = Alignment.CenterVertically
+        // horizontalArrangement = Arrangement.SpaceBetween // Will be handled by weights and Spacers
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(
-                model = data.medicationType.imageUrl,
-                placeholder = painterResource(id = R.drawable.ic_medication_24),
-                error = painterResource(id = R.drawable.ic_medication_24)
-            ),
-            contentDescription = data.medicationType.name, // TODO: Use stringResource
-            modifier = Modifier.size(40.dp) // Adjusted size
-        )
-
-        Spacer(modifier = Modifier.width(16.dp)) // Adjusted spacer
-
-        Column(modifier = Modifier.weight(1f)) {
-            val words = data.medicationName.split(" ")
-            val displayName = if (words.size > 3) {
-                words.take(3).joinToString(" ") + "..."
-            } else {
-                data.medicationName
+        // Left part: Image and Time (if not taken or taken at scheduled time)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter = rememberAsyncImagePainter(
+                    model = data.medicationType.imageUrl,
+                    placeholder = painterResource(id = R.drawable.ic_medication_24), // Ensure this drawable exists
+                    error = painterResource(id = R.drawable.ic_medication_24)
+                ),
+                contentDescription = data.medicationType.name, // TODO: Use stringResource
+                modifier = Modifier.size(48.dp) // Increased image size
+            )
+            // Display scheduled time if not taken, or taken at a different time (original time)
+            if (!data.isTaken || (data.isTaken && data.actualTakenTime != null && data.actualTakenTime != data.scheduledTime)) {
+                Text(
+                    text = data.scheduledTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (data.isTaken) contentColor.copy(alpha = 0.7f) else contentColor, // Mute if taken and different
+                    textDecoration = if (data.isTaken && data.actualTakenTime != null && data.actualTakenTime != data.scheduledTime) TextDecoration.LineThrough else TextDecoration.None,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
+        }
+
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // Center part: Medication Name and Dosage
+        Column(modifier = Modifier.weight(1f)) {
+            val displayName = data.medicationName.split(" ").joinToString(" ") // No explicit truncation with "..."
             Text(
                 text = displayName,
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold), // Adjusted style
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), // Slightly larger name
                 color = contentColor,
-                maxLines = 1, // Ensure single line for name like original card
-                overflow = TextOverflow.Ellipsis // Add ellipsis for overflow
+                maxLines = 2, // Allow wrapping up to 2 lines
+                overflow = TextOverflow.Ellipsis
             )
             if (data.dosage.isNotBlank()) {
                 Text(
                     text = data.dosage,
-                    style = MaterialTheme.typography.bodyLarge, // Adjusted style
-                    color = contentColor.copy(alpha = 0.8f)
+                    style = MaterialTheme.typography.bodyMedium, // Slightly larger dosage
+                    color = contentColor.copy(alpha = 0.8f),
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
-            // "Taken at" time display can remain as is, or be adjusted if needed
-            if (data.isTaken && data.actualTakenTime != null && data.actualTakenTime != data.scheduledTime) {
-                Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(top = 2.dp)) { // Increased top padding slightly
-                    Text("Taken: ${data.actualTakenTime.format(DateTimeFormatter.ofPattern("HH:mm"))}", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium), color = contentColor)
-                    Spacer(Modifier.width(4.dp))
-                    Text(data.scheduledTime.format(DateTimeFormatter.ofPattern("HH:mm")), style = MaterialTheme.typography.labelSmall.copy(textDecoration = TextDecoration.LineThrough), color = contentColor.copy(alpha = 0.7f))
-                }
-            } else if (data.isTaken && data.actualTakenTime != null) {
-                Text("Taken: ${data.actualTakenTime.format(DateTimeFormatter.ofPattern("HH:mm"))}", style = MaterialTheme.typography.labelSmall, color = contentColor.copy(alpha = 0.8f), modifier = Modifier.padding(top = 2.dp)) // Increased top padding
-            }
         }
-        Spacer(modifier = Modifier.width(12.dp)) // Adjusted spacer
-        Switch(
-            checked = data.isTaken,
-            onCheckedChange = data.onToggle,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = baseMedicationColor,
-                checkedTrackColor = baseMedicationColor.copy(alpha = SwitchDefaults.TrackAlpha),
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        // Right part: "Taken at HH:MM" status (if taken) and Switch
+        Column(horizontalAlignment = Alignment.End) {
+            if (data.isTaken && data.actualTakenTime != null) {
+                Text(
+                    text = "Taken: ${data.actualTakenTime.format(DateTimeFormatter.ofPattern("HH:mm"))}",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = contentColor,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+            } else {
+                // Add a spacer to maintain height if "Taken" text is not visible,
+                // to keep switch alignment consistent.
+                Spacer(modifier = Modifier.height(MaterialTheme.typography.labelMedium.lineHeight.value.dp + 4.dp))
+            }
+            Switch(
+                checked = data.isTaken,
+                onCheckedChange = data.onToggle,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = primaryMedicationColor,
+                    checkedTrackColor = primaryMedicationColor.copy(alpha = SwitchDefaults.TrackAlpha),
                 uncheckedThumbColor = MaterialTheme.colorScheme.outline,
                 uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                 disabledCheckedThumbColor = baseMedicationColor.copy(alpha = 0.5f),
