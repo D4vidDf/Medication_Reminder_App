@@ -37,9 +37,10 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.Canvas
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.PathEffect
+// import androidx.compose.ui.geometry.Offset // Not directly used in this version of CurrentTimeSeparator
+// import androidx.compose.ui.graphics.PathEffect // Not directly used
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.d4viddf.medicationreminder.ui.components.TodayMedicationData
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -50,11 +51,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.d4viddf.medicationreminder.ui.screens.medication.MedicationDetailsScreen
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row // Added for TakeFutureMedicationDialog
-import androidx.compose.foundation.layout.Spacer // Added for TakeFutureMedicationDialog
-import androidx.compose.foundation.layout.width // Added for TakeFutureMedicationDialog
-import androidx.compose.material3.AlertDialog // Added for TakeFutureMedicationDialog
-import androidx.compose.material3.TextButton // Added for TakeFutureMedicationDialog
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue // Required for initialScrollDone
+import androidx.compose.foundation.layout.BoxWithConstraints // Required for bottom padding calculation
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
@@ -63,19 +72,16 @@ fun TodayScreen(
     navController: NavController,
     widthSizeClass: WindowWidthSizeClass,
     viewModel: TodayViewModel = hiltViewModel()
-    // No SharedTransitionScope or AnimatedVisibilityScope needed here unless TodayScreen itself does complex transitions
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val showDialogState by viewModel.showTakeFutureDialog.collectAsState()
-    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<Int>() // For medicationId
+    val scaffoldNavigator = rememberListDetailPaneScaffoldNavigator<Int>()
     val coroutineScope = rememberCoroutineScope()
 
     val onReminderClick: (medicationId: Int) -> Unit = { medicationId ->
         if (widthSizeClass == WindowWidthSizeClass.Compact) {
-            // Navigate to full screen MedicationDetailsScreen
-            navController.navigate(Screen.MedicationDetails.createRoute(medicationId, enableSharedTransition = false)) // Shared transition off for now from Today
+            navController.navigate(Screen.MedicationDetails.createRoute(medicationId, enableSharedTransition = false))
         } else {
-            // Show in detail pane
             coroutineScope.launch {
                 scaffoldNavigator.navigateTo(ListDetailPaneScaffoldRole.Detail, medicationId)
             }
@@ -85,27 +91,21 @@ fun TodayScreen(
     NavigableListDetailPaneScaffold(
         navigator = scaffoldNavigator,
         listPane = {
-            // This is a ThreePaneScaffoldPaneScope
-            val compactListScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState()) // For compact TopAppBar
-            // For LargeTopAppBar, if it should always be visible and large, no scrollBehavior is passed to it.
-            // The Scaffold's nestedScroll modifier will apply to the content area.
-
+            val compactListScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(rememberTopAppBarState())
             Scaffold(
                 modifier = Modifier.then(
-                    // Apply nestedScroll only if a scroll behavior is used by the app bar
                     if (widthSizeClass == WindowWidthSizeClass.Compact) Modifier.nestedScroll(compactListScrollBehavior.nestedScrollConnection)
-                    else Modifier // No nestedScroll connection if LargeTopAppBar is fixed
+                    else Modifier
                 ),
                 topBar = {
                     if (widthSizeClass == WindowWidthSizeClass.Compact) {
                         TopAppBar(
                             title = { Text(stringResource(id = R.string.today_screen_title)) },
-                            scrollBehavior = compactListScrollBehavior // Behavior for compact scrolling TopAppBar
+                            scrollBehavior = compactListScrollBehavior
                         )
                     } else {
                         LargeTopAppBar(
                             title = { Text(stringResource(id = R.string.today_screen_title)) }
-                            // No scrollBehavior, so it remains large and pinned
                         )
                     }
                 }
@@ -114,7 +114,7 @@ fun TodayScreen(
                     uiState = uiState,
                     innerPadding = innerPadding,
                     viewModel = viewModel,
-                    onReminderClick = onReminderClick // Pass the click handler
+                    onReminderClick = onReminderClick
                 )
 
                 showDialogState?.let { dialogState ->
@@ -132,17 +132,16 @@ fun TodayScreen(
             }
         },
         detailPane = {
-            // This is a ThreePaneScaffoldPaneScope
             val selectedMedicationIdForDetail = scaffoldNavigator.currentDestination?.contentKey
             if (selectedMedicationIdForDetail != null) {
                 MedicationDetailsScreen(
                     medicationId = selectedMedicationIdForDetail,
-                    navController = navController, // For internal navigation from details if any
+                    navController = navController,
                     onNavigateBack = {
                         coroutineScope.launch { scaffoldNavigator.navigateBack() }
                     },
-                    isHostedInPane = true, // Important for correct behavior in pane
-                    widthSizeClass = widthSizeClass, // Pass width class
+                    isHostedInPane = true,
+                    widthSizeClass = widthSizeClass,
                     sharedTransitionScope = null,
                     animatedVisibilityScope = null,
                     onNavigateToAllSchedules = { medId, colorName -> navController.navigate(Screen.AllSchedules.createRoute(medId, colorName, true)) },
@@ -183,7 +182,7 @@ private fun HandleUiState(
                 )
             }
         }
-        uiState.timeGroups.isEmpty() && !uiState.isLoading -> { // Use timeGroups
+        uiState.timeGroups.isEmpty() && !uiState.isLoading -> {
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
@@ -192,22 +191,21 @@ private fun HandleUiState(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(16.dp)
                     )
-                    // Show separator even if list is empty, directly in this Box
                     CurrentTimeSeparator(currentTime = uiState.currentTime)
                 }
             }
         }
         else -> {
-            BoxWithConstraints(modifier = Modifier.padding(innerPadding).fillMaxSize()) { // Wrap with BoxWithConstraints
-                val estimatedItemHeight = 120.dp // Estimate of a TimeGroupCard height
+            BoxWithConstraints(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                val estimatedItemHeight = 120.dp
                 val bottomPadding = (this.maxHeight - estimatedItemHeight).coerceAtLeast(0.dp)
 
                 TodayRemindersList(
                     timeGroups = uiState.timeGroups,
                     currentTime = uiState.currentTime,
-                    modifier = Modifier.fillMaxSize(), // TodayRemindersList will fill BoxWithConstraints
+                    modifier = Modifier.fillMaxSize(),
                     onReminderClick = onReminderClick,
-                    bottomContentPadding = bottomPadding // Pass calculated bottom padding
+                    bottomContentPadding = bottomPadding
                 )
             }
         }
@@ -220,66 +218,83 @@ fun TodayRemindersList(
     currentTime: LocalTime,
     modifier: Modifier = Modifier,
     onReminderClick: (medicationId: Int) -> Unit,
-    bottomContentPadding: Dp // New parameter for bottom padding
+    bottomContentPadding: Dp
 ) {
-    // timeGroups are already sorted by the ViewModel
-    var separatorInserted = false
     val lazyListState = rememberLazyListState()
-
     val coroutineScope = rememberCoroutineScope()
+    var initialScrollDone by rememberSaveable(timeGroups) { mutableStateOf(false) }
 
-    LaunchedEffect(timeGroups, currentTime, lazyListState.isScrollInProgress, lazyListState.layoutInfo) {
-        if (lazyListState.isScrollInProgress) return@LaunchedEffect
+    LaunchedEffect(timeGroups, currentTime, initialScrollDone, lazyListState.layoutInfo.totalItemsCount) {
+        if (initialScrollDone || lazyListState.isScrollInProgress) {
+            return@LaunchedEffect
+        }
 
-        val totalLazyColumnItems = lazyListState.layoutInfo.totalItemsCount
-        if (totalLazyColumnItems == 0 && timeGroups.isNotEmpty()) {
+        val totalLayoutItems = lazyListState.layoutInfo.totalItemsCount
+        if (totalLayoutItems == 0 && timeGroups.isNotEmpty()) {
             return@LaunchedEffect
         }
 
         var targetIndex = 0
-        var _separatorAlreadyInsertedUpToTarget = false
+        var foundTarget = false
 
         if (timeGroups.isEmpty()) {
-            targetIndex = 0
+            targetIndex = if (totalLayoutItems > 0) 0 else -1
+            if (targetIndex != -1) foundTarget = true
         } else {
-            var found = false
             var currentLazyIndex = 0
+            var separatorAlreadyInsertedForThisPass = false
+
             for (group in timeGroups) {
-                if (group.scheduledTime.isAfter(currentTime) && !_separatorAlreadyInsertedUpToTarget) {
-                    if (group.scheduledTime >= currentTime) {
+                if (group.scheduledTime.isAfter(currentTime) && !separatorAlreadyInsertedForThisPass) {
+                    if (!foundTarget) {
                         targetIndex = currentLazyIndex
-                        found = true
+                        foundTarget = true
                         break
                     }
-                    currentLazyIndex++
-                    _separatorAlreadyInsertedUpToTarget = true
                 }
-                if (group.scheduledTime >= currentTime) {
+                if (group.scheduledTime.isAfter(currentTime) && !separatorAlreadyInsertedForThisPass) {
+                     currentLazyIndex++
+                    separatorAlreadyInsertedForThisPass = true
+                }
+
+                if (group.scheduledTime >= currentTime && !foundTarget) {
                     targetIndex = currentLazyIndex
-                    found = true
+                    foundTarget = true
                     break
                 }
                 currentLazyIndex++
             }
-            if (!found && timeGroups.isNotEmpty()) {
+
+            if (!foundTarget) {
                 var itemCount = 0
-                itemCount = timeGroups.size
-                targetIndex = itemCount
+                var sepInserted = false
+                timeGroups.forEach { group ->
+                     if (group.scheduledTime.isAfter(currentTime) && !sepInserted) {
+                         itemCount++
+                         sepInserted = true
+                     }
+                    itemCount++
+                }
+                if (!sepInserted) itemCount++
+                targetIndex = (itemCount - 1).coerceAtLeast(0)
+                foundTarget = true // Target the end if nothing else found
             }
         }
 
-        val currentTotalItems = lazyListState.layoutInfo.totalItemsCount
-        if (targetIndex >= 0 && targetIndex < currentTotalItems) {
+        if (foundTarget && targetIndex >= 0 && targetIndex < totalLayoutItems) {
             coroutineScope.launch {
                 lazyListState.animateScrollToItem(targetIndex)
+                initialScrollDone = true
             }
-        } else if (timeGroups.isEmpty() && currentTotalItems > 0 && targetIndex == 0) {
-             coroutineScope.launch {
-                lazyListState.animateScrollToItem(0)
-            }
-        } else if (currentTotalItems > 0 && targetIndex >= currentTotalItems) {
+        } else if (timeGroups.isEmpty() && totalLayoutItems > 0 && targetIndex == 0) { // Explicit for empty list separator
             coroutineScope.launch {
-                lazyListState.animateScrollToItem((currentTotalItems - 1).coerceAtLeast(0))
+                lazyListState.animateScrollToItem(0)
+                initialScrollDone = true
+            }
+        } else if (foundTarget && totalLayoutItems > 0 && targetIndex >= totalLayoutItems ) { // Fallback for out of bounds but valid calculation
+             coroutineScope.launch {
+                lazyListState.animateScrollToItem((totalLayoutItems - 1).coerceAtLeast(0))
+                initialScrollDone = true
             }
         }
     }
@@ -287,8 +302,9 @@ fun TodayRemindersList(
     LazyColumn(
         state = lazyListState,
         modifier = modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 8.dp, bottom = bottomContentPadding) // Apply dynamic bottom padding
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 8.dp, bottom = bottomContentPadding)
     ) {
+        var separatorInserted = false // This needs to be reset per composition pass of items{}
         timeGroups.forEach { timeGroupData ->
             if (!separatorInserted && timeGroupData.scheduledTime.isAfter(currentTime)) {
                 item(key = "separator_before_${timeGroupData.scheduledTime}") {
@@ -301,20 +317,18 @@ fun TodayRemindersList(
                 TimeGroupCard(
                     timeGroupData = timeGroupData,
                     onReminderClick = onReminderClick,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp) // Padding for each TimeGroupCard
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
         }
-
-        // If separator hasn't been inserted yet (all reminders are in the past or exactly at current time)
-        // and there are items in the list.
         if (!separatorInserted && timeGroups.isNotEmpty()) {
             item(key = "separator_at_end") {
-                CurrentTimeSeparator(currentTime = currentTime) // Uncommented
+                CurrentTimeSeparator(currentTime = currentTime)
             }
-            // No need to set separatorInserted = true here as it's the end
         }
-        // If timeGroups is empty, the empty state in HandleUiState shows the separator. (This was already handled there)
+        // If timeGroups is empty, the empty state in HandleUiState shows the separator.
+        // The LazyColumn will be empty here, so this explicit separator for empty list is not needed here
+        // as HandleUiState already renders it.
     }
 }
 
@@ -324,10 +338,10 @@ fun CurrentTimeSeparator(currentTime: LocalTime) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp)
+            .padding(vertical = 16.dp, horizontal = 16.dp) // Added horizontal padding to match list items
     ) {
         Canvas(modifier = Modifier.size(8.dp)) {
-            drawCircle(color = MaterialTheme.colorScheme.primary, radius = size.minDimension / 2) // Uncommented
+            drawCircle(color = MaterialTheme.colorScheme.primary, radius = size.minDimension / 2)
         }
         HorizontalDivider(
             modifier = Modifier
