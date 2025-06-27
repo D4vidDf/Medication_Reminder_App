@@ -45,8 +45,8 @@ fun MedicationCardTodayFinal(
     data: TodayMedicationData,
     shape: RoundedCornerShape
 ) {
-    val baseMedicationColor = data.medicationColor.getColor()
-    val onBaseMedicationColor = data.medicationColor.getOnColor()
+    val baseMedicationColor = data.medicationColor.backgroundColor
+    val onBaseMedicationColor = data.medicationColor.onBackgroundColor
 
     val cardBackgroundColor: Color
     val mainContentColor: Color
@@ -54,12 +54,12 @@ fun MedicationCardTodayFinal(
     // val iconTintColor: Color // Icon tint might not be directly applicable to Coil Image easily
 
     if (data.isTaken) {
-        cardBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        mainContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-        subContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+        cardBackgroundColor = MaterialTheme.colorScheme.surfaceVariant
+        mainContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        subContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         // iconTintColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     } else if (data.isFuture) {
-        cardBackgroundColor = baseMedicationColor.copy(alpha = 0.25f)
+        cardBackgroundColor = baseMedicationColor
         // Basic contrast for text on colored background
         mainContentColor = if (baseMedicationColor.luminance() > 0.5f) Color.Black.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.9f)
         subContentColor = if (baseMedicationColor.luminance() > 0.5f) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.8f)
@@ -75,7 +75,6 @@ fun MedicationCardTodayFinal(
         modifier = modifier.fillMaxWidth(),
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (data.isTaken) 0.dp else 1.dp)
     ) {
         Row(
             modifier = Modifier
@@ -87,8 +86,8 @@ fun MedicationCardTodayFinal(
             Image(
                 painter = rememberAsyncImagePainter(
                     model = data.medicationType.imageUrl,
-                    placeholder = painterResource(id = R.drawable.ic_medication_24), // Generic placeholder
-                    error = painterResource(id = R.drawable.ic_medication_24) // Generic error icon
+                    placeholder = painterResource(id = R.drawable.ic_stat_medication), // Generic placeholder
+                    error = painterResource(id = R.drawable.ic_stat_medication) // Generic error icon
                 ),
                 contentDescription = data.medicationType.name, // TODO: Use stringResource for accessibility
                 modifier = Modifier.size(28.dp)
@@ -152,7 +151,7 @@ fun MedicationCardTodayFinal(
                 onCheckedChange = data.onToggle,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = baseMedicationColor,
-                    checkedTrackColor = baseMedicationColor.copy(alpha = SwitchDefaults.TrackAlpha),
+                    checkedTrackColor = baseMedicationColor.copy(alpha = 0.4f),
                     uncheckedThumbColor = MaterialTheme.colorScheme.outline,
                     uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                     disabledCheckedThumbColor = baseMedicationColor.copy(alpha = 0.5f),
@@ -211,7 +210,7 @@ fun MedicationCardTodayFinalTakenLatePreview() {
 fun MedicationCardTodayFinalPastNotTakenPreview() {
     AppTheme {
         val sampleType = MedicationType(4, "Paracetamol", null)
-        val sampleData = TodayMedicationData("4", 4, "Paracetamol", "500mg", sampleType, LocalTime.of(7,0), null, false, false, MedicationColor.LIGHT_RED, {})
+        val sampleData = TodayMedicationData("4", 4, "Paracetamol", "500mg", sampleType, LocalTime.of(7,0), null, false, false, MedicationColor.LIGHT_PINK, {})
         MedicationCardTodayFinal(data = sampleData, modifier = Modifier.padding(vertical = 2.dp, horizontal = 8.dp), shape = RoundedCornerShape(12.dp))
     }
 }

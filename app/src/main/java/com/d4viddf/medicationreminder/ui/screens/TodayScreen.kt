@@ -1,5 +1,6 @@
 package com.d4viddf.medicationreminder.ui.screens
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,9 +65,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue // Required for initialScrollDone
 import androidx.compose.foundation.layout.BoxWithConstraints // Required for bottom padding calculation
+import com.d4viddf.medicationreminder.ui.components.TimeGroupCard
+import com.d4viddf.medicationreminder.viewmodel.TimeGroupDisplayData
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class,
+    ExperimentalSharedTransitionApi::class
+)
 @Composable
 fun TodayScreen(
     navController: NavController,
@@ -98,16 +103,11 @@ fun TodayScreen(
                     else Modifier
                 ),
                 topBar = {
-                    if (widthSizeClass == WindowWidthSizeClass.Compact) {
+
                         TopAppBar(
                             title = { Text(stringResource(id = R.string.today_screen_title)) },
                             scrollBehavior = compactListScrollBehavior
                         )
-                    } else {
-                        LargeTopAppBar(
-                            title = { Text(stringResource(id = R.string.today_screen_title)) }
-                        )
-                    }
                 }
             ) { innerPadding ->
                 HandleUiState(
@@ -340,8 +340,9 @@ fun CurrentTimeSeparator(currentTime: LocalTime) {
             .fillMaxWidth()
             .padding(vertical = 16.dp, horizontal = 16.dp) // Added horizontal padding to match list items
     ) {
+        val color = MaterialTheme.colorScheme.primary
         Canvas(modifier = Modifier.size(8.dp)) {
-            drawCircle(color = MaterialTheme.colorScheme.primary, radius = size.minDimension / 2)
+            drawCircle(color = color, radius = size.minDimension / 2)
         }
         HorizontalDivider(
             modifier = Modifier

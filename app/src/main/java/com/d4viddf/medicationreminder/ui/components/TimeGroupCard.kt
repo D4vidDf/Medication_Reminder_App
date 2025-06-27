@@ -1,17 +1,38 @@
 package com.d4viddf.medicationreminder.ui.components
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.d4viddf.medicationreminder.R
 import com.d4viddf.medicationreminder.data.MedicationType
 import com.d4viddf.medicationreminder.ui.colors.MedicationColor
@@ -26,29 +47,35 @@ fun TimeGroupCard(
     timeGroupData: TimeGroupDisplayData,
     onReminderClick: (medicationId: Int) -> Unit
 ) {
-    ElevatedCard(
+    OutlinedCard(
         modifier = modifier,
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(vertical = 12.dp)) { // Padding for content inside the group card
-            Text(
-                text = timeGroupData.scheduledTime.format(DateTimeFormatter.ofPattern("HH:mm")),
-                style = MaterialTheme.typography.titleLarge, // More prominent time
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)
-            )
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                Text(
+                    text = timeGroupData.scheduledTime.format(DateTimeFormatter.ofPattern("HH:mm")),
+                    style = MaterialTheme.typography.titleLarge, // More prominent time
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 12.dp)
+                )
 
-            Text(
-                text = "${timeGroupData.takenCount} / ${timeGroupData.totalInGroup} Taken", // Taken dosage summary
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp)
-            )
+                Text(
+                    text = "${timeGroupData.takenCount} / ${timeGroupData.totalInGroup} Taken", // Taken dosage summary
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 12.dp)
+                )
+            }
 
             // Divider line
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 24.dp))
 
             // List of reminder items for this time group
-            Column(modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)) { // Add some padding around the list of items
+            Column(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)) { // Add some padding around the list of items
                 timeGroupData.reminders.forEachIndexed { index, reminderData ->
                     val itemShape = getReminderItemShapeWithinGroup( // Renamed from getReminderCardShapeWithinGroup
                         index = index,
@@ -61,7 +88,7 @@ fun TimeGroupCard(
                         shape = itemShape,
                         modifier = Modifier
                             .clickable { onReminderClick(reminderData.medicationId) }
-                            .padding(horizontal = 8.dp) // Padding for each item row
+                            .padding(horizontal = 8.dp, vertical = 2.dp) // Padding for each item row
                     )
                 }
             }
@@ -72,7 +99,7 @@ fun TimeGroupCard(
 // Shape logic for items within the group
 private fun getReminderItemShapeWithinGroup(index: Int, totalItemsInGroup: Int): RoundedCornerShape {
     val standardCornerRadius = 24.dp // Match original MedicationCard radius
-    val connectedEdgeRadius = 2.dp // Minimal rounding for connected edges to maintain slight separation
+    val connectedEdgeRadius = 12.dp // Minimal rounding for connected edges to maintain slight separation
 
     return when {
         totalItemsInGroup == 1 -> RoundedCornerShape(standardCornerRadius) // Single item gets full standard rounding
@@ -91,12 +118,13 @@ private fun ReminderItemRow(
 ) {
     // Use properties from MedicationColor enum directly
     val primaryMedicationColor = data.medicationColor.backgroundColor
-    val onPrimaryMedicationColor = data.medicationColor.textColor // Or onBackgroundColor, decide on one
+    val onPrimaryMedicationColor =
+        data.medicationColor.textColor // Or onBackgroundColor, decide on one
 
     val itemBackgroundColor = if (data.isTaken) {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) // Slightly more distinct when taken
+        Color.Transparent
     } else if (data.isFuture) {
-        primaryMedicationColor.copy(alpha = 0.20f)
+        primaryMedicationColor
     } else {
         Color.Transparent
     }
@@ -121,11 +149,11 @@ private fun ReminderItemRow(
             Image(
                 painter = rememberAsyncImagePainter(
                     model = data.medicationType.imageUrl,
-                    placeholder = painterResource(id = R.drawable.ic_medication_24), // Ensure this drawable exists
-                    error = painterResource(id = R.drawable.ic_medication_24)
+                    placeholder = painterResource(id = R.drawable.rounded_medication_24), // Ensure this drawable exists
+                    error = painterResource(id = R.drawable.rounded_medication_24)
                 ),
                 contentDescription = data.medicationType.name, // TODO: Use stringResource
-                modifier = Modifier.size(48.dp) // Increased image size
+                modifier = Modifier.size(56.dp) // Increased image size
             )
             // Display scheduled time if not taken, or taken at a different time (original time)
             if (!data.isTaken || (data.isTaken && data.actualTakenTime != null && data.actualTakenTime != data.scheduledTime)) {
@@ -144,7 +172,8 @@ private fun ReminderItemRow(
 
         // Center part: Medication Name and Dosage
         Column(modifier = Modifier.weight(1f)) {
-            val displayName = data.medicationName.split(" ").joinToString(" ") // No explicit truncation with "..."
+            val displayName = data.medicationName.split(" ")
+                .joinToString(" ") // No explicit truncation with "..."
             Text(
                 text = displayName,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), // Slightly larger name
@@ -166,34 +195,24 @@ private fun ReminderItemRow(
 
         // Right part: "Taken at HH:MM" status (if taken) and Switch
         Column(horizontalAlignment = Alignment.End) {
-            if (data.isTaken && data.actualTakenTime != null) {
-                Text(
-                    text = "Taken: ${data.actualTakenTime.format(DateTimeFormatter.ofPattern("HH:mm"))}",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    color = contentColor,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-            } else {
-                // Add a spacer to maintain height if "Taken" text is not visible,
-                // to keep switch alignment consistent.
-                Spacer(modifier = Modifier.height(MaterialTheme.typography.labelMedium.lineHeight.value.dp + 4.dp))
-            }
+
             Switch(
                 checked = data.isTaken,
                 onCheckedChange = data.onToggle,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = primaryMedicationColor,
-                    checkedTrackColor = primaryMedicationColor.copy(alpha = SwitchDefaults.TrackAlpha),
-                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                disabledCheckedThumbColor = baseMedicationColor.copy(alpha = 0.5f),
-                disabledCheckedTrackColor = baseMedicationColor.copy(alpha = 0.2f),
-                disabledUncheckedThumbColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
-                disabledUncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            ),
-            enabled = !data.isFuture || data.isTaken,
-            modifier = Modifier.size(width = 48.dp, height = 28.dp)
-        )
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = primaryMedicationColor,
+                    uncheckedThumbColor = data.medicationColor.progressBackColor,
+                    uncheckedBorderColor = data.medicationColor.progressBackColor,
+                    disabledCheckedThumbColor = data.medicationColor.textColor,
+                    disabledUncheckedThumbColor = data.medicationColor.progressBackColor,
+                    disabledUncheckedTrackColor = data.medicationColor.textColor,
+                    disabledUncheckedBorderColor = data.medicationColor.textColor
+                ),
+                enabled = !data.isFuture || data.isTaken,
+                modifier = Modifier.size(width = 48.dp, height = 28.dp)
+            )
+        }
     }
 }
 
@@ -226,7 +245,7 @@ fun TimeGroupCardMultipleItemsPreview() {
             id = "1", medicationId = 101, medicationName = "Aspirin Extra Strength Long Name", dosage = "100mg",
             medicationType = MedicationType(1, "Pill", null),
             scheduledTime = LocalTime.of(9, 0), isTaken = false, isFuture = true,
-            medicationColor = MedicationColor.LIGHT_RED, onToggle = {}
+            medicationColor = MedicationColor.LIGHT_YELLOW, onToggle = {}
         )
         val reminder2 = TodayMedicationData(
             id = "2", medicationId = 102, medicationName = "Vitamin C", dosage = "500mg",

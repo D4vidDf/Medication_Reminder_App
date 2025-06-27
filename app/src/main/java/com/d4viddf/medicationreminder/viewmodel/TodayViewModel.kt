@@ -1,36 +1,29 @@
 package com.d4viddf.medicationreminder.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.d4viddf.medicationreminder.data.MedicationReminderRepository
-// Corrected import for MedicationRepository
-import com.d4viddf.medicationreminder.repository.MedicationRepository
-import com.d4viddf.medicationreminder.data.MedicationSchedule
-import com.d4viddf.medicationreminder.data.MedicationTypeRepository
-// Removed local definition, ensure this import is correct if TodayMedicationData is in its own file in ui.components
-import com.d4viddf.medicationreminder.ui.components.TodayMedicationData
-import com.d4viddf.medicationreminder.ui.colors.MedicationColor
 import com.d4viddf.medicationreminder.data.MedicationType
+import com.d4viddf.medicationreminder.data.MedicationTypeRepository
+import com.d4viddf.medicationreminder.repository.MedicationRepository
+import com.d4viddf.medicationreminder.ui.colors.MedicationColor
+import com.d4viddf.medicationreminder.ui.components.TodayMedicationData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-// import kotlinx.coroutines.flow.firstOrNull // Ensure this is present - replaced by take and singleOrNull
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.singleOrNull
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
-import android.util.Log // Added import for Log
-import java.time.LocalDateTime
 
-// TodayMedicationData class definition is now removed from here.
-// It should be in app/src/main/java/com/d4viddf/medicationreminder/ui/components/TodayMedicationData.kt
 
 data class TodayScreenUiState(
     val timeGroups: List<TimeGroupDisplayData> = emptyList(), // Changed from groupedReminders Map
