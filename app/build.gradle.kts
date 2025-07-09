@@ -139,4 +139,7 @@ dependencies {
     implementation(libs.hilt.work) // Or latest stable version
 
     implementation(libs.charty)
+
+    // App Functions
+    implementation(libs.androidx.appfunctions)
 }

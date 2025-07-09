@@ -113,5 +113,15 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- App Functions Service -->
+        <service
+            android:name=".appfunctions.MedicationAppFunctionService"
+            android:exported="true"
+            tools:ignore="ExportedService">
+            <intent-filter>
+                <action android:name="androidx.appfunctions.action.EXECUTE_APP_FUNCTION" />
+            </intent-filter>
+        </service>
+
     </application>
 </manifest>
