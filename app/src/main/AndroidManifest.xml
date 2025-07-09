@@ -113,5 +113,12 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <service
+            android:name="androidx.appactions.interaction.service.AppInteractionService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.appactions.interaction.service.AppInteractionService.BIND" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

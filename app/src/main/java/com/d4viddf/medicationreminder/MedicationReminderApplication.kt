@@ -9,10 +9,13 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.d4viddf.medicationreminder.common.WorkerConstants
 import com.d4viddf.medicationreminder.notifications.NotificationHelper
+import com.d4viddf.medicationreminder.appfunctions.CheckNextDoseFactory
+import com.d4viddf.medicationreminder.notifications.NotificationHelper
 import com.d4viddf.medicationreminder.utils.FileLogger
 import com.d4viddf.medicationreminder.workers.ReminderSchedulingWorker
 import dagger.hilt.android.HiltAndroidApp
 import java.util.Calendar
+import androidx.appactions.interaction.service.AppInteractionService
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -70,6 +73,15 @@ class MedicationReminderApplication : Application(), Configuration.Provider {
             NotificationHelper.createNotificationChannels(this)
             Log.d("MedicationReminderApp", "Notification channels created.")
             FileLogger.log("MedicationReminderApp", "Standard Log.d: Notification channels created.")
+
+        // Initialize the AppInteractionService with your capability factory.
+        AppInteractionService.getInstance().init(
+            mapOf(
+                "actions.intent.GET_THING" to CheckNextDoseFactory()
+            )
+        )
+        Log.d("MedicationReminderApp", "AppInteractionService initialized.")
+        FileLogger.log("MedicationReminderApp", "AppInteractionService initialized.")
 
         setupDailyReminderRefreshWorker()
     }

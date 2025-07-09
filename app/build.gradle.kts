@@ -139,4 +139,5 @@ dependencies {
     implementation(libs.hilt.work) // Or latest stable version
 
     implementation(libs.charty)
+    implementation("androidx.appactions:appactions-interaction-service:1.0.0-alpha03")
 }
