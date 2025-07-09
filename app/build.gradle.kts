@@ -141,5 +141,7 @@ dependencies {
     implementation(libs.charty)
 
     // App Functions
-    implementation(libs.androidx.appfunctions)
+    implementation(libs.androidx.appfunctions.core)
+    implementation(libs.androidx.appfunctions.service)
+    ksp(libs.androidx.appfunctions.compiler)
 }

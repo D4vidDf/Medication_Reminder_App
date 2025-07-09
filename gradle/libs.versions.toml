@@ -40,7 +40,7 @@ adaptiveLayout = "1.1.0"
 adaptive = "1.2.0-alpha07"
 adaptiveLayoutVersion = "1.2.0-alpha07"
 adaptiveNavigation = "1.2.0-alpha07"
-appfunctions = "1.0.0-alpha02"
+androidxAppfunctions = "1.0.0-alpha02" # Renamed for clarity
 
 
 [libraries]
@@ -105,7 +105,11 @@ androidx-adaptive-layout = { group = "androidx.compose.material3.adaptive", name
 androidx-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive", version.ref = "adaptive" }
 adaptive-layout = { group = "androidx.compose.material3.adaptive", name = "adaptive-layout", version.ref = "adaptiveLayoutVersion" }
 androidx-adaptive-navigation = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation", version.ref = "adaptiveNavigation" }
-androidx-appfunctions = { group = "androidx.appactions", name = "appactions-interaction-service", version.ref = "appfunctions" }
+
+# AppFunctions specific dependencies
+androidx-appfunctions-core = { group = "androidx.appfunctions", name = "appfunctions", version.ref = "androidxAppfunctions" }
+androidx-appfunctions-service = { group = "androidx.appfunctions", name = "appfunctions-service", version.ref = "androidxAppfunctions" }
+androidx-appfunctions-compiler = { group = "androidx.appfunctions", name = "appfunctions-compiler", version.ref = "androidxAppfunctions" }
 
 
 [plugins]

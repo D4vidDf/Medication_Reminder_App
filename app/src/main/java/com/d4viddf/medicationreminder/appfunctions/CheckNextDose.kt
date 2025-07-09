@@ -10,7 +10,7 @@ import androidx.appfunctions.metadata.AppFunctionSchemaMetadata
 // This metadata object describes the function to the AI Agent.
 fun getCheckNextDoseCapability(): AppFunctionMetadata {
     return AppFunctionBuilder()
-        .setFunctionName("CheckNextDose")
+        .setFunctionName("CheckNextDose") // This name should be consistent
         .setDescription("Checks the next scheduled dose for a given medication.")
         .addParameter(
             AppFunctionParameterBuilder()
@@ -26,21 +26,21 @@ fun getCheckNextDoseCapability(): AppFunctionMetadata {
                     AppFunctionParameterBuilder()
                         .setName("nextDoseTime")
                         .setDescription("The time of the next scheduled dose.")
-                        .setDataType(AppFunctionSchemaMetadata.DataType.STRING) // Consider using a more specific time/date type if available
+                        .setDataType(AppFunctionSchemaMetadata.DataType.STRING)
                         .build()
                 )
                 .addResponsePart(
                     AppFunctionParameterBuilder()
-                        .setName("medicationName")
+                        .setName("medicationName") // Outputting medication name for confirmation
                         .setDescription("The name of the medication for which the next dose was checked.")
                         .setDataType(AppFunctionSchemaMetadata.DataType.STRING)
                         .build()
                 )
-                 .addResponsePart(
+                .addResponsePart(
                     AppFunctionParameterBuilder()
                         .setName("doseAmount")
                         .setDescription("The amount of the medication for the next dose.")
-                        .setDataType(AppFunctionSchemaMetadata.DataType.STRING) // Or NUMBER if appropriate
+                        .setDataType(AppFunctionSchemaMetadata.DataType.STRING)
                         .build()
                 )
                 .build()

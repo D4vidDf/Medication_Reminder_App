@@ -1,20 +1,28 @@
 package com.d4viddf.medicationreminder.appfunctions
 
-import androidx.appfunctions.AppFunctionService
-import androidx.appfunctions.AppFunctionService.AppFunctionServiceConfiguration
-import androidx.appfunctions.service.AppFunctionConfiguration
+import androidx.appfunctions.AppFunctionService // Correct import
+import androidx.appfunctions.AppFunctionService.AppFunctionServiceConfiguration // Correct import
+import androidx.appfunctions.service.AppFunctionConfiguration // Correct import
 
-class MedicationAppFunctionService : AppFunctionService() {
-    override fun onCreateConfiguration(): AppFunctionServiceConfiguration {
+class MedicationAppFunctionService : AppFunctionService() { // Correct base class
+
+    override fun onCreateConfiguration(): AppFunctionServiceConfiguration { // Correct return type and method
         return AppFunctionServiceConfiguration.Builder()
             .addAppFunction(
                 AppFunctionConfiguration.Builder()
-                    .setFunctionName("CheckNextDose") // Should match the name in capability metadata
-                    .setAppFunction(NextDoseAppFunction(applicationContext))
-                    .setCapability(getCheckNextDoseCapability()) // From CheckNextDose.kt
+                    .setFunctionName("CheckNextDose") // Must match the name in capability metadata
+                    .setAppFunction(NextDoseAppFunction(applicationContext)) // Provide instance of your AppFunction impl
+                    .setCapability(getCheckNextDoseCapability()) // Reference to the capability metadata
                     .build()
             )
-            // You can add more AppFunctionConfiguration objects here for other capabilities
+            // Example: Add more AppFunctionConfiguration objects here for other capabilities
+            // .addAppFunction(
+            //     AppFunctionConfiguration.Builder()
+            //         .setFunctionName("AnotherCapability")
+            //         .setAppFunction(AnotherAppFunction(applicationContext))
+            //         .setCapability(getAnotherCapabilityMetadata())
+            //         .build()
+            // )
             .build()
     }
 }

@@ -5,12 +5,14 @@ import androidx.appfunctions.AppFunctionContext
 import androidx.appfunctions.AppFunctionData
 import androidx.appfunctions.ExecuteAppFunctionRequest
 import androidx.appfunctions.ExecuteAppFunctionResponse
-import androidx.appfunctions.service.AppFunction
+import androidx.appfunctions.service.AppFunction // Correct import for the interface
 import com.d4viddf.medicationreminder.data.MedicationScheduleRepository
+import com.d4viddf.medicationreminder.data.NextDoseInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.NoSuchElementException
 
-class NextDoseAppFunction(private val context: Context) : AppFunction {
+class NextDoseAppFunction(private val context: Context) : AppFunction { // Implement the correct interface
     private val medicationScheduleRepository = MedicationScheduleRepository(context)
 
     override suspend fun execute(
@@ -23,16 +25,14 @@ class NextDoseAppFunction(private val context: Context) : AppFunction {
                 .build()
 
         return try {
-            // Assuming MedicationScheduleRepository has a method like getNextDose
-            // This is a suspend function, so it should be called from a coroutine scope
-            val nextDoseInfo = withContext(Dispatchers.IO) {
+            val nextDoseInfo: NextDoseInfo? = withContext(Dispatchers.IO) {
                 medicationScheduleRepository.getNextDose(medicationName)
             }
 
             if (nextDoseInfo != null) {
                 val responseData = AppFunctionData.Builder()
                     .putString("nextDoseTime", nextDoseInfo.nextDoseTime)
-                    .putString("medicationName", nextDoseInfo.medicationName)
+                    .putString("medicationName", nextDoseInfo.medicationName) // Parameter name for output
                     .putString("doseAmount", nextDoseInfo.doseAmount)
                     .build()
                 ExecuteAppFunctionResponse.Success.newBuilder().setResponse(responseData).build()
