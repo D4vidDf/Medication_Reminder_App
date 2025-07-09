@@ -139,5 +139,7 @@ dependencies {
     implementation(libs.hilt.work) // Or latest stable version
 
     implementation(libs.charty)
-    implementation("androidx.appactions:appactions-interaction-service:1.0.0-alpha03")
+    implementation("androidx.appfunctions:appfunctions:1.0.0-alpha02")
+    implementation("androidx.appfunctions:appfunctions-service:1.0.0-alpha02")
+    implementation("androidx.appfunctions:appfunctions-compiler:1.0.0-alpha02")
 }

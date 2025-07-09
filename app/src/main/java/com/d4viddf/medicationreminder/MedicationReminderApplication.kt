@@ -10,12 +10,10 @@ import androidx.work.WorkManager
 import com.d4viddf.medicationreminder.common.WorkerConstants
 import com.d4viddf.medicationreminder.notifications.NotificationHelper
 import com.d4viddf.medicationreminder.appfunctions.CheckNextDoseFactory
-import com.d4viddf.medicationreminder.notifications.NotificationHelper
 import com.d4viddf.medicationreminder.utils.FileLogger
 import com.d4viddf.medicationreminder.workers.ReminderSchedulingWorker
 import dagger.hilt.android.HiltAndroidApp
 import java.util.Calendar
-import androidx.appactions.interaction.service.AppInteractionService
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
