@@ -163,6 +163,21 @@ class DataLayerListenerService : WearableListenerService() {
                 }
                 startActivity(intent)
             }
+            PATH_OPEN_MEDICATION_DETAIL_ON_PHONE -> {
+                val medicationIdString = String(messageEvent.data, StandardCharsets.UTF_8)
+                val medicationId = medicationIdString.toIntOrNull()
+                if (medicationId != null) {
+                    Log.d(TAG, "Received open_medication_detail_on_phone for medication ID: $medicationId")
+                    val intent = Intent(this, MainActivity::class.java).apply {
+                        action = IntentActionConstants.ACTION_OPEN_MEDICATION_DETAIL
+                        putExtra(IntentExtraConstants.EXTRA_MEDICATION_ID, medicationId)
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                    }
+                    startActivity(intent)
+                } else {
+                    Log.e(TAG, "Could not parse medication ID from message data: $medicationIdString")
+                }
+            }
             else -> {
                 Log.w(TAG, "Unknown message path: ${messageEvent.path}")
             }
@@ -199,6 +214,7 @@ class DataLayerListenerService : WearableListenerService() {
         private const val PATH_OPEN_PLAY_STORE_ON_PHONE = "/open_play_store" // Path from Wear OS app
         private const val PATH_ADHOC_TAKEN_ON_WATCH = "/mark_adhoc_taken_on_watch" // Path from Wear OS for ad-hoc
         private const val PATH_OPEN_APP_ON_PHONE = "/open_app_on_phone"
+        private const val PATH_OPEN_MEDICATION_DETAIL_ON_PHONE = "/open_medication_detail_on_phone"
     }
 
     // Payload class for ad-hoc taken events from watch

@@ -38,7 +38,7 @@ import java.time.format.DateTimeFormatter
 fun MedicationDetailScreen(
     medicationId: Int?,
     viewModel: WearViewModel,
-    onOpenOnPhone: () -> Unit
+    onOpenOnPhone: (Int) -> Unit
 ) {
     // Collect state from the ViewModel
     val medicationWithSchedules by viewModel.selectedMedication.collectAsStateWithLifecycle()
@@ -60,7 +60,7 @@ fun MedicationDetailScreen(
         timeText = null, // You can add a TimeText here if needed
         edgeButton = {
             EdgeButton(
-                onClick = onOpenOnPhone,
+                onClick = { medicationId?.let { onOpenOnPhone(it) } },
                 buttonSize = EdgeButtonSize.Small
             ) {
                 Text(stringResource(R.string.open_on_phone), textAlign = TextAlign.Center)

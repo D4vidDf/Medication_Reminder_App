@@ -23,8 +23,34 @@ class WearableCommunicationService(
     companion object {
         private const val TAG = "WearCommService"
         private const val PATH_MARK_AS_TAKEN = "/mark_as_taken"
+        private const val PATH_OPEN_MEDICATION_DETAIL_ON_PHONE = "/open_medication_detail_on_phone"
         // Add other paths as needed, e.g., for snooze
         // private const val PATH_SNOOZE_REMINDER = "/snooze_reminder"
+    }
+
+    fun sendOpenMedicationDetailOnPhoneMessage(medicationId: Int) {
+        coroutineScope.launch {
+            try {
+                val nodeListTask = Wearable.getNodeClient(context).connectedNodes
+                val nodes: List<Node> = Tasks.await(nodeListTask)
+
+                if (nodes.isEmpty()) {
+                    Log.w(TAG, "No connected phone nodes found to send open_medication_detail_on_phone message.")
+                    return@launch
+                }
+
+                nodes.forEach { node ->
+                    val medicationIdBytes = medicationId.toString().toByteArray(StandardCharsets.UTF_8)
+                    val sendMessageTask = messageClient.sendMessage(node.id, PATH_OPEN_MEDICATION_DETAIL_ON_PHONE, medicationIdBytes)
+                    Tasks.await(sendMessageTask)
+                    Log.i(TAG, "Open_medication_detail_on_phone message sent to ${node.displayName} for medication ID: $medicationId (using blocking await)")
+                }
+            } catch (e: ApiException) {
+                Log.e(TAG, "API exception while sending open_medication_detail_on_phone message: ${e.statusCode}", e)
+            } catch (e: Exception) {
+                Log.e(TAG, "Generic exception while sending open_medication_detail_on_phone message", e)
+            }
+        }
     }
 
     fun sendMarkAsTakenMessage(reminderId: Int) {
