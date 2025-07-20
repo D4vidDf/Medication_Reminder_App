@@ -22,6 +22,7 @@ import com.d4viddf.medicationreminder.notifications.NotificationHelper
 import com.d4viddf.medicationreminder.repository.UserPreferencesRepository
 import com.d4viddf.medicationreminder.utils.PermissionUtils
 import com.d4viddf.medicationreminder.common.IntentActionConstants
+import android.content.Intent
 import com.d4viddf.medicationreminder.common.IntentExtraConstants
 import com.d4viddf.medicationreminder.ui.navigation.Screen
 import com.d4viddf.medicationreminder.workers.TestSimpleWorker
@@ -127,7 +128,7 @@ class MainActivity : ComponentActivity() {
     // Removed requestPostNotificationPermission
     // Removed checkAndRequestExactAlarmPermission
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
     }
