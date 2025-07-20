@@ -62,7 +62,7 @@ import com.d4viddf.medicationreminder.ui.navigation.Screen
 import com.d4viddf.medicationreminder.utils.PermissionUtils
 import kotlinx.coroutines.launch
 
-enum class PermissionType { NOTIFICATION, EXACT_ALARM, FULL_SCREEN_INTENT }
+enum class PermissionType { NOTIFICATION, EXACT_ALARM, FULL_SCREEN_INTENT, SYSTEM_ALERT_WINDOW }
 
 data class OnboardingStepContent(
     val titleResId: Int,
@@ -85,6 +85,7 @@ fun OnboardingScreen(
         OnboardingStepContent(R.string.onboarding_step2_notifications_title, R.string.onboarding_step2_notifications_desc, PermissionType.NOTIFICATION),
         OnboardingStepContent(R.string.onboarding_step3_exact_alarm_title, R.string.onboarding_step3_exact_alarm_desc, PermissionType.EXACT_ALARM),
         OnboardingStepContent(R.string.onboarding_step_fullscreen_title, R.string.onboarding_step_fullscreen_desc, PermissionType.FULL_SCREEN_INTENT),
+        OnboardingStepContent(R.string.onboarding_step_system_alert_window_title, R.string.onboarding_step_system_alert_window_desc, PermissionType.SYSTEM_ALERT_WINDOW),
         OnboardingStepContent(R.string.onboarding_step4_finish_title, R.string.onboarding_step4_finish_desc)
     )
     val pagerState = rememberPagerState { onboardingSteps.size }
@@ -408,15 +409,22 @@ fun OnboardingStepPage(
                 PermissionType.NOTIFICATION -> if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) Manifest.permission.POST_NOTIFICATIONS else null
                 PermissionType.EXACT_ALARM -> if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) Manifest.permission.SCHEDULE_EXACT_ALARM else null
                 PermissionType.FULL_SCREEN_INTENT -> Manifest.permission.USE_FULL_SCREEN_INTENT
+                PermissionType.SYSTEM_ALERT_WINDOW -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) Manifest.permission.SYSTEM_ALERT_WINDOW else null
             }
             if (permissionString != null) {
                 isPermissionGranted = if (step.permissionType == PermissionType.EXACT_ALARM && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
                     alarmManager.canScheduleExactAlarms()
-                } else { ContextCompat.checkSelfPermission(context, permissionString) == PackageManager.PERMISSION_GRANTED }
+                } else if (step.permissionType == PermissionType.SYSTEM_ALERT_WINDOW && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    PermissionUtils.canDrawOverlays(context)
+                } else {
+                    ContextCompat.checkSelfPermission(context, permissionString) == PackageManager.PERMISSION_GRANTED
+                }
             } else if (step.permissionType == PermissionType.NOTIFICATION && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
                 isPermissionGranted = true
             } else if (step.permissionType == PermissionType.EXACT_ALARM && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) {
+                isPermissionGranted = true
+            } else if (step.permissionType == PermissionType.SYSTEM_ALERT_WINDOW && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
                 isPermissionGranted = true
             }
             buttonTextResId = if (isPermissionGranted) R.string.onboarding_permission_granted_button else R.string.onboarding_grant_permission_button
@@ -456,7 +464,8 @@ fun OnboardingStepPage(
                                 // For older SDKs, isPermissionGranted should be true via LaunchedEffect, so this path isn't taken.
                             }
                             PermissionType.EXACT_ALARM -> PermissionUtils.checkAndRequestExactAlarmPermission(activity)
-                            PermissionType.FULL_SCREEN_INTENT -> PermissionUtils.checkAndRequestFullScreenIntentPermission(activity) // This typically doesn't have a system dialog.
+                            PermissionType.FULL_SCREEN_INTENT -> PermissionUtils.checkAndRequestFullScreenIntentPermission(activity)
+                            PermissionType.SYSTEM_ALERT_WINDOW -> PermissionUtils.checkAndRequestSystemAlertWindowPermission(activity)
                         }
                         // REMOVE: localPermissionCheckTrigger++
                     }

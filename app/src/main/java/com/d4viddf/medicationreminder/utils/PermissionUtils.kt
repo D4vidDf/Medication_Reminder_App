@@ -151,6 +151,25 @@ object PermissionUtils {
             Log.d(TAG_PERMISSION_UTILS, "Full-screen intent permission check not applicable for API < 34 via NotificationManager.")
         }
     }
+
+    fun checkAndRequestSystemAlertWindowPermission(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(activity)) {
+                Log.w(TAG_PERMISSION_UTILS, "SYSTEM_ALERT_WINDOW permission not granted. Requesting...")
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:${activity.packageName}")
+                )
+                try {
+                    activity.startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e(TAG_PERMISSION_UTILS, "Could not open ACTION_MANAGE_OVERLAY_PERMISSION settings", e)
+                }
+            } else {
+                Log.d(TAG_PERMISSION_UTILS, "SYSTEM_ALERT_WINDOW permission already granted.")
+            }
+        }
+    }
     /**
      * Checks if the app has permission to draw over other apps.
      * On versions below Android M, this is granted by default.

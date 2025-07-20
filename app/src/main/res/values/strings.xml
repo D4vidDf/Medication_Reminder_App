@@ -246,6 +246,8 @@
     <string name="onboarding_step3_exact_alarm_desc">Para asegurar que tus recordatorios sean precisos y puntuales, incluso cuando la aplicación no está activa, necesitamos permiso para programar alarmas exactas.</string>
     <string name="onboarding_step_fullscreen_title">Habilitar Notificaciones a Pantalla Completa</string>
     <string name="onboarding_step_fullscreen_desc">Para recordatorios críticos, permitir notificaciones a pantalla completa asegura que los veas inmediatamente, incluso si tu dispositivo está bloqueado o estás usando otra aplicación.</string>
+    <string name="onboarding_step_system_alert_window_title">Enable Drawing Over Other Apps</string>
+    <string name="onboarding_step_system_alert_window_desc">To ensure that you can open the app from your watch, we need permission to draw over other apps. This allows the app to be launched from the background.</string>
     <string name="onboarding_step4_finish_title">¡Todo Listo!</string>
     <string name="onboarding_step4_finish_desc">Gracias por configurar todos los permisos necesarios. Ya estás listo/a para usar Recordatorio de Medicación al máximo.</string>
     <string name="onboarding_grant_permission_button">Conceder Permiso</string>
