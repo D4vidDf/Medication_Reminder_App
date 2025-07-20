@@ -134,12 +134,24 @@ object NotificationHelper {
         )
 
         // Full-screen PendingIntent (for the heads-up notification)
-        val fullScreenPendingIntent = PendingIntent.getActivity(
-            context,
-            reminderDbId + 2000, // Unique request code for full-screen PI
-            fullScreenActivityIntent, // Also uses fullScreenActivityIntent
-            pendingIntentFlags // Re-use flags
-        )
+        val fullScreenPendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            PendingIntent.getActivity(
+                context,
+                reminderDbId + 2000,
+                fullScreenActivityIntent,
+                pendingIntentFlags,
+                android.app.ActivityOptions.makeBasic().setPendingIntentCreatorBackgroundActivityStartMode(
+                    android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                ).toBundle()
+            )
+        } else {
+            PendingIntent.getActivity(
+                context,
+                reminderDbId + 2000, // Unique request code for full-screen PI
+                fullScreenActivityIntent, // Also uses fullScreenActivityIntent
+                pendingIntentFlags // Re-use flags
+            )
+        }
 
         val markAsActionIntent = Intent(context, com.d4viddf.medicationreminder.receivers.ReminderBroadcastReceiver::class.java).apply { // FQDN for ReminderBroadcastReceiver
             action = IntentActionConstants.ACTION_MARK_AS_TAKEN // Ensure this action is set

@@ -24,6 +24,7 @@ object PermissionUtils {
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String> // For Post Notifications
     private lateinit var requestFullScreenIntentLauncher: ActivityResultLauncher<Intent>
     private lateinit var recordAudioPermissionLauncher: ActivityResultLauncher<String> // For Record Audio
+    private lateinit var requestSystemAlertWindowLauncher: ActivityResultLauncher<Intent>
 
     fun init(activity: ComponentActivity) {
         requestPermissionLauncher =
@@ -52,6 +53,17 @@ object PermissionUtils {
                     Log.i(TAG_PERMISSION_UTILS, "RECORD_AUDIO permission granted.")
                 } else {
                     Log.w(TAG_PERMISSION_UTILS, "RECORD_AUDIO permission denied.")
+                }
+            }
+
+        requestSystemAlertWindowLauncher =
+            activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (Settings.canDrawOverlays(activity)) {
+                        Log.i(TAG_PERMISSION_UTILS, "SYSTEM_ALERT_WINDOW permission is now granted after returning from settings.")
+                    } else {
+                        Log.w(TAG_PERMISSION_UTILS, "SYSTEM_ALERT_WINDOW permission is still NOT granted after returning from settings.")
+                    }
                 }
             }
     }
@@ -161,7 +173,7 @@ object PermissionUtils {
                     Uri.parse("package:${activity.packageName}")
                 )
                 try {
-                    activity.startActivity(intent)
+                    requestSystemAlertWindowLauncher.launch(intent)
                 } catch (e: Exception) {
                     Log.e(TAG_PERMISSION_UTILS, "Could not open ACTION_MANAGE_OVERLAY_PERMISSION settings", e)
                 }
