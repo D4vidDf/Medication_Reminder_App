@@ -25,6 +25,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.d4viddf.medicationreminder.MainActivity
 import com.d4viddf.medicationreminder.R
+import com.d4viddf.medicationreminder.common.IntentExtraConstants
 import com.d4viddf.medicationreminder.repository.MedicationTypeRepository
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.PutDataMapRequest
