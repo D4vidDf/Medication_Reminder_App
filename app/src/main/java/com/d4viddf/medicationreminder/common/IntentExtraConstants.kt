@@ -3,6 +3,7 @@ package com.d4viddf.medicationreminder.common
 object IntentExtraConstants {
     // General Extras (used by ReminderBroadcastReceiver, FullScreenNotificationActivity, etc.)
     const val EXTRA_REMINDER_ID = "extra_reminder_id"
+    const val EXTRA_MEDICATION_ID = "extra_medication_id"
     const val EXTRA_MEDICATION_NAME = "extra_medication_name" // Corresponds to EXTRA_MED_NAME in FullScreenNotificationActivity
     const val EXTRA_MEDICATION_DOSAGE = "extra_medication_dosage" // Corresponds to EXTRA_MED_DOSAGE in FullScreenNotificationActivity
     const val EXTRA_ACTUAL_REMINDER_TIME_MILLIS = "extra_actual_reminder_time_millis"

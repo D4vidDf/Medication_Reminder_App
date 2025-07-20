@@ -28,7 +28,8 @@ fun MedicationReminderApp(
     themePreference: String,
     widthSizeClass: WindowWidthSizeClass,
     userPreferencesRepository: UserPreferencesRepository, // Keep this for OnboardingScreen
-    onboardingCompleted: Boolean // Add this, make it non-null
+    onboardingCompleted: Boolean, // Add this, make it non-null
+    medicationIdToNavigate: Int?
 ) {
 
     // This logic will now be at the top level inside MedicationReminderApp, after parameters
@@ -38,6 +39,10 @@ fun MedicationReminderApp(
         val navController = rememberNavController()
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
+
+            if (medicationIdToNavigate != null && medicationIdToNavigate != -1) {
+                navController.navigate(Screen.MedicationDetails.createRoute(medicationIdToNavigate))
+            }
 
             // Determine if the current screen is a "main" screen that should show common navigation elements
             val mainScreenRoutes = listOf(

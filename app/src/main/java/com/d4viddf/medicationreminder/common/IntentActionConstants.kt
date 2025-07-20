@@ -12,4 +12,5 @@ object IntentActionConstants {
 
     // Action for data sync
     const val ACTION_DATA_CHANGED = "com.d4viddf.medicationreminder.ACTION_DATA_CHANGED"
+    const val ACTION_OPEN_MEDICATION_DETAIL = "com.d4viddf.medicationreminder.ACTION_OPEN_MEDICATION_DETAIL"
 }

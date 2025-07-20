@@ -21,6 +21,9 @@ import com.d4viddf.medicationreminder.data.ThemeKeys
 import com.d4viddf.medicationreminder.notifications.NotificationHelper
 import com.d4viddf.medicationreminder.repository.UserPreferencesRepository
 import com.d4viddf.medicationreminder.utils.PermissionUtils
+import com.d4viddf.medicationreminder.common.IntentActionConstants
+import com.d4viddf.medicationreminder.common.IntentExtraConstants
+import com.d4viddf.medicationreminder.ui.navigation.Screen
 import com.d4viddf.medicationreminder.workers.TestSimpleWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +37,7 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var userPreferencesRepository: UserPreferencesRepository
 
+    private var medicationIdToNavigate: Int? = null
 
     companion object {
         private const val TAG_MAIN_ACTIVITY = "MainActivity" // For logging
@@ -83,6 +87,7 @@ class MainActivity : ComponentActivity() {
         }
 
         Log.i(TAG_MAIN_ACTIVITY, "onCreate: Calling setContent { ... }") // 24.
+        handleIntent(intent)
         setContent { // 25.
             val loadedOnboardingCompletedStatus by onboardingStatusHolder.collectAsState()
 
@@ -107,7 +112,8 @@ class MainActivity : ComponentActivity() {
                     themePreference = themePreference,
                     widthSizeClass = windowSizeClass.widthSizeClass,
                     userPreferencesRepository = userPreferencesRepository,
-                    onboardingCompleted = loadedOnboardingCompletedStatus!! // Use non-null asserted value
+                    onboardingCompleted = loadedOnboardingCompletedStatus!!, // Use non-null asserted value
+                    medicationIdToNavigate = medicationIdToNavigate
                 )
             } else {
                 // While onboardingStatusHolder.value is null (splash screen is showing),
@@ -120,4 +126,15 @@ class MainActivity : ComponentActivity() {
     // Removed checkAndRequestFullScreenIntentPermission
     // Removed requestPostNotificationPermission
     // Removed checkAndRequestExactAlarmPermission
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == IntentActionConstants.ACTION_OPEN_MEDICATION_DETAIL) {
+            medicationIdToNavigate = intent.getIntExtra(IntentExtraConstants.EXTRA_MEDICATION_ID, -1)
+        }
+    }
 }

@@ -157,10 +157,13 @@ fun AppNavigation(
             }
             composable(
                 Screen.MedicationDetails.route,
-                arguments = listOf(navArgument("enableSharedTransition") { type = NavType.BoolType; defaultValue = true })
+                arguments = listOf(
+                    navArgument(MEDICATION_ID_ARG) { type = NavType.IntType },
+                    navArgument("enableSharedTransition") { type = NavType.BoolType; defaultValue = true }
+                )
             ) { backStackEntry ->
                 // `this` is an AnimatedVisibilityScope
-                val medicationId = backStackEntry.arguments?.getString(MEDICATION_ID_ARG)?.toIntOrNull()
+                val medicationId = backStackEntry.arguments?.getInt(MEDICATION_ID_ARG)
                 val enableSharedTransition = backStackEntry.arguments?.getBoolean("enableSharedTransition") ?: true
                 if (medicationId != null) {
                     MedicationDetailsScreen(
